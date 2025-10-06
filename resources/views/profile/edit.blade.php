@@ -5,6 +5,24 @@
         </h2>
     </x-slot>
 
+     <!-- thêm liên kết của trang User-->
+    <div class="pt-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="flex space-x-4 p-4 bg-white shadow-sm sm:rounded-lg">
+                <!-- Nút chuyển sang Profile Settings -->
+                <a href="{{ route('profile.edit') }}" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 bg-gray-100 shadow-inner">
+                    {{ __('Account Settings') }}
+                </a>
+                <!-- Nút chuyển sang User Profile -->
+                <a href="{{ route('user.profile') }}" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 ease-in-out shadow-lg">
+                    {{ __('View Personal Page') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
