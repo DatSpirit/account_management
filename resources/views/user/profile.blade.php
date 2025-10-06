@@ -10,7 +10,7 @@
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900">
                 <!-- $user được truyền từ UserController sang -->
-                {{ __("Xin chào") }} <strong>{{ $user->name }}</strong>!
+                {{ __("Hello!") }} <strong>{{ $user->name }}</strong>!
                 <p class="mt-2 text-lg font-medium">This is your information:</p>
                 <ul class="list-disc ml-5 mt-2 space-y-1">
                     <li>Email: {{ $user->email }}</li>
