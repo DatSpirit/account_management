@@ -13,12 +13,12 @@
                 <!-- Nút chuyển sang Profile Settings -->
                 <a href="{{ route('profile.edit') }}" 
                    class="px-4 py-2 text-sm font-semibold rounded-lg text-indigo-600 bg-indigo-50 border border-indigo-200 shadow-md">
-                    {{ __('Account Settings') }}
+                    {{ __('Profile Settings') }}
                 </a>
                 <!-- Nút chuyển sang User Profile -->
                 <a href="{{ route('user.profile') }}" 
                    class="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out">
-                    {{ __('View Personal Page') }}
+                    {{ __('User Profile') }}
                 </a>
             </div>
         </div>
