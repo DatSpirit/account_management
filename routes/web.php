@@ -28,10 +28,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/user', [UserController::class, 'index'])->name('user.profile');
 
     // Trang quản lý người dùng (Admin Dashboard)
-    Route::get('/admin/users', [AdminController::class, 'index'])
-    ->middleware(['auth', 'admin'])
-    ->name('admin.users');
-
+    Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
+        Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.edit');
+        Route::put('/users/{user}', [AdminController::class, 'update'])->name('admin.update');
+        Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('admin.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
