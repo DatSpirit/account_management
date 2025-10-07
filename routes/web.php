@@ -10,16 +10,17 @@ Route::get('/', function () {
 });
 
 
-
-
 // Trang Dashboard chính    
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 // Các route cần đăng nhập
 Route::middleware('auth')->group(function () {
-    // Trang chỉnh sửa hồ sơ
+
+
+    // Hồ sơ người dùng
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -29,10 +30,19 @@ Route::middleware('auth')->group(function () {
 
     // Trang quản lý người dùng (Admin Dashboard)
     Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+
+        // Danh sách người dùng
         Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
+
+        // Chỉnh sửa người dùng
         Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.edit');
+
+        // Cập nhật người dùng
         Route::put('/users/{user}', [AdminController::class, 'update'])->name('admin.update');
+
+        // Xóa người dùng
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('admin.destroy');
+
     });
 });
 

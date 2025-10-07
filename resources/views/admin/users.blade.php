@@ -48,13 +48,13 @@
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex justify-center space-x-2">
                                             <!-- Nút Edit -->
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" 
+                                            <a href="{{ route('admin.edit', $user->id) }}" 
                                                class="px-3 py-1 text-xs font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 transition">
                                                 {{ __('Edit') }}
                                             </a>
 
                                             <!-- Nút Delete -->
-                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này không?');">
+                                            <form action="{{ route('admin.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này không?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
