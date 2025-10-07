@@ -16,12 +16,11 @@ class AdminController extends Controller
      */
     public function index(Request $request): View
     {
-        // 1. Lấy tất cả người dùng từ database
+        // Lấy danh sách người dùng, phân trang 10 user mỗi trang
         $users = User::paginate(10);
 
-        // 2. Trả về view 'admin.users' và truyền biến $users
-        return view('admin.users', [
-            'users' => $users,
-        ]);
+        // Trả về view với danh sách user
+         return view('admin.users', compact('users'));
+    
     }
 }

@@ -10,10 +10,7 @@ Route::get('/', function () {
 });
 
 
-// Trang quản lý người dùng (Admin Dashboard)
-Route::get('/admin/users', [AdminController::class, 'index'])
-    ->middleware(['auth', 'admin'])
-    ->name('admin.users');
+
 
 // Trang Dashboard chính    
 Route::get('/dashboard', function () {
@@ -29,6 +26,11 @@ Route::middleware('auth')->group(function () {
 
     // trang cá nhân User
     Route::get('/profile/user', [UserController::class, 'index'])->name('user.profile');
+
+    // Trang quản lý người dùng (Admin Dashboard)
+    Route::get('/admin/users', [AdminController::class, 'index'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.users');
 
 });
 
