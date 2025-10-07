@@ -44,6 +44,28 @@
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-100">User</span>
                                         @endif
                                     </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex justify-center space-x-2">
+                                            <!-- Nút Edit -->
+                                            <a href="{{ route('admin.users.edit', $user->id) }}" 
+                                               class="px-3 py-1 text-xs font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 transition">
+                                                {{ __('Edit') }}
+                                            </a>
+
+                                            <!-- Nút Delete -->
+                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này không?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="px-3 py-1 text-xs font-semibold rounded-md text-white bg-red-600 hover:bg-red-700 transition">
+                                                    {{ __('Delete') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+
+
                                 </tr>
                             @endforeach
                         </tbody>
