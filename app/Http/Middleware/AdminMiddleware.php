@@ -25,7 +25,7 @@ class AdminMiddleware
             }
         }
         // Nếu không đăng nhập hoặc không phải Admin, chuyển hướng về Dashboard và hiển thị thông báo
-        return redirect()->route('dashboard')->with('status', 'Bạn không có quyền truy cập trang quản trị!');
+        return redirect()->route('dashboard')->with('status', 'You are not authorized to access this page.');
 
     }
 }

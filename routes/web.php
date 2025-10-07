@@ -21,7 +21,9 @@ Route::middleware('auth')->group(function () {
 // trang cá nhân User
     Route::get('/profile/user', [UserController::class, 'index'])->name('user.profile');
 // trang quản lý người dùng
-    Route::get('/admin/users', [AdminController::class, 'index'])->name('admin.users');
+    Route::get('/admin/users', [AdminController::class, 'index'])
+    ->middleware(['auth', 'admin'])
+    ->name('admin.users');
 });
 
 require __DIR__.'/auth.php';

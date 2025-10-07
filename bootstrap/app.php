@@ -10,9 +10,23 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+  
+   ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web([
+        \App\Http\Middleware\VerifyCsrfToken::class,
+    ]);
+
+    // Middleware mặc định của API
+    $middleware->api([
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
+
+    // Đăng ký alias cho middleware tuỳ chỉnh
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+    ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
+    ->create();
