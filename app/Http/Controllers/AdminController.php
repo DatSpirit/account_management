@@ -17,11 +17,25 @@ class AdminController extends Controller
      */
     public function index(Request $request): View
     {
-        // Lấy danh sách người dùng, phân trang 10 user mỗi trang
-        $users = User::paginate(10);
+
+
+        $search = $request->input('search');
+
+        // Query builder
+        $query = User::query();
+
+        // Nếu có search, filter theo name hoặc email
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+        // Lấy danh sách người dùng, phân trang 20 user mỗi trang
+        $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
         // Trả về view với danh sách user
-         return view('admin.users', compact('users'));
+        return view('admin.users', compact('users', 'search'));
     
     }
 
