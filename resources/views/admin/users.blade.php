@@ -35,7 +35,7 @@
 
                     <!-- Ô tìm kiếm -->
                    
-                        
+                <div class="relative w-72">        
                     <input id="search-input" type="text" name="search"
                         placeholder="Nhập từ khóa tìm kiếm..."
                         value="{{ request('search') }}"
@@ -43,7 +43,10 @@
                             border border-gray-600 rounded-md shadow-md
                             focus:outline-none focus:ring-2 focus:ring-indigo-500 
                             placeholder-gray-200 appearance-none">
-                    
+                 <!-- Dropdown gợi ý -->
+                    <ul id="suggestions" 
+                    class="absolute z-50 mt-1 w-full bg-gray-900 border border-gray-700 rounded-md hidden text-left"></ul>
+                </div> 
                     <!-- Nút tìm -->
                     <button type="submit"
                             class="appearance-none px-5 py-2 font-semibold text-black bg-black 
@@ -135,46 +138,70 @@
             </div>
         </div>
     </div>
-    <!-- ✨ Script Autocomplete -->
-    <script>
-        const input = document.getElementById('search-input');
-        const results = document.getElementById('autocomplete-results');
-        const filterSelect = document.querySelector('select[name="filter"]');
+ <!-- Script Autocomplete Tối ưu -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input');
+    const suggestionsBox = document.getElementById('suggestions');
+    const filterSelect = document.getElementById('filter-select');
+    let debounceTimer;
 
-        input.addEventListener('input', async () => {
-            const query = input.value.trim();
-            const filter = filterSelect.value;
-            if (!query) {
-                results.innerHTML = '';
-                results.classList.add('hidden');
+    searchInput.addEventListener('input', function () {
+        const query = this.value.trim();
+        const filter = filterSelect.value;
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (query.length < 2) {
+                suggestionsBox.classList.add('hidden');
+                suggestionsBox.innerHTML = '';
                 return;
             }
 
-            const response = await fetch(`/admin/users/autocomplete?filter=${filter}&search=${encodeURIComponent(query)}`);
-            const data = await response.json();
+            // Gọi API suggestions
+            fetch(`/admin/users/suggestions?q=${encodeURIComponent(query)}&filter=${filter}`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
 
-            if (data.length > 0) {
-                results.innerHTML = data.map(item => `<li class="px-4 py-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-gray-700">${item}</li>`).join('');
-                results.classList.remove('hidden');
-            } else {
-                results.innerHTML = '';
-                results.classList.add('hidden');
-            }
-        });
+                    if (data.length === 0) {
+                        suggestionsBox.classList.add('hidden');
+                        return;
+                    }
 
-        // Gán sự kiện chọn
-        results.addEventListener('click', e => {
-            if (e.target.tagName === 'LI') {
-                input.value = e.target.textContent;
-                results.classList.add('hidden');
-            }
-        });
+                    // Hiển thị gợi ý
+                    data.forEach(user => {
+                        const li = document.createElement('li');
+                        li.className = "px-4 py-2 cursor-pointer hover:bg-gray-800 hover:text-white transition duration-150";
+                        li.textContent = 
+                            filter === 'email' ? user.email :
+                            filter === 'id' ? `#${user.id}` :
+                            user.name + ' — ' + user.email;
 
-        // Ẩn khi click ra ngoài
-        document.addEventListener('click', e => {
-            if (!results.contains(e.target) && e.target !== input) {
-                results.classList.add('hidden');
-            }
-        });
-    </script>
+                        //  Khi chọn → điền vào ô input
+                        li.addEventListener('click', () => {
+                            searchInput.value = 
+                                filter === 'email' ? user.email :
+                                filter === 'id' ? user.id :
+                                user.name;
+                            suggestionsBox.classList.add('hidden');
+                        });
+
+                        suggestionsBox.appendChild(li);
+                    });
+
+                    suggestionsBox.classList.remove('hidden');
+                })
+                .catch(() => suggestionsBox.classList.add('hidden'));
+        }, 300);
+    });
+
+    //  Ẩn khi click ra ngoài
+    document.addEventListener('click', (e) => {
+        if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+            suggestionsBox.classList.add('hidden');
+        }
+    });
+});
+</script>
 </x-app-layout>

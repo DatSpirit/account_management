@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
 
         // API Gợi ý tìm kiếm (Autocomplete)
-        Route::get('/users/autocomplete', [AdminController::class, 'autocomplete'])->name('admin.users.autocomplete');
+        Route::get('/users/suggestions', [AdminController::class, 'suggestions'])->name('admin.users.suggestions');
 
         // Chỉnh sửa người dùng
         Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.edit');

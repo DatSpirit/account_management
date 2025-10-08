@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class AdminController extends Controller
 {
@@ -37,23 +38,35 @@ class AdminController extends Controller
         return view('admin.users', compact('users', 'search', 'filter'));
     
     }
+
     /**
-     * API Gợi ý tìm kiếm (Autocomplete)
-     */
-    public function autocomplete(Request $request): JsonResponse
-    {
-        $filter = $request->input('filter', 'name');
-        $term = $request->input('term', '');
+ * Gợi ý người dùng theo tên, email, ID (AJAX)
+ */
+public function suggestions(Request $request)
+{
+    $query = $request->input('q', '');
+    $filter = $request->input('filter', 'name'); // ID, name hoặc email
 
-        $results = User::where($filter, 'LIKE', "%{$term}%")
-            ->take(5)
-            ->get([$filter])
-            ->pluck($filter);
-
-        return response()->json($results);
+    if (strlen($query) < 2) {
+        return response()->json([]); // chỉ gợi ý khi gõ >= 2 ký tự
     }
 
-    
+    $users = User::query();
+
+    // Chỉ tìm trong cột được chọn (name, email, id)
+    if ($filter === 'email') {
+        $users->where('email', 'LIKE', "%{$query}%");
+    } elseif ($filter === 'id') {
+        $users->where('id', $query);
+    } else {
+        $users->where('name', 'LIKE', "%{$query}%");
+    }
+
+    $results = $users->take(5)->get(['id', 'name', 'email']);
+
+    return response()->json($results);
+}
+
     /**
      * Hiển thị form chỉnh sửa người dùng.
      */
