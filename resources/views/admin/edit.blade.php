@@ -11,11 +11,24 @@
 
                 <!-- Flash messages -->
                 @if(session('success'))
-                    <div class="mb-4 text-green-600">{{ session('success') }}</div>
+                    <div class="mb-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                        {{ session('success') }}
+                    </div>
+                @elseif(session('error'))
+                    <div class="mb-4 px-4 py-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                        {{ session('error') }}
+                    </div>
                 @endif
 
-                @if(session('error'))
-                    <div class="mb-4 text-red-600">{{ session('error') }}</div>
+                <!-- Validation errors -->
+                @if($errors->any())
+                    <div class="mb-4 px-4 py-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                        <ul class="list-disc pl-5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
 
                 <!-- Edit User Form -->
@@ -23,45 +36,25 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- Name -->
                     <div class="mb-4">
-                        <label class="block text-gray-700 dark:text-gray-200">Name</label>
-                        <input type="text" name="name" value="{{ old('name', $user->name) }}"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        @error('name')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
+                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                     </div>
 
-                    <!-- Email -->
                     <div class="mb-4">
-                        <label class="block text-gray-700 dark:text-gray-200">Email</label>
-                        <input type="email" name="email" value="{{ old('email', $user->email) }}"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        @error('email')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                     </div>
 
-                    <!-- Is Admin -->
-                    <div class="mb-4">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="is_admin" value="1"
-                                   {{ $user->is_admin ? 'checked' : '' }}
-                                   class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                            <span class="ml-2 text-gray-700 dark:text-gray-200">Admin</span>
-                        </label>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 mt-6">
                         <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            Update User
+                                class="px-4 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700 transition">
+                            Update
                         </button>
-
                         <a href="{{ route('admin.users') }}"
-                           class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                           class="px-4 py-2 bg-gray-300 text-gray-700 rounded shadow hover:bg-gray-400 transition">
                             Cancel
                         </a>
                     </div>
