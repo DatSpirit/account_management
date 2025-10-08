@@ -52,6 +52,7 @@
                             <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Tên</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Ngày tham gia</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Ghi chú</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Vai trò</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Hành động</th>
                         </tr>
@@ -64,6 +65,14 @@
                                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ $user->name }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{ $user->email }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{ $user->created_at->format('d/m/Y') }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 {{ $user->notes ? 'bg-yellow-50 font-medium' : '' }}">
+                                    @if ($user->notes)
+                                        {{ \Illuminate\Support\Str::limit($user->notes, 20, '...') }}
+                                    @else
+                                           —
+                                    @endif
+                                </td>
+
                                 <td class="px-6 py-4">
                                     @if ($user->is_admin)
                                         <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">

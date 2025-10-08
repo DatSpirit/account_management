@@ -57,6 +57,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         // Cập nhật user
