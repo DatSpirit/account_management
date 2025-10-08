@@ -50,7 +50,7 @@
 
                     <div class="flex items-center gap-3 mt-6">
                         <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700 transition">
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded shadow hover:bg-gray-400 transition">
                             Update
                         </button>
                         <a href="{{ route('admin.users') }}"

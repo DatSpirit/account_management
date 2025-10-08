@@ -1,9 +1,17 @@
+
+
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Admin - User Management Dashboard') }}
         </h2>
     </x-slot>
+
+      <!-- Flash Messages -->
+<x-flash-message type="success" :message="session('success')" />
+<x-flash-message type="error" :message="session('error')" />
+
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
