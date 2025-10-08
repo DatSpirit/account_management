@@ -18,25 +18,39 @@ class AdminController extends Controller
     public function index(Request $request): View
     {
 
-
         $search = $request->input('search');
+        $filter = $request->input('filter', 'name');
 
         // Query builder
         $query = User::query();
 
-        // Nếu có search, filter theo name hoặc email
+  
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%");
-            });
+            $query->where($filter, 'LIKE', "%{$search}%"); 
         }
+
+
         // Lấy danh sách người dùng, phân trang 20 user mỗi trang
         $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
         // Trả về view với danh sách user
-        return view('admin.users', compact('users', 'search'));
+        return view('admin.users', compact('users', 'search', 'filter'));
     
+    }
+    /**
+     * API Gợi ý tìm kiếm (Autocomplete)
+     */
+    public function autocomplete(Request $request): JsonResponse
+    {
+        $filter = $request->input('filter', 'name');
+        $term = $request->input('term', '');
+
+        $results = User::where($filter, 'LIKE', "%{$term}%")
+            ->take(5)
+            ->get([$filter])
+            ->pluck($filter);
+
+        return response()->json($results);
     }
 
     

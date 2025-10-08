@@ -11,7 +11,6 @@
 
     <div class="py-10">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Header + Search -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div class="text-center sm:text-left">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -22,26 +21,39 @@
                     </p>
                 </div>
 
-                <!-- Search bar -->
-                <form method="GET" action="{{ route('admin.users') }}" class="mt-4 sm:mt-0 flex items-center space-x-2">
-                    <div class="relative w-64">
-                        <!-- Icon kính lúp -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 16.65z" />
-                        </svg>
-                        <input type="text" name="search" placeholder="Tìm kiếm tên hoặc email"
-                            value="{{ request('search') }}"
-                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full placeholder-gray-400 dark:placeholder-gray-500">
-                    </div>
+                        <!-- Search + Filter -->
+                <form method="GET" action="{{ route('admin.users') }}" class="mt-4 sm:mt-0 flex items-center space-x-2 relative">
+                    <!-- Bộ lọc -->
+                    <select name="filter" 
+                    class="appearance-none px-5 py-2 font-semibold text-black bg-black 
+                       border border-gray-600 rounded-md shadow-md pr-10
+                       focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="name" {{ request('filter') === 'name' ? 'selected' : '' }}>Tên</option>
+                        <option value="email" {{ request('filter') === 'email' ? 'selected' : '' }}>Email</option>
+                        <option value="id" {{ request('filter') === 'id' ? 'selected' : '' }}>ID</option>
+                    </select>
+
+                    <!-- Ô tìm kiếm -->
+                   
+                        
+                    <input id="search-input" type="text" name="search"
+                        placeholder="Nhập từ khóa tìm kiếm..."
+                        value="{{ request('search') }}"
+                        class="pl-10 pr-4 py-2 w-full font-medium text-black bg-black 
+                            border border-gray-600 rounded-md shadow-md
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                            placeholder-gray-200 appearance-none">
+                    
+                    <!-- Nút tìm -->
                     <button type="submit"
-                        class="px-5 py-2 font-semibold text-black bg-gradient-to-r from-gray-900 to-gray-700 
-               hover:from-gray-800 hover:to-gray-600 rounded-md shadow-md 
-               transition-all duration-200 transform hover:scale-[1.03]">
+                            class="appearance-none px-5 py-2 font-semibold text-black bg-black 
+                            border border-gray-600 rounded-md shadow-md pr-10
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <span>{{ __('Search') }}</span>
                     </button>
                 </form>
             </div>
+
 
             <!-- Bảng danh sách -->
             <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700">
@@ -123,4 +135,46 @@
             </div>
         </div>
     </div>
+    <!-- ✨ Script Autocomplete -->
+    <script>
+        const input = document.getElementById('search-input');
+        const results = document.getElementById('autocomplete-results');
+        const filterSelect = document.querySelector('select[name="filter"]');
+
+        input.addEventListener('input', async () => {
+            const query = input.value.trim();
+            const filter = filterSelect.value;
+            if (!query) {
+                results.innerHTML = '';
+                results.classList.add('hidden');
+                return;
+            }
+
+            const response = await fetch(`/admin/users/autocomplete?filter=${filter}&search=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            if (data.length > 0) {
+                results.innerHTML = data.map(item => `<li class="px-4 py-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-gray-700">${item}</li>`).join('');
+                results.classList.remove('hidden');
+            } else {
+                results.innerHTML = '';
+                results.classList.add('hidden');
+            }
+        });
+
+        // Gán sự kiện chọn
+        results.addEventListener('click', e => {
+            if (e.target.tagName === 'LI') {
+                input.value = e.target.textContent;
+                results.classList.add('hidden');
+            }
+        });
+
+        // Ẩn khi click ra ngoài
+        document.addEventListener('click', e => {
+            if (!results.contains(e.target) && e.target !== input) {
+                results.classList.add('hidden');
+            }
+        });
+    </script>
 </x-app-layout>
