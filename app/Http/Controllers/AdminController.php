@@ -27,7 +27,20 @@ class AdminController extends Controller
 
   
         if ($search) {
-            $query->where($filter, 'LIKE', "%{$search}%"); 
+            $query->where($filter, 'LIKE', "%{$search}%")
+            ->orderByRaw("
+              CASE
+                  WHEN LOWER($filter) LIKE ? THEN 1
+                  WHEN LOWER($filter) LIKE ? THEN 2
+                  WHEN LOWER($filter) LIKE ? THEN 3
+                  ELSE 4
+              END,
+              $filter ASC
+            ", [
+              strtolower("{$search}%"),
+              strtolower("% {$search}%"),
+              strtolower("%{$search}%")
+            ]);
         }
 
 
@@ -44,27 +57,39 @@ class AdminController extends Controller
  */
 public function suggestions(Request $request)
 {
-    $query = $request->input('q', '');
+    $query = trim($request->input('q'));
     $filter = $request->input('filter', 'name'); // ID, name hoặc email
+    
+    
+ 
+    if (!in_array($filter, ['id', 'name', 'email'])) {
+        $filter = 'name';
+    }
 
-    if (strlen($query) < 2) {
+    if (strlen($query) < 1) {
         return response()->json([]); // chỉ gợi ý khi gõ >= 2 ký tự
     }
 
-    $users = User::query();
+    $users = User::select('id', 'name', 'email')
+        ->where($filter, 'like', "%{$query}%")
+        ->orderByRaw("
+            CASE
+                WHEN LOWER({$filter}) LIKE ? THEN 1         -- bắt đầu bằng từ khóa
+                WHEN LOWER({$filter}) LIKE ? THEN 2         -- có chứa từ khóa sau dấu cách
+                WHEN LOWER({$filter}) LIKE ? THEN 3         -- chứa từ khóa ở giữa
+                ELSE 4
+            END,
+            {$filter} ASC
 
-    // Chỉ tìm trong cột được chọn (name, email, id)
-    if ($filter === 'email') {
-        $users->where('email', 'LIKE', "%{$query}%");
-    } elseif ($filter === 'id') {
-        $users->where('id', $query);
-    } else {
-        $users->where('name', 'LIKE', "%{$query}%");
-    }
+        ", [
+            strtolower("{$query}%"),          // bắt đầu bằng
+            strtolower("% {$query}%"),         // sau dấu cách
+            strtolower("%{$query}%") 
+            ])
+        ->limit(30)
+        ->get();
 
-    $results = $users->take(5)->get(['id', 'name', 'email']);
-
-    return response()->json($results);
+    return response()->json($users);
 }
 
     /**
