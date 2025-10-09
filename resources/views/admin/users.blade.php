@@ -14,11 +14,8 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div class="text-center sm:text-left">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ __('Danh sách người dùng') }}
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
                         {{ __('Quản lý tất cả người dùng đã đăng ký trong hệ thống.') }}
-                    </p>
+                    </h3>
                 </div>
 
                 <!-- Search + Filter -->
@@ -142,7 +139,7 @@
                                     <div class="flex justify-center space-x-2">
                                         <!-- Nút Edit -->
                                         <a href="{{ route('admin.edit', $user->id) }}"
-                                            class="px-3 py-1 text-xs font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition">
+                                            class="px-4 py-2 text-xs font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition">
                                             {{ __('Edit') }}
                                         </a>
 
@@ -152,7 +149,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="px-3 py-1 text-xs font-semibold rounded-md text-white bg-red-600 hover:bg-red-700 shadow-sm transition">
+                                                class="px-4 py-2 text-xs font-semibold rounded-md text-white bg-red-600 hover:bg-red-700 shadow-sm transition">
                                                 {{ __('Delete') }}
                                             </button>
                                         </form>

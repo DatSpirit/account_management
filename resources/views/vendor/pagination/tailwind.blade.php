@@ -18,7 +18,7 @@
             @if (is_array($element))
                 @foreach ($element as $page => $url)
                     @if ($page == $paginator->currentPage())
-                        <span aria-current="page" class="px-4 py-2 mx-1 text-white bg-indigo-600 rounded-md shadow">{{ $page }}</span>
+                        <span aria-current="page" class="px-4 py-2 mx-1 text-white bg-black-700 rounded-md shadow">{{ $page }}</span>
                     @else
                         <a href="{{ $url }}" class="px-4 py-2 mx-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">{{ $page }}</a>
                     @endif
