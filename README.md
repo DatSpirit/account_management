@@ -1,61 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Hướng dẫn Cài đặt (Setup Guide)
+Yêu cầu Tiên quyết
+Để chạy dự án, bạn cần đảm bảo các phần mềm sau đã được cài đặt:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+PHP: Phiên bản >= 8.1
 
-## About Laravel
+Composer: Trình quản lý gói cho PHP.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Node.js & npm: Để quản lý các gói frontend (Tailwind CSS).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Database Server: Ví dụ: MySQL, PostgreSQL, hoặc SQLite (để nhanh chóng sử dụng)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Web Server: Ví dụ: Apache, Nginx hoặc sử dụng PHP built-in server.
 
-## Learning Laravel
+Các bước cài đặt chi tiết
+Clone Repository:
+Tải mã nguồn về máy của bạn:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+git clone [repository-url]
+cd [project-name]
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Cài đặt Dependencies Backend (PHP):
+Sử dụng Composer để tải về tất cả các thư viện PHP cần thiết.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+composer install
 
-## Laravel Sponsors
+Cấu hình Môi trường (.env):
+Tạo file cấu hình môi trường và sinh khóa ứng dụng.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+cp .env.example .env
+php artisan key:generate
 
-### Premium Partners
+Cấu hình Database: Mở file .env và cập nhật các dòng sau cho phù hợp với Database Server của bạn:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_base_app  # Thay bằng tên database của bạn
+DB_USERNAME=root              # Thay bằng username database của bạn
+DB_PASSWORD=                  # Thay bằng password database của bạn
 
-## Contributing
+Lưu ý: Nếu sử dụng SQLite, chỉ cần tạo file database rỗng và cấu hình DB_CONNECTION=sqlite.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Chạy Database Migrations:
+Laravel sẽ tạo các bảng cần thiết, bao gồm cả cột is_admin mà chúng ta đã thêm.
 
-## Code of Conduct
+php artisan migrate --force
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Cài đặt và Build Dependencies Frontend (Node/npm):
+Tải các gói frontend (Tailwind CSS) và biên dịch chúng để tạo ra file CSS cuối cùng.
 
-## Security Vulnerabilities
+npm install
+npm run dev  # Chạy ở chế độ phát triển
+# Hoặc: npm run build (Chạy ở chế độ production)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Gán quyền Admin (Tùy chọn):
+Để kiểm tra tính năng phân quyền, bạn cần gán quyền Admin cho một tài khoản người dùng đã tồn tại.
 
-## License
+php artisan tinker
+>>> $user = App\Models\User::where('email', 'your-email@example.com')->first();
+>>> $user->is_admin = true;
+>>> $user->save();
+>>> exit;
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+(Hãy đảm bảo bạn đã đăng ký một tài khoản trước khi thực hiện bước này).
+
+Khởi động Server:
+Sử dụng server tích hợp của PHP để khởi chạy ứng dụng.
+
+php artisan serve
+
+Ứng dụng sẽ chạy tại địa chỉ https://www.google.com/search?q=http://127.0.0.1:8000.
