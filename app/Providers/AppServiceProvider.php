@@ -3,11 +3,12 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-// Import các Fortify Contracts và Response Classes tùy chỉnh
+use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Contracts\LoginViewResponse as LoginViewResponseContract;
-use App\Http\Responses\LoginViewResponse;
 use Laravel\Fortify\Contracts\RegisterViewResponse as RegisterViewResponseContract;
+use App\Http\Responses\LoginViewResponse;
 use App\Http\Responses\RegisterViewResponse;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,8 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Liên kết (bind) các Contracts của Fortify với các Response Classes tùy chỉnh.
-        // Đây là bước BẮT BUỘC để sửa lỗi "Target [Laravel\Fortify\Contracts\LoginViewResponse] is not instantiable."
+        // Bind các response tùy chỉnh cho Fortify
         $this->app->bind(LoginViewResponseContract::class, LoginViewResponse::class);
         $this->app->bind(RegisterViewResponseContract::class, RegisterViewResponse::class);
     }
@@ -27,6 +27,41 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Nếu đang chạy trong môi trường production, bắt buộc HTTPS (tùy chọn)
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Định nghĩa View cho Fortify
+        |--------------------------------------------------------------------------
+        */
+        Fortify::loginView(function () {
+            return view('auth.login');
+        });
+
+        Fortify::registerView(function () {
+            return view('auth.register');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Chuyển hướng sau khi đăng nhập/đăng ký
+        |--------------------------------------------------------------------------
+        |
+        | Ở đây, ta ghi đè hành vi mặc định để sau khi người dùng đăng nhập
+        | hoặc đăng ký thành công sẽ được chuyển hướng sang /dashboard
+        |
+        */
+        app()->singleton(
+            \Laravel\Fortify\Contracts\LoginResponse::class,
+            \App\Http\Responses\LoginResponse::class
+        );
+
+        app()->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            \App\Http\Responses\RegisterResponse::class
+        );
     }
 }

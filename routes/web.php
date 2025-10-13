@@ -7,7 +7,7 @@ use App\Http\Controllers\AdminController; // khai báo Controller cho Admin
 use Laravel\Fortify\Fortify;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 
-
+// Trang giới thiệu (Home/Landing Page)
 Route::get('/', function () {
     return view('welcome');
 });
