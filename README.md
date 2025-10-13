@@ -1,61 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Quản Lý Tài Khoản (Account Management System)
+Đây là hệ thống quản lý người dùng được xây dựng bằng Laravel và sử dụng cơ sở dữ liệu MySQL/MariaDB.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Dưới đây là các bước cần thiết để thiết lập và chạy dự án trên máy cục bộ của bạn.
 
-## About Laravel
+1. Yêu Cầu Hệ Thống
+Để chạy ứng dụng này, bạn cần cài đặt các công cụ sau:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Web Server & Database: XAMPP (bao gồm Apache và MySQL/MariaDB) hoặc môi trường tương đương (WAMP, MAMP, Docker, v.v.).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+PHP: Phiên bản PHP 8.x (Tùy thuộc vào phiên bản Laravel bạn đang dùng).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Composer: Công cụ quản lý thư viện cho PHP.
 
-## Learning Laravel
+Git: Hệ thống kiểm soát phiên bản (để clone dự án).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. Thiết Lập Môi Trường Cục Bộ
+2.1. Clone Dự Án
+Mở Git Bash hoặc Command Prompt và thực hiện lệnh sau để tải mã nguồn về:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+cd D:\xampp\htdocs
+git clone [https://github.com/DatSpirit/account_management.git](https://github.com/DatSpirit/account_management.git)
+cd account_management
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2.2. Khởi động Web Server và Database
+Mở XAMPP Control Panel.
 
-## Laravel Sponsors
+Khởi động module Apache (Web Server).
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Khởi động module MySQL (Database Server).
 
-### Premium Partners
+2.3. Cài đặt các Thư viện PHP
+Trong thư mục dự án (D:\xampp\htdocs\account_management), chạy lệnh Composer để tải các dependency cần thiết:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+composer install
 
-## Contributing
+2.4. Tạo Tệp Cấu Hình Môi Trường (.env)
+Tạo một bản sao của tệp mẫu và đổi tên:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+copy .env.example .env
+# Hoặc: cp .env.example .env (trên môi trường Unix/Linux/Git Bash)
 
-## Code of Conduct
+Sau đó, tạo khóa ứng dụng (Application Key):
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+php artisan key:generate
 
-## Security Vulnerabilities
+3. Cấu Hình Cơ Sở Dữ Liệu (Database)
+3.1. Tạo Database
+Truy cập vào phpMyAdmin qua trình duyệt (thường là http://localhost/phpmyadmin/) và tạo một cơ sở dữ liệu mới.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Tên cơ sở dữ liệu đề xuất: account_management_db
 
-## License
+3.2. Cấu hình Kết nối trong .env
+Mở tệp .env và cập nhật các thông số kết nối cơ sở dữ liệu:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=account_management_db # Đổi thành tên DB bạn vừa tạo
+DB_USERNAME=root                # Thường là root nếu dùng XAMPP mặc định
+DB_PASSWORD=                    # Để trống nếu dùng XAMPP mặc định (hoặc điền mật khẩu của bạn)
+
+3.3. Chạy Migration và Seeder
+Chạy các lệnh sau để tạo bảng trong cơ sở dữ liệu và điền dữ liệu mẫu (nếu có Seeder):
+
+php artisan migrate --seed
+
+3.4. (Tùy chọn) Tạo Storage Link
+Nếu ứng dụng có sử dụng lưu trữ file (ví dụ: ảnh đại diện), bạn cần tạo liên kết tượng trưng (symlink):
+
+php artisan storage:link
+
+4. Chạy Ứng Dụng
+Sau khi hoàn tất các bước trên, bạn có thể chạy ứng dụng theo hai cách:
+
+Cách 1: Sử dụng Server Laravel tích hợp (Khuyến nghị)
+php artisan serve
+
+Ứng dụng sẽ chạy tại địa chỉ: http://127.0.0.1:8000
+
+Cách 2: Sử dụng Web Server Apache của XAMPP
+Truy cập vào địa chỉ: http://localhost/account_management/public
+
+5. Đăng Nhập (Testing)
+Nếu bạn đã chạy php artisan migrate --seed thành công, bạn có thể sử dụng thông tin đăng nhập mặc định (hoặc tài khoản đã được tạo qua seeder) để kiểm tra.
+
+Tài khoản Admin mẫu: (Nếu seeder có tạo)
+
+Email: admin@example.com
+
+Mật khẩu: password (hoặc mật khẩu mặc định của seeder)
+
+Chúc bạn thành công! Nếu gặp bất kỳ lỗi nào, vui lòng kiểm tra lại cấu hình .env và đảm bảo các module Apache và MySQL đang chạy trong XAMPP.
