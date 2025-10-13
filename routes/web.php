@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController; // khai báo Controller cho User
 use App\Http\Controllers\AdminController; // khai báo Controller cho Admin
+use Laravel\Fortify\Fortify;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,7 +49,13 @@ Route::middleware('auth')->group(function () {
         // Xóa người dùng
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('admin.destroy');
 
-    });
-});
+        // Xem trước thông tin người dùng
+        Route::get('/users/{user}/show', [AdminController::class, 'show'])->name('admin.users.show');
 
-require __DIR__.'/auth.php';
+    });
+
+     // Route cho gửi lại email xác minh
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware(['throttle:6,1'])
+        ->name('verification.send');
+});
