@@ -10,10 +10,17 @@
 
                 <!-- Navigation Links --><div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('Home') }}
                     </x-nav-link>
 
-                    <!-- Hiển thị link Admin Panel chỉ khi user là admin -->@if(Auth::check() && Auth::user()->is_admin)
+                    @if(Auth::check() && Auth::user()->is_admin)
+
+                    <!-- Hiển thị link Overview chỉ khi user là admin -->
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                            {{ __('Admin Overview') }}
+                        </x-nav-link>
+
+                    <!-- Hiển thị link Admin Panel chỉ khi user là admin -->
                         <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                             {{ __('Admin Panel') }}
                         </x-nav-link>
