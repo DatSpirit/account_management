@@ -3,7 +3,7 @@
         <!-- HEADER: Tăng cường độ đậm và thêm viền dưới tinh tế -->
         <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
             <h2 class="font-extrabold text-3xl text-gray-900 dark:text-gray-50 leading-tight tracking-wider">
-                {{ __('TỔNG QUAN CÁ NHÂN') }}
+                {{ __('PERSONAL OVERVIEW') }}
             </h2>
         </div>
     </x-slot>
@@ -18,7 +18,7 @@
                 <!-- PHẦN CHÀO MỪNG & THÔNG BÁO -->
                 <div class="mb-10">
                     <h3 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-3">
-                        👋 Chào mừng trở lại, <span class="text-indigo-600 dark:text-indigo-400">{{ $user->name }}</span>
+                        👋 Welcome, <span class="text-indigo-600 dark:text-indigo-400">{{ $user->name }}</span>
                     </h3>
                     
                     <!-- Khối thông báo/Hành động chính -->

@@ -22,7 +22,7 @@ Dưới đây là các bước cần thiết để thiết lập và chạy dự
 
 - Mở Git Bash hoặc Command Prompt và thực hiện lệnh sau để tải mã nguồn về:
 
-cd D:\xampp\htdocs
+
 git clone [https://github.com/DatSpirit/account_management.git](https://github.com/DatSpirit/account_management.git)
 cd account_management
 
@@ -52,24 +52,7 @@ Hoặc: cp .env.example .env (trên môi trường Unix/Linux/Git Bash)
 php artisan key:generate
 
 3. Cấu Hình Cơ Sở Dữ Liệu (Database)
-
-3.1. Tạo Database
-
-- Truy cập vào phpMyAdmin qua trình duyệt (thường là http://localhost/phpmyadmin/) và tạo một cơ sở dữ liệu mới.
-
-- Tạo Database Mới:
-
-Nhấp vào tab "Databases" 
-
-Trong mục "Create database" nhập tên cho cơ sở dữ liệu của bạn.
-
-Tên đề xuất: account_management_db
-
-Chọn "Collation" (ví dụ: utf8mb4_unicode_ci để hỗ trợ tiếng Việt và các ký tự đặc biệt).
-
-Nhấn nút "Create" 
-
-3.2. Cấu hình Kết nối trong .env
+3.1. Cấu hình Kết nối trong .env
 
 Mở tệp .env và cập nhật các thông số kết nối cơ sở dữ liệu:
 
@@ -87,18 +70,18 @@ DB_USERNAME=root
 - Để trống nếu dùng XAMPP mặc định (hoặc điền mật khẩu của bạn)
        
 DB_PASSWORD=                    
-3.3. Chạy Migration và Seeder
+3.2. Chạy Migration và Seeder
 
 Chạy các lệnh sau để tạo bảng trong cơ sở dữ liệu và điền dữ liệu mẫu (nếu có Seeder):
 
 php artisan migrate --seed
 
-3.4. (Tùy chọn) Tạo Storage Link
+3.3. (Tùy chọn) Tạo Storage Link
 Nếu ứng dụng có sử dụng lưu trữ file, bạn cần tạo liên kết tượng trưng (symlink):
 
 php artisan storage:link
 
-3.5 Cài đặt các gói phụ thuộc frontend
+3.4 Cài đặt các gói phụ thuộc frontend
 - Dùng lệnh:
 
 npm install

@@ -17,7 +17,7 @@
 
                     <!-- Hiển thị link Overview chỉ khi user là admin -->
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                            {{ __('Admin Overview') }}
+                            {{ __('Admin Dashboard') }}
                         </x-nav-link>
 
                     <!-- Hiển thị link Admin Panel chỉ khi user là admin -->
