@@ -23,6 +23,15 @@ class UserSeeder extends Seeder
             'is_admin' => true, // Đánh dấu là Admin
         ]);
 
+          // 1. TÀI KHOẢN ADMIN (Để kiểm thử)
+        User::create([
+            'name' => 'Thanh Dat',
+            'email' => 'datpt@gmail.com', // Email dùng để đăng nhập
+            'password' => Hash::make('12345678'), // Mật khẩu 
+            'is_admin' => true, // Đánh dấu là Admin
+        ]);
+
+
 
          // Tạo 100 user ngẫu nhiên
         User::factory()->count(100)->create();
