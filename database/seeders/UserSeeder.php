@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User; 
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -13,6 +14,16 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+
+        // 1. TÀI KHOẢN ADMIN (Để kiểm thử)
+        User::create([
+            'name' => 'Admin Tester',
+            'email' => 'admin@test.com', // Email dùng để đăng nhập
+            'password' => Hash::make('password'), // Mật khẩu là 'password'
+            'is_admin' => true, // Đánh dấu là Admin
+        ]);
+
+
          // Tạo 100 user ngẫu nhiên
         User::factory()->count(100)->create();
     }
