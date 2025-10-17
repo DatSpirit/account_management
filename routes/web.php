@@ -7,11 +7,26 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+        use App\Http\Controllers\ProductController; 
 
 // Trang chủ
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+
+
+Route::post('/api/orders/create', [OrderController::class, 'createOrder']);
+Route::post('/api/payos/webhook', [PaymentController::class, 'handleWebhook']);
+
+Route::get('/products', [ProductController::class, 'index'])->name('products');
+Route::get('/pay/{id}', [ProductController::class, 'pay'])->name('pay');
+Route::get('/thankyou', [ProductController::class, 'thankyou'])->name('thankyou');
+
+
 
 // ===========================
 // 🔹 USER KHU VỰC NGƯỜI DÙNG
@@ -35,6 +50,7 @@ Route::middleware(['auth', 'verified'])
         Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
             ->middleware(['throttle:6,1'])
             ->name('verification.send');
+
     });
 
 
