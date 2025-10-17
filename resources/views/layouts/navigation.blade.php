@@ -13,6 +13,11 @@
                         {{ __('Home') }}
                     </x-nav-link>
 
+                    <!-- Hiển thị link Products  -->
+                        <x-nav-link :href="route('products')" :active="request()->routeIs('products')">
+                            {{ __('Product') }}
+                        </x-nav-link>
+
                     @if(Auth::check() && Auth::user()->is_admin)
 
                     <!-- Hiển thị link Overview chỉ khi user là admin -->

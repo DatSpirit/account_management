@@ -144,7 +144,7 @@
                         @foreach ($recentUsers as $rUser)
                             <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200 border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br text-black from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
                                         {{ strtoupper(substr($rUser->name, 0, 1)) }}
                                     </div>
                                     <div>
