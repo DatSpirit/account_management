@@ -10,8 +10,16 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
-    <!-- Styles -->
+   <!-- Styles -->
+<!-- Styles -->
+@if (app()->environment('local'))
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+@else
+    <link rel="stylesheet" href="{{ secure_asset('build/assets/app-CfAMAoGE.css') }}">
+    <script src="{{ secure_asset('build/assets/app-ByAQDGt7.js') }}" defer></script>
+@endif
+
+
 </head>
 
 <body class="antialiased bg-white dark:bg-gray-900">

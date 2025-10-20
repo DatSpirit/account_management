@@ -77,7 +77,24 @@
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger --><div class="-me-2 flex items-center sm:hidden">
+            <!-- Hamburger -->
+            <div class="-me-2 flex items-center sm:hidden">
+
+              <!-- Nút Dark/Light -->  
+            <button id="theme-toggle-mobile"
+                class="w-full flex items-center justify-start p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition duration-200">
+                <!-- chế độ Light (Sáng)  -->
+                <span id="theme-toggle-dark-icon-mobile" class="text-xl transition duration-200">
+                    🌞
+                </span>
+
+                <!--  ở chế độ Dark (Tối)  -->
+                <span id="theme-toggle-light-icon-mobile" class="text-xl transition duration-200 hidden">
+                    🌙
+                </span>
+            </button>
+
+                
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -88,37 +105,34 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu --><div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('Home') }}
             </x-responsive-nav-link>
 
-            <!-- Hiển thị link Admin Panel trên mobile -->@if(Auth::check() && Auth::user()->is_admin)
+            <!-- Link Product -->
+            <x-responsive-nav-link :href="route('products')" :active="request()->routeIs('products')">
+                {{ __('Product') }}
+            </x-responsive-nav-link>
+
+            <!-- Hiển thị link Admin Dashboard & Admin Panel trên mobile -->
+            @if(Auth::check() && Auth::user()->is_admin)
+
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                    {{ __('Admin Dashboard') }}
+                </x-responsive-nav-link>
+
                 <x-responsive-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                     {{ __('Admin Panel') }}
                 </x-responsive-nav-link>
             @endif
         </div>
 
-        <!-- Responsive Settings Options --><!-- START: DARK MODE TOGGLE BUTTON CHO MOBILE --><div class="px-4 py-2 border-t border-gray-200 dark:border-gray-600">
-            <button id="theme-toggle-mobile"
-                class="w-full flex items-center justify-start p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition duration-200">
-                
-                <!-- Icon và Text --><span class="text-gray-800 dark:text-gray-200 font-medium me-3">
-                    {{ __('Toggle Theme') }}
-                </span>
-                
-                <!-- chế độ Light (Sáng)  --><span id="theme-toggle-dark-icon-mobile" class="text-xl transition duration-200">
-                    🌞
-                </span>
-
-                <!--  ở chế độ Dark (Tối)  --><span id="theme-toggle-light-icon-mobile" class="text-xl transition duration-200 hidden">
-                    🌙
-                </span>
-            </button>
-        </div>
-        <!-- END: DARK MODE TOGGLE BUTTON CHO MOBILE --><div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+       
+        <!-- END: DARK MODE TOGGLE BUTTON CHO MOBILE -->
+        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>

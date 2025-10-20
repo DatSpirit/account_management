@@ -8,4 +8,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+      server: {
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: 'ledgiest-von-cruciately.ngrok-free.dev', //Tên miền ngrok
+        },
+    },
 });
