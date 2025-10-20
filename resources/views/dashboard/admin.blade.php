@@ -113,46 +113,48 @@
             <!-- Chart & Recent Users Section -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Chart Card -->
-                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-xl">
-                    <div class="flex items-center justify-between mb-6">
-                        <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+                        <h4 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
                             <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            <span>Biểu Đồ Tăng Trưởng Người Dùng</span>
+                            <span class="text-base sm:text-xl">Biểu Đồ Tăng Trưởng</span>
                         </h4>
                         <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                             Năm {{ date('Y') }}
                         </span>
                     </div>
-                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl">
-                        <canvas id="userGrowthChart" height="100"></canvas>
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900/50 dark:to-purple-900/10 p-3 sm:p-4 rounded-xl">
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="userGrowthChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Recent Users Card -->
-                <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-xl">
-                    <div class="flex items-center justify-between mb-6">
-                        <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-4 sm:mb-6">
+                        <h4 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
                             <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
-                            <span>Người Dùng Mới Nhất</span>
+                            <span class="text-base sm:text-xl">Người Dùng Mới</span>
                         </h4>
                     </div>
-                    <div class="space-y-3 max-h-[400px] overflow-y-auto">
+                    <div class="space-y-3 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                         @foreach ($recentUsers as $rUser)
                             <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200 border border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                <div class="flex items-center space-x-3 min-w-0 flex-1">
+                                    <div class="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
                                         {{ strtoupper(substr($rUser->name, 0, 1)) }}
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-800">{{ $rUser->name }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $rUser->email }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ $rUser->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $rUser->email }}</p>
                                     </div>
                                 </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
                                     {{ $rUser->created_at->diffForHumans() }}
                                 </span>
                             </div>
@@ -246,68 +248,96 @@
         const isDarkMode = document.documentElement.classList.contains('dark') || 
                           (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-        // Chart Configuration
+        // Chart Configuration with responsive design
         const ctx = document.getElementById('userGrowthChart');
+        
+        // Create gradient
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradient.addColorStop(0.5, 'rgba(147, 51, 234, 0.2)');
+        gradient.addColorStop(1, 'rgba(236, 72, 153, 0.05)');
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'],
+                labels: ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
                 datasets: [{
                     label: 'Người dùng mới',
                     data: @json($growthData),
                     borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    backgroundColor: gradient,
                     fill: true,
                     tension: 0.4,
                     borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
                     pointBackgroundColor: '#6366f1',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointHoverBackgroundColor: '#6366f1',
+                    pointHoverBackgroundColor: '#8b5cf6',
                     pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 3
+                    pointHoverBorderWidth: 3,
+                    segment: {
+                        borderColor: ctx => {
+                            const colors = ['#6366f1', '#8b5cf6', '#ec4899'];
+                            return colors[Math.floor(ctx.p0DataIndex / 4)] || '#6366f1';
+                        }
+                    }
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { 
+                        display: window.innerWidth >= 640,
                         position: 'top',
                         labels: {
                             color: isDarkMode ? '#e5e7eb' : '#374151',
                             font: {
-                                size: 12,
+                                size: window.innerWidth >= 640 ? 12 : 10,
                                 weight: '600'
                             },
-                            padding: 15
+                            padding: window.innerWidth >= 640 ? 15 : 10,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
                         }
                     },
                     title: { 
-                        display: true, 
-                        text: 'Thống kê tăng trưởng người dùng năm {{ date('Y') }}',
+                        display: window.innerWidth >= 640,
+                        text: 'Thống kê tăng trưởng năm {{ date('Y') }}',
                         color: isDarkMode ? '#f3f4f6' : '#111827',
                         font: {
-                            size: 16,
+                            size: window.innerWidth >= 640 ? 16 : 14,
                             weight: 'bold'
                         },
                         padding: {
-                            bottom: 20
+                            bottom: window.innerWidth >= 640 ? 20 : 10
                         }
                     },
                     tooltip: {
-                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         titleColor: isDarkMode ? '#f3f4f6' : '#111827',
                         bodyColor: isDarkMode ? '#e5e7eb' : '#374151',
-                        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-                        borderWidth: 1,
-                        padding: 12,
+                        borderColor: isDarkMode ? '#4b5563' : '#e5e7eb',
+                        borderWidth: 2,
+                        padding: window.innerWidth >= 640 ? 12 : 10,
                         displayColors: true,
+                        titleFont: {
+                            size: window.innerWidth >= 640 ? 14 : 12,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: window.innerWidth >= 640 ? 13 : 11
+                        },
+                        cornerRadius: 8,
+                        caretPadding: 10,
                         callbacks: {
                             label: function(context) {
-                                return ' ' + context.parsed.y + ' người dùng';
+                                return ' ' + context.parsed.y.toLocaleString('vi-VN') + ' người dùng';
+                            },
+                            title: function(context) {
+                                return 'Tháng ' + (context[0].dataIndex + 1);
                             }
                         }
                     }
@@ -316,34 +346,77 @@
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: isDarkMode ? '#374151' : '#e5e7eb',
-                            drawBorder: false
+                            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+                            drawBorder: false,
+                            lineWidth: 1
                         },
                         ticks: {
                             color: isDarkMode ? '#9ca3af' : '#6b7280',
                             font: {
-                                size: 11
+                                size: window.innerWidth >= 640 ? 11 : 9
+                            },
+                            padding: window.innerWidth >= 640 ? 8 : 5,
+                            callback: function(value) {
+                                if (window.innerWidth < 640) {
+                                    return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value;
+                                }
+                                return value.toLocaleString('vi-VN');
                             }
+                        },
+                        border: {
+                            display: false
                         }
                     },
                     x: {
                         grid: {
-                            color: isDarkMode ? '#374151' : '#e5e7eb',
-                            drawBorder: false
+                            color: isDarkMode ? 'rgba(55, 65, 81, 0.3)' : 'rgba(229, 231, 235, 0.5)',
+                            drawBorder: false,
+                            lineWidth: 1
                         },
                         ticks: {
                             color: isDarkMode ? '#9ca3af' : '#6b7280',
                             font: {
-                                size: 11
-                            }
+                                size: window.innerWidth >= 640 ? 11 : 9,
+                                weight: '500'
+                            },
+                            padding: window.innerWidth >= 640 ? 8 : 5
+                        },
+                        border: {
+                            display: false
                         }
                     }
                 },
                 interaction: {
                     intersect: false,
                     mode: 'index'
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: false
                 }
             }
+        });
+
+        // Update chart on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                const chart = Chart.getChart(ctx);
+                if (chart) {
+                    chart.options.plugins.legend.display = window.innerWidth >= 640;
+                    chart.options.plugins.title.display = window.innerWidth >= 640;
+                    chart.options.plugins.legend.labels.font.size = window.innerWidth >= 640 ? 12 : 10;
+                    chart.options.plugins.title.font.size = window.innerWidth >= 640 ? 16 : 14;
+                    chart.options.scales.y.ticks.font.size = window.innerWidth >= 640 ? 11 : 9;
+                    chart.options.scales.x.ticks.font.size = window.innerWidth >= 640 ? 11 : 9;
+                    chart.update();
+                }
+            }, 250);
         });
 
         // Show flash messages
