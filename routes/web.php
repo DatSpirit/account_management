@@ -10,7 +10,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\TransactionController;
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -86,6 +86,9 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Dashboard chính của admin
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Quản lý giao dịch
+        Route::get('/transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');
 
         // Quản lý người dùng
         Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
