@@ -29,6 +29,11 @@
                         <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
                             {{ __('Admin Panel') }}
                         </x-nav-link>
+                    
+                    <!-- Hiển thị link Transaction History chỉ khi user là admin -->
+                        <x-nav-link :href="route('admin.transactions.index')" :active="request()->routeIs('admin.transactions.index')">
+                            {{ __('Transaction') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>

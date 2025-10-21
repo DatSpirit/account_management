@@ -14,16 +14,55 @@
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $name
+ * @property string $category
+ * @property numeric $price
+ * @property string|null $description
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereCategory($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
  */
 	class Product extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property int|null $product_id
+ * @property int $order_code
+ * @property numeric $amount
+ * @property string $status
+ * @property string|null $description
+ * @property array<array-key, mixed>|null $response_data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Product|null $product
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereOrderCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereResponseData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereUserId($value)
+ */
+	class Transaction extends \Eloquent {}
 }
 
 namespace App\Models{
