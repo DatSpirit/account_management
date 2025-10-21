@@ -1,29 +1,36 @@
 <?php
+
 namespace App\Services;
 
 use PayOS\PayOS;
 
 class PayosService
 {
-    protected PayOS $payos;
+    protected $payOS;
 
     public function __construct()
     {
-        $clientId = env('PAYOS_CLIENT_ID');
-        $apiKey = env('PAYOS_API_KEY');
-        $checksumKey = env('PAYOS_CHECKSUM_KEY');
-
-        $this->payos = new PayOS($clientId, $apiKey, $checksumKey);
+        $this->payOS = new PayOS(
+            env('PAYOS_CLIENT_ID'),
+            env('PAYOS_API_KEY'),
+            env('PAYOS_CHECKSUM_KEY')
+        );
     }
 
-    /**
-     * Tạo payment link đơn giản
-     * @param array $data
-     * @return array
-     */
-    public function createPaymentLink(array $data): array
+    public function createPaymentLink(array $data)
     {
-        // $data: orderCode, amount, description, returnUrl, cancelUrl, buyerEmail...
-        return $this->payos->createPaymentLink($data);
+        // Kiểm tra payload trước khi gửi (để debug)
+        // dd($data);
+
+        $response = $this->payOS->createPaymentLink([
+            'orderCode' => $data['orderCode'],
+            'amount' => $data['amount'],
+            'description' => $data['description'],
+            'returnUrl' => $data['returnUrl'],
+            'cancelUrl' => $data['cancelUrl'],
+            'items' => $data['items'] // ✅ Phải là 'items' dạng mảng
+        ]);
+
+        return $response['checkoutUrl'] ?? '/';
     }
 }
