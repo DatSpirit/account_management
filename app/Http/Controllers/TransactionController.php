@@ -18,16 +18,27 @@ class TransactionController extends Controller
         // Lọc trạng thái: all / pending / success / failed
         $status = $request->get('status');
 
-        $transactions = Transaction::when($status && in_array($status, ['pending', 'success', 'failed']),
+        $transactions = Transaction::when(
+            $status && in_array($status, ['pending', 'success', 'failed']),
             fn($query) => $query->where('status', $status)
         )
         ->with(['user', 'product'])
         ->latest()
         ->paginate(10);
 
+        // Thống kê tổng số giao dịch
+        $totalTransactions = Transaction::count();
+        $totalSuccess = Transaction::where('status', 'success')->count();
+        $totalFailed = Transaction::where('status', 'failed')->count();
+        $totalPending = Transaction::where('status', 'pending')->count();
+
         return view('admin.transactions.index', [
             'transactions' => $transactions,
             'status' => $status,
+            'totalTransactions' => $totalTransactions,
+            'totalSuccess' => $totalSuccess,
+            'totalFailed' => $totalFailed,
+            'totalPending' => $totalPending,
         ]);
     }
 }
