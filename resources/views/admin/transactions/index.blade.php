@@ -1,237 +1,286 @@
 <x-app-layout>
-    <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-3"></div>
-
     <x-slot name="header">
-        <div class="flex items-center justify-center space-x-4">
-            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3 .895-3 2 1.343 2 3 2m-3-2h6m-9-2h9.5m-11 0a2 2 0 012-2h10a2 2 0 012 2v6a2 2 0 01-2 2h-10a2 2 0 01-2-2v-6z"/>
-            </svg>
-            <h2 class="font-extrabold text-2xl text-gray-800 dark:text-gray-100 tracking-tight">
-                History Transaction
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Quản lý giao dịch') }}
             </h2>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.transactions.export', request()->query()) }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Xuất Excel
+                </a>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="max-w-7xl mx-auto space-y-6">
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
+            {{-- Thống kê tổng quan --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {{-- Tổng giao dịch --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Tổng giao dịch</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['total']) }}</p>
+                            <p class="text-xs text-gray-500 mt-1">Hôm nay: {{ $stats['today'] }}</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
-                <h3 class="text-2xl font-bold text-white mb-4">Tổng Quan Giao Dịch</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                    
-                    <div class="text-center bg-white/10 p-3 rounded-xl shadow-lg">
-                        <div class="text-3xl font-bold text-white">{{ number_format($totalTransactions) }}</div>
-                        <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide mt-1">Tổng Giao Dịch</div>
+                {{-- Thành công --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Thành công</p>
+                            <p class="text-3xl font-bold text-green-600">{{ number_format($stats['success']) }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ number_format($stats['total_amount']) }} đ</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
                     </div>
-                    
-                    <div class="text-center bg-white/10 p-3 rounded-xl shadow-lg">
-                        <div class="text-3xl font-bold text-green-300">{{ number_format($totalSuccess) }}</div>
-                        <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide mt-1">Thành Công</div>
+                </div>
+
+                {{-- Đang chờ --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Đang chờ</p>
+                            <p class="text-3xl font-bold text-yellow-600">{{ number_format($stats['pending']) }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ number_format($stats['pending_amount']) }} đ</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
                     </div>
-                    
-                    <div class="text-center bg-white/10 p-3 rounded-xl shadow-lg">
-                        <div class="text-3xl font-bold text-yellow-300">{{ number_format($totalPending) }}</div>
-                        <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide mt-1">Đang Chờ</div>
-                    </div>
-                    
-                    <div class="text-center bg-white/10 p-3 rounded-xl shadow-lg">
-                        <div class="text-3xl font-bold text-red-300">{{ number_format($totalFailed) }}</div>
-                        <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide mt-1">Thất Bại</div>
+                </div>
+
+                {{-- Thất bại --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Thất bại</p>
+                            <p class="text-3xl font-bold text-red-600">{{ number_format($stats['failed'] + $stats['cancelled']) }}</p>
+                            <p class="text-xs text-gray-500 mt-1">Hủy: {{ $stats['cancelled'] }}</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-xl">
-                <form method="GET" action="{{ route('admin.users') }}" class="space-y-4">
-                    {{-- Thay đổi: items-end để căn chỉnh khi có label. Thay đổi bố cục thành flex-row trên lg --}}
-                    <div class="flex flex-col lg:flex-row gap-4 items-end">
-                        
-                        <div class="relative flex-shrink-0 w-full lg:w-40">
-                            <label for="filter-select" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-                                Lọc Theo
-                            </label>
-                            <select name="filter" id="filter-select"
-                                class="w-full px-4 py-3 appearance-none bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 
-                                       rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100
-                                       focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 
-                                       transition-all duration-200 cursor-pointer hover:border-indigo-400">
-                                <option value="name" {{ request('filter') === 'name' ? 'selected' : '' }}>👤 Tên</option>
-                                <option value="email" {{ request('filter') === 'email' ? 'selected' : '' }}>📧 Email</option>
-                                <option value="id" {{ request('filter') === 'id' ? 'selected' : '' }}>🔢 ID</option>
-                            </select>
-                            {{-- Icon cho dropdown --}}
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 dark:text-gray-500 mt-8">
-                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
+
+            {{-- Bộ lọc --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <form method="GET" action="{{ route('admin.transactions.index') }}" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {{-- Tìm kiếm --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
+                            <input type="text" name="search" value="{{ $search ?? '' }}" 
+                                   placeholder="Order code, mô tả, user..."
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
 
-                        <div class="flex-1">
-                            <label for="search-input" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-                                Tìm Kiếm
-                            </label>
-                            <div class="relative">
-                                {{-- Màu nền sáng đã được giữ là 'bg-white' và viền 'border-gray-300' để trông rõ ràng hơn --}}
-                                <input type="text" name="search" id="search-input" 
-                                       value="{{ request('search') }}"
-                                       placeholder="Nhập từ khóa tìm kiếm..."
-                                       class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 
-                                              rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
-                                              focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 
-                                              transition-all duration-200">
-                                
-                                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                    </svg>
-                                </button>
-                                
-                                <ul id="suggestions" class="absolute z-50 mt-2 w-full bg-white dark:bg-gray-800 
-                                    border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl hidden overflow-hidden">
-                                </ul>
-                            </div>
+                        {{-- Trạng thái --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                            <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Tất cả</option>
+                                <option value="pending" {{ ($status ?? '') == 'pending' ? 'selected' : '' }}>Đang chờ</option>
+                                <option value="success" {{ ($status ?? '') == 'success' ? 'selected' : '' }}>Thành công</option>
+                                <option value="failed" {{ ($status ?? '') == 'failed' ? 'selected' : '' }}>Thất bại</option>
+                                <option value="cancelled" {{ ($status ?? '') == 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
+                            </select>
+                        </div>
+
+                        {{-- Từ ngày --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
+                            <input type="date" name="date_from" value="{{ $dateFrom ?? '' }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+
+                        {{-- Đến ngày --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
+                            <input type="date" name="date_to" value="{{ $dateTo ?? '' }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+
+                        {{-- Buttons --}}
+                        <div class="flex items-end gap-2">
+                            <button type="submit" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                Lọc
+                            </button>
+                            <a href="{{ route('admin.transactions.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                                Reset
+                            </a>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+            {{-- Bảng giao dịch --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-indigo-700 dark:bg-indigo-900 text-white shadow-md">
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider rounded-tl-2xl">ID</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">Người Dùng</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">Sản Phẩm</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">Số Tiền</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">Trạng Thái</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">Mã Đơn</th>
-                                <th class="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider rounded-tr-2xl">Thời Gian</th>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Mã đơn
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Người dùng
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Sản phẩm
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Số tiền
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Trạng thái
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Thời gian
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Thao tác
+                                </th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @forelse ($transactions as $transaction)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-mono text-xs">
-                                            #{{ $transaction->id }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 hover:underline transition">
-                                            {{ $transaction->user?->name ?? 'Khách (Guest)' }}
-                                        </a>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $transaction->user?->email }}</p>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {{ $transaction->product?->name ?? 'Sản phẩm đã xóa' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap font-extrabold text-md text-indigo-700 dark:text-indigo-300">
-                                        {{ number_format($transaction->amount, 0, ',', '.') }}₫
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if ($transaction->status === 'success')
-                                            <span class="inline-flex items-center px-3 py-1 text-xs font-bold leading-none text-green-800 bg-green-100 dark:bg-green-900/50 dark:text-green-300 rounded-full shadow-sm">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                                Thành công
-                                            </span>
-                                        @elseif ($transaction->status === 'failed')
-                                            <span class="inline-flex items-center px-3 py-1 text-xs font-bold leading-none text-red-800 bg-red-100 dark:bg-red-900/50 dark:text-red-300 rounded-full shadow-sm">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                                                Thất bại
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-3 py-1 text-xs font-bold leading-none text-yellow-800 bg-yellow-100 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-full shadow-sm">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm-1 9V7a1 1 0 112 0v4a1 1 0 11-2 0zm0 4a1 1 0 112 0 1 1 0 01-2 0z"/></svg>
-                                                Đang chờ
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
-                                        {{ $transaction->order_code }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $transaction->created_at->format('d/m/Y H:i') }}
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $transaction->created_at->diffForHumans() }}</p>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center">
-                                        <div class="flex flex-col items-center justify-center space-y-4">
-                                            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2m-9 0V3h4v2m-4 0h4"></path></svg>
-                                            </div>
-                                            <div class="space-y-2">
-                                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                    Không tìm thấy giao dịch nào
-                                                </h3>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm.
-                                                </p>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($transactions as $transaction)
+                            <tr class="hover:bg-gray-50 transition">
+                                {{-- Mã đơn --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-gray-900">#{{ $transaction->order_code }}</span>
+                                        <span class="text-xs text-gray-500">{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+
+                                {{-- Người dùng --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($transaction->user)
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                <span class="text-indigo-600 font-semibold text-sm">
+                                                    {{ strtoupper(substr($transaction->user->name, 0, 2)) }}
+                                                </span>
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">{{ $transaction->user->name }}</p>
+                                            <p class="text-xs text-gray-500">{{ $transaction->user->email }}</p>
+                                        </div>
+                                    </div>
+                                    @else
+                                    <span class="text-sm text-gray-400">Khách</span>
+                                    @endif
+                                </td>
+
+                                {{-- Sản phẩm --}}
+                                <td class="px-6 py-4">
+                                    @if($transaction->product)
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-gray-900">{{ $transaction->product->name }}</span>
+                                        <span class="text-xs text-gray-500">{{ Str::limit($transaction->description, 50) }}</span>
+                                    </div>
+                                    @else
+                                    <span class="text-sm text-gray-400">{{ Str::limit($transaction->description, 50) }}</span>
+                                    @endif
+                                </td>
+
+                                {{-- Số tiền --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <span class="text-sm font-bold text-gray-900">
+                                        {{ number_format($transaction->amount, 0, ',', '.') }} đ
+                                    </span>
+                                </td>
+
+                                {{-- Trạng thái --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    @php
+                                        $statusConfig = [
+                                            'success' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Thành công', 'icon' => '✓'],
+                                            'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'label' => 'Đang chờ', 'icon' => '⏱'],
+                                            'failed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => 'Thất bại', 'icon' => '✗'],
+                                            'cancelled' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => 'Đã hủy', 'icon' => '⊘'],
+                                        ];
+                                        $config = $statusConfig[$transaction->status] ?? $statusConfig['pending'];
+                                    @endphp
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $config['bg'] }} {{ $config['text'] }}">
+                                        <span class="mr-1">{{ $config['icon'] }}</span>
+                                        {{ $config['label'] }}
+                                    </span>
+                                </td>
+
+                                {{-- Thời gian --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col text-sm">
+                                        <span class="text-gray-900">{{ $transaction->created_at->format('d/m/Y') }}</span>
+                                        <span class="text-gray-500 text-xs">{{ $transaction->created_at->format('H:i:s') }}</span>
+                                        <span class="text-gray-400 text-xs">{{ $transaction->created_at->diffForHumans() }}</span>
+                                    </div>
+                                </td>
+
+                                {{-- Thao tác --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('admin.transactions.show', $transaction->id) }}" 
+                                           class="text-indigo-600 hover:text-indigo-900" title="Xem chi tiết">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p class="text-gray-500 text-lg font-medium">Không có giao dịch nào</p>
+                                        <p class="text-gray-400 text-sm mt-1">Thử thay đổi bộ lọc hoặc tạo giao dịch mới</p>
+                                    </div>
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
+                {{-- Pagination --}}
                 @if($transactions->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                        {{ $transactions->links('vendor.pagination.tailwind') }}
-                    </div>
+                <div class="px-6 py-4 border-t border-gray-200">
+                    {{ $transactions->appends(request()->query())->links() }}
+                </div>
                 @endif
             </div>
-            </div>
+
+        </div>
     </div>
-
-    <script>
-        // Toast Notification System (Lấy từ users.blade.php)
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const icons = {
-                success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>',
-                error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>'
-            };
-            
-            const colors = {
-                success: 'bg-green-50 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700',
-                error: 'bg-red-50 dark:bg-red-900/50 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700'
-            };
-            
-            toast.className = `flex items-center space-x-3 px-6 py-4 rounded-xl shadow-2xl border-2 ${colors[type]} 
-                              transform transition-all duration-300 translate-x-full opacity-0`;
-            toast.innerHTML = `
-                <div class="flex-shrink-0">${icons[type]}</div>
-                <p class="font-medium text-sm">${message}</p>
-                <button onclick="this.parentElement.remove()" class="ml-4 hover:opacity-70 transition-opacity">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-x-full', 'opacity-0');
-            }, 100);
-            
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
-        }
-
-        // Show flash messages as toasts
-        @if(session('success'))
-            showToast("{{ session('success') }}", 'success');
-        @endif
-        @if(session('error'))
-            showToast("{{ session('error') }}", 'error');
-        @endif
-    </script>
 </x-app-layout>

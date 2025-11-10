@@ -92,6 +92,9 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Quản lý giao dịch
         Route::get('/transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');
+        Route::get('/transactions/{id}', [TransactionController::class, 'show'])->name('admin.transactions.show');
+        Route::patch('/transactions/{id}/status', [TransactionController::class, 'updateStatus'])->name('admin.transactions.update-status');
+        Route::get('/transactions/export', [TransactionController::class, 'export'])->name('admin.transactions.export');
 
         // Quản lý người dùng
         Route::get('/users', [AdminController::class, 'index'])->name('admin.users');
