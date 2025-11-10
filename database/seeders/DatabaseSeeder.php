@@ -15,13 +15,13 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-       User::factory()->create([
-        'name' => 'Test User',
-        'email' => 'test' . uniqid() . '@example.com',
-        ]);
+    //    User::factory()->create([
+    //     'name' => 'Test User',
+    //     'email' => 'test' . uniqid() . '@example.com',
+    //     ]);
 
         
-    // Tạo thêm 100 user ngẫu nhiên
+    // Tạo thêm user ngẫu nhiên
     $this->call(UserSeeder::class);
     }
 }

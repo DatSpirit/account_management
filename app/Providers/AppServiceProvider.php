@@ -9,6 +9,7 @@ use Laravel\Fortify\Contracts\RegisterViewResponse as RegisterViewResponseContra
 use App\Http\Responses\LoginViewResponse;
 use App\Http\Responses\RegisterViewResponse;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('local', 'production')) {
             URL::forceScheme('https');
         }
+
+        // ✅ Load API routes
+        $this->loadApiRoutes();
 
         /*
         |--------------------------------------------------------------------------
@@ -63,5 +67,15 @@ class AppServiceProvider extends ServiceProvider
             \Laravel\Fortify\Contracts\RegisterResponse::class,
             \App\Http\Responses\RegisterResponse::class
         );
+    }
+
+    /**
+     * ✅ Load API routes từ routes/api.php
+     */
+    protected function loadApiRoutes(): void
+    {
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(base_path('routes/api.php'));
     }
 }

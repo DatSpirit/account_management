@@ -15,6 +15,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+       'api/payos/webhook', // Bỏ qua CSRF cho PayOS webhook
+       'api/*',
     ];
 }

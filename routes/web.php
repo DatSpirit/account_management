@@ -11,6 +11,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\WebhookController;
+
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -18,14 +20,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// ===========================
-// 🔹 API THANH TOÁN (Public)
-// ===========================
-Route::post('/api/orders/create', [OrderController::class, 'createOrder'])
-    ->name('api.orders.create');
 
-Route::post('/api/payos/webhook', [PaymentController::class, 'handleWebhook'])
-    ->name('api.payos.webhook');
+
+// // API thanh toán (public)
+// Route::post('api/orders/create', [OrderController::class, 'createOrder'])
+//     ->name('api.orders.create');
+
+// // Webhook nhận tín hiệu từ PayOS
+// Route::post('api/payos/webhook', [WebhookController::class, 'handleWebhook'])
+//     ->name('api.payos.webhook');
 
 // ===========================
 // 🔹 SẢN PHẨM - NGƯỜI DÙNG
@@ -36,8 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     // Thanh toán sản phẩm
-    Route::get('/pay/{id}', [ProductController::class, 'pay'])->name('pay');
-    Route::get('/thankyou', [ProductController::class, 'thankyou'])->name('thankyou');
+    Route::get('/pay/{id}', [OrderController::class, 'pay'])->name('pay');
+    Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
 });
 
 // ===========================
@@ -103,3 +106,11 @@ Route::middleware(['auth', 'verified', 'admin'])
 // 🔹 XÁC THỰC / ĐĂNG NHẬP
 // ===========================
 require __DIR__.'/auth.php';
+
+// 🔹 CUSTOM CONFIRM PASSWORD (nếu cần giữ /confirm-password cũ)
+// ===========================
+
+Route::get('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'show'])
+    ->name('password.confirm.custom');
+Route::post('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'store'])
+    ->name('password.confirm.custom.store');
