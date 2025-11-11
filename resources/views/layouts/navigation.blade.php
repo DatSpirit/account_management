@@ -22,12 +22,12 @@
 
                     <!-- Hiển thị link Overview chỉ khi user là admin -->
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                            {{ __('Admin Dashboard') }}
+                            {{ __('Dashboard') }}
                         </x-nav-link>
 
                     <!-- Hiển thị link Admin Panel chỉ khi user là admin -->
                         <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
-                            {{ __('Admin Panel') }}
+                            {{ __('Users') }}
                         </x-nav-link>
                     
                     <!-- Hiển thị link Transaction History chỉ khi user là admin -->
@@ -126,11 +126,16 @@
             @if(Auth::check() && Auth::user()->is_admin)
 
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                    {{ __('Admin Dashboard') }}
+                    {{ __('Dashboard') }}
                 </x-responsive-nav-link>
 
                 <x-responsive-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
-                    {{ __('Admin Panel') }}
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+
+                <!-- Hiển thị link Transaction History chỉ khi user là admin -->
+                <x-responsive-nav-link :href="route('admin.transactions.index')" :active="request()->routeIs('admin.transactions.index')">
+                    {{ __('Transaction') }}
                 </x-responsive-nav-link>
             @endif
         </div>

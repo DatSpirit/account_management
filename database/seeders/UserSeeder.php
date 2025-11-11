@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
 
 
 
-         // Tạo 200 user ngẫu nhiên : php artisan db:seed
-        User::factory()->count(200)->create();
+         // Tạo user ngẫu nhiên : php artisan db:seed
+        User::factory()->count(100)->create();
     }
 }

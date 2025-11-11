@@ -23,5 +23,9 @@ class DatabaseSeeder extends Seeder
         
     // Tạo thêm user ngẫu nhiên
     $this->call(UserSeeder::class);
+    
+
+    // Tạo thêm Product ngẫu nhiên
+    $this->call(ProductSeeder::class);
     }
 }

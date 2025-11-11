@@ -2,242 +2,213 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{{ route('admin.transactions.index') }}" class="text-gray-600 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {{-- Nút Back: Liên kết về trang danh sách --}}
+                <a href="{{ route('admin.transactions.index') }}" class="p-2 rounded-full text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 bg-gray-100 dark:bg-gray-700 transition-all duration-200 shadow-md">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-100 tracking-tight">
                     Chi tiết giao dịch #{{ $transaction->order_code }}
                 </h2>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-8 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                {{-- Thông tin chính --}}
+                {{-- Cột Chính (Thông tin và Mô tả) --}}
                 <div class="lg:col-span-2 space-y-6">
                     
-                    {{-- Trạng thái & Thời gian --}}
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Trạng thái giao dịch</h3>
+                    {{-- 1. Trạng thái & Thời gian --}}
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            {{-- Trạng thái --}}
+                            <div class="space-y-1">
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Trạng thái hiện tại</p>
+                                @php
+                                    $statusConfig = [
+                                        'success' => ['bg' => 'bg-green-100 dark:bg-green-900/50', 'text' => 'text-green-800 dark:text-green-300', 'label' => 'Success', 'icon' => '✓'],
+                                        'pending' => ['bg' => 'bg-yellow-100 dark:bg-yellow-900/50', 'text' => 'text-yellow-800 dark:text-yellow-300', 'label' => 'Pending', 'icon' => '⏱'],
+                                        'failed' => ['bg' => 'bg-red-100 dark:bg-red-900/50', 'text' => 'text-red-800 dark:text-red-300', 'label' => 'Failed', 'icon' => '✗'],
+                                        'cancelled' => ['bg' => 'bg-gray-100 dark:bg-gray-700', 'text' => 'text-gray-800 dark:text-gray-300', 'label' => 'Cancelled', 'icon' => '⊘'],
+                                    ];
+                                    $config = $statusConfig[$transaction->status] ?? $statusConfig['pending'];
+                                @endphp
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-lg font-bold shadow-md {{ $config['bg'] }} {{ $config['text'] }}">
+                                    <span class="mr-2">{{ $config['icon'] }}</span>
+                                    {{ $config['label'] }}
+                                </span>
+                            </div>
+                            
+                            {{-- Thời gian --}}
+                            <div class="text-right space-y-1">
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Thời gian tạo</p>
+                                <p class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ $transaction->created_at->format('H:i:s, d/m/Y') }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $transaction->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Thông tin giao dịch chi tiết --}}
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">Thông tin chi tiết</h3>
                         
-                        <div class="flex items-center justify-between mb-6">
+                        <dl class="space-y-4">
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Code</dt>
+                                <dd class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">#{{ $transaction->order_code }}</dd>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Người dùng</dt>
+                                <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $transaction->user->name ?? 'Guest' }}</dd>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                                <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $transaction->user->email ?? 'N/A' }}</dd>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Sản phẩm</dt>
+                                <dd class="text-sm text-gray-900 dark:text-gray-100">{{ $transaction->product->name ?? 'N/A' }}</dd>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
+                                <dt class="text-base font-bold text-gray-900 dark:text-gray-100">Tổng tiền</dt>
+                                <dd class="text-xl font-extrabold text-green-600 dark:text-green-400">{{ number_format($transaction->amount, 0, ',', '.') }} VND</dd>
+                            </div>
+                        </dl>
+                    </div>
+                    
+                    {{-- 3. Mô tả Giao dịch (Hiển thị dữ liệu thô JSON) --}}
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
+                            Mô tả giao dịch (Dữ liệu Thô JSON)
+                        </h3>
+                        
+                        {{-- Khối hiển thị dữ liệu thô JSON --}}
+                        <div class="rounded-lg bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-700">
                             @php
-                                $statusConfig = [
-                                    'success' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Thanh toán thành công', 'icon' => '✓'],
-                                    'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'label' => 'Đang chờ xử lý', 'icon' => '⏱'],
-                                    'failed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => 'Thanh toán thất bại', 'icon' => '✗'],
-                                    'cancelled' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => 'Đã hủy', 'icon' => '⊘'],
+                                // Xây dựng mảng dữ liệu theo cấu trúc JSON bạn cung cấp
+                                $rawData = [
+                                    'id' => $transaction->id,
+                                    'order_code' => $transaction->order_code,
+                                    'amount' => $transaction->amount,
+                                    'status' => $transaction->status,
+                                    'description' => $transaction->description,
+                                    'created_at' => $transaction->created_at->toDateTimeString(),
+                                    'updated_at' => $transaction->updated_at->toDateTimeString(),
+                                    'user' => $transaction->user ? [
+                                        'id' => $transaction->user->id,
+                                        'name' => $transaction->user->name,
+                                        'email' => $transaction->user->email,
+                                    ] : null,
+                                    'product' => $transaction->product ? [
+                                        'id' => $transaction->product->id,
+                                        'name' => $transaction->product->name,
+                                        'price' => $transaction->product->price,
+                                    ] : null,
                                 ];
-                                $config = $statusConfig[$transaction->status] ?? $statusConfig['pending'];
+
+                                // Encode thành JSON với định dạng dễ đọc
+                                $jsonOutput = json_encode($rawData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
                             @endphp
                             
-                            <span class="inline-flex items-center px-6 py-3 rounded-lg text-base font-semibold {{ $config['bg'] }} {{ $config['text'] }}">
-                                <span class="mr-2 text-xl">{{ $config['icon'] }}</span>
-                                {{ $config['label'] }}
-                            </span>
-                            
-                            <div class="text-right">
-                                <p class="text-sm text-gray-500">Mã đơn hàng</p>
-                                <p class="text-2xl font-bold text-gray-900">#{{ $transaction->order_code }}</p>
-                            </div>
+                            {{-- Sử dụng thẻ <pre> để hiển thị JSON giữ nguyên định dạng --}}
+                            <pre class="text-xs sm:text-sm text-gray-800 dark:text-gray-200 overflow-auto">
+{!! $jsonOutput !!}
+                            </pre>
                         </div>
 
-                        <div class="border-t border-gray-200 pt-4">
-                            <dl class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Ngày tạo</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $transaction->created_at->format('d/m/Y H:i:s') }}</dd>
-                                    <dd class="mt-1 text-xs text-gray-500">{{ $transaction->created_at->diffForHumans() }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Cập nhật lần cuối</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $transaction->updated_at->format('d/m/Y H:i:s') }}</dd>
-                                    <dd class="mt-1 text-xs text-gray-500">{{ $transaction->updated_at->diffForHumans() }}</dd>
-                                </div>
-                            </dl>
-                        </div>
                     </div>
-
-                    {{-- Thông tin thanh toán --}}
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Thông tin thanh toán</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                                <span class="text-sm font-medium text-gray-600">Số tiền giao dịch</span>
-                                <span class="text-2xl font-bold text-indigo-600">
-                                    {{ number_format($transaction->amount, 0, ',', '.') }} đ
-                                </span>
-                            </div>
-                            
-                            @if($transaction->product)
-                            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                                <span class="text-sm font-medium text-gray-600">Sản phẩm</span>
-                                <span class="text-sm text-gray-900 font-semibold">{{ $transaction->product->name }}</span>
-                            </div>
-                            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                                <span class="text-sm font-medium text-gray-600">Giá sản phẩm</span>
-                                <span class="text-sm text-gray-900">{{ number_format($transaction->product->price, 0, ',', '.') }} đ</span>
-                            </div>
-                            @endif
-                            
-                            <div class="flex justify-between items-start py-3">
-                                <span class="text-sm font-medium text-gray-600">Mô tả</span>
-                                <span class="text-sm text-gray-900 text-right max-w-md">{{ $transaction->description }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Thông tin người dùng --}}
-                    @if($transaction->user)
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Thông tin khách hàng</h3>
-                        
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <span class="text-indigo-600 font-bold text-xl">
-                                    {{ strtoupper(substr($transaction->user->name, 0, 2)) }}
-                                </span>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-semibold text-gray-900">{{ $transaction->user->name }}</h4>
-                                <p class="text-sm text-gray-500">{{ $transaction->user->email }}</p>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-gray-200 pt-4">
-                            <dl class="space-y-3">
-                                <div class="flex justify-between">
-                                    <dt class="text-sm font-medium text-gray-500">User ID</dt>
-                                    <dd class="text-sm text-gray-900">{{ $transaction->user->id }}</dd>
-                                </div>
-                                @if($transaction->user->phone)
-                                <div class="flex justify-between">
-                                    <dt class="text-sm font-medium text-gray-500">Số điện thoại</dt>
-                                    <dd class="text-sm text-gray-900">{{ $transaction->user->phone }}</dd>
-                                </div>
-                                @endif
-                                <div class="flex justify-between">
-                                    <dt class="text-sm font-medium text-gray-500">Ngày đăng ký</dt>
-                                    <dd class="text-sm text-gray-900">{{ $transaction->user->created_at->format('d/m/Y') }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div class="mt-4">
-                            <a href="{{ route('admin.users.show', $transaction->user->id) }}" 
-                               class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-900">
-                                Xem hồ sơ khách hàng
-                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                    @endif
 
                 </div>
 
-                {{-- Sidebar --}}
+                {{-- Cột Phụ (Hành động & Lịch sử) --}}
                 <div class="space-y-6">
                     
-                    {{-- Thao tác nhanh --}}
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Thao tác</h3>
+                    {{-- 4. Thao tác / Cập nhật trạng thái --}}
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">Hành động</h3>
                         
-                        <div class="space-y-3">
-                            @if($transaction->status == 'pending')
-                            <form action="{{ route('admin.transactions.update-status', $transaction->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="status" value="success">
-                                <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-                                    ✓ Xác nhận thành công
-                                </button>
-                            </form>
+                        {{-- Form cập nhật trạng thái (Đã sửa thành PATCH) --}}
+                        <form method="POST" action="{{ route('admin.transactions.update-status', $transaction->id) }}" class="space-y-4">
+                            @csrf
+                            {{-- Sử dụng PATCH để phù hợp với route của bạn --}}
+                            @method('PATCH') 
                             
-                            <form action="{{ route('admin.transactions.update-status', $transaction->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="status" value="failed">
-                                <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
-                                    ✗ Đánh dấu thất bại
-                                </button>
-                            </form>
-                            @endif
-                            
-                            <button onclick="window.print()" class="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition">
-                                🖨️ In hóa đơn
+                            <select name="status" id="update_status" 
+                                class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/50 transition-all duration-200">
+                                <option value="pending" {{ $transaction->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="success" {{ $transaction->status == 'success' ? 'selected' : '' }}>Success</option>
+                                <option value="failed" {{ $transaction->status == 'failed' ? 'selected' : '' }}>Failed</option>
+                                <option value="cancelled" {{ $transaction->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+
+                            <button type="submit" 
+                                class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition-all duration-200 shadow-md">
+                                Cập nhật trạng thái
                             </button>
-                            
-                            <a href="{{ route('admin.transactions.index') }}" class="block w-full px-4 py-2 text-center bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
-                                ← Quay lại danh sách
-                            </a>
-                        </div>
+                        </form>
+                        
+                        {{-- Bổ sung: Nút In hóa đơn --}}
+                        <button onclick="window.print()" 
+                            class="w-full inline-flex justify-center items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 transition-all duration-200 shadow-md">
+                            🖨️ In hóa đơn
+                        </button>
+                        
                     </div>
 
-                    {{-- Timeline --}}
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Lịch sử thay đổi</h3>
+                    {{-- 5. Lịch sử giao dịch (History Timeline) --}}
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">Lịch sử hoạt động</h3>
                         
                         <div class="flow-root">
-                            <ul class="-mb-8">
-                                <li>
-                                    <div class="relative pb-8">
-                                        <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
-                                        <div class="relative flex space-x-3">
+                            <ul role="list" class="-mb-6">
+                                {{-- Tạo giao dịch --}}
+                                <li class="relative pb-6">
+                                    <div class="relative flex space-x-3">
+                                        <div class="relative">
+                                            <span class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </span>
+                                            <span class="absolute top-10 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-600" aria-hidden="true"></span>
+                                        </div>
+                                        
+                                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                             <div>
-                                                <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
-                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </span>
+                                                <p class="text-sm text-gray-900 dark:text-gray-100 font-medium">Tạo giao dịch</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Thời gian tạo: {{ $transaction->created_at->format('H:i d/m') }}</p>
                                             </div>
-                                            <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                <div>
-                                                    <p class="text-sm text-gray-900 font-medium">Giao dịch được tạo</p>
-                                                    <p class="text-xs text-gray-500">Trạng thái: Pending</p>
-                                                </div>
-                                                <div class="text-right text-xs text-gray-500 whitespace-nowrap">
-                                                    {{ $transaction->created_at->format('H:i d/m') }}
-                                                </div>
+                                            <div class="text-right text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap pt-1">
+                                                {{ $transaction->created_at->diffForHumans() }}
                                             </div>
                                         </div>
                                     </div>
                                 </li>
                                 
-                                @if($transaction->updated_at != $transaction->created_at)
-                                <li>
-                                    <div class="relative pb-8">
-                                        <div class="relative flex space-x-3">
+                                {{-- Trạng thái cập nhật (nếu có thay đổi) --}}
+                                @if($transaction->created_at != $transaction->updated_at)
+                                <li class="relative pb-6">
+                                    <div class="relative flex space-x-3">
+                                        <div class="relative">
+                                            {{-- Icon Status --}}
+                                            <span class="h-8 w-8 rounded-full {{ $config['bg'] }} flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                                                <svg class="w-5 h-5 {{ $config['text'] }}" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                             <div>
-                                                @php
-                                                    $iconColor = match($transaction->status) {
-                                                        'success' => 'bg-green-500',
-                                                        'failed' => 'bg-red-500',
-                                                        'cancelled' => 'bg-gray-500',
-                                                        default => 'bg-yellow-500'
-                                                    };
-                                                @endphp
-                                                <span class="h-8 w-8 rounded-full {{ $iconColor }} flex items-center justify-center ring-8 ring-white">
-                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </span>
+                                                <p class="text-sm text-gray-900 dark:text-gray-100 font-medium">Cập nhật trạng thái</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">Trạng thái: **{{ ucfirst($transaction->status) }}**</p>
                                             </div>
-                                            <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                <div>
-                                                    <p class="text-sm text-gray-900 font-medium">Cập nhật trạng thái</p>
-                                                    <p class="text-xs text-gray-500">Trạng thái: {{ ucfirst($transaction->status) }}</p>
-                                                </div>
-                                                <div class="text-right text-xs text-gray-500 whitespace-nowrap">
-                                                    {{ $transaction->updated_at->format('H:i d/m') }}
-                                                </div>
+                                            <div class="text-right text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap pt-1">
+                                                {{ $transaction->updated_at->format('H:i d/m') }}
                                             </div>
                                         </div>
                                     </div>
@@ -248,7 +219,6 @@
                     </div>
 
                 </div>
-
             </div>
         </div>
     </div>

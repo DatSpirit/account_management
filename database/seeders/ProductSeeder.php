@@ -10,9 +10,9 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Electronics', 'Books', 'Clothes', 'Toys', 'Home'];
+        $categories = ['Laptop', 'Tablet', 'Clothes', 'Toys', 'Gaming'];
 
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 30; $i++) {
             Product::create([
                 'name' => 'Product ' . $i,
                 'category' => $categories[array_rand($categories)],

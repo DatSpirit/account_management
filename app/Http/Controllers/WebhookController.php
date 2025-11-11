@@ -10,13 +10,22 @@ class WebhookController extends Controller
 {
     public function handleWebhook(Request $request)
     {
-        // Log đầu vào
+        // Lấy toàn bộ payload JSON từ webhook
+        $payload = $request->json()->all(); // hoặc $request->all() nếu không chắc chắc là JSON
+
+        // Log dữ liệu để debug
+        \Log::info('🔔 🔔 🔔 Webhook payload received:', $payload);
+
+        // cách xem dữ liệu: notepad storage/logs/laravel.log
+
+
+        // 1️⃣ Log đầu vào
         Log::info('🔔 PayOS Webhook received', $request->all());
 
         try {
             $payload = $request->all();
 
-            // 1️⃣ Lấy các trường theo structure PayOS
+            // 2️⃣ Lấy các trường theo structure PayOS
             $code = $payload['code'] ?? null;
             $desc = $payload['desc'] ?? null;
             $data = $payload['data'] ?? null;
@@ -34,21 +43,19 @@ class WebhookController extends Controller
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
 
-            // 2️⃣ Xác thực chữ ký
+            // 3️⃣ Xác thực chữ ký
             $isValid = $this->verifySignature($data, $signature);
-            
             if (!$isValid) {
-                Log::warning('❌ Signature verification FAILED - Processing anyway for testing');
-                // ⚠️ TẠM THỜI bỏ qua signature để test - XÓA DÒNG NÀY KHI PRODUCTION
-                // return response()->json(['error' => 0, 'message' => 'ok'], 200);
+                // Log::warning('❌ Signature verification FAILED - Processing anyway for testing');
+                return response()->json(['error'=>1,'message'=>'Invalid signature'], 401);
             } else {
                 Log::info('✅ Signature verified successfully');
             }
 
-            // 3️⃣ Lấy thông tin giao dịch từ data
+            // 4️⃣ Lấy thông tin giao dịch từ data
             $orderCode = $data['orderCode'] ?? null;
             $amount = $data['amount'] ?? 0;
-            $paymentCode = $data['code'] ?? $code; // Code có thể ở trong data hoặc ngoài
+            $paymentCode = $data['code'] ?? $code;
             $description = $data['description'] ?? '';
             $status = $data['status'] ?? null; // PAID, CANCELLED, PENDING
 
@@ -65,12 +72,11 @@ class WebhookController extends Controller
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
 
-            // 4️⃣ Tìm transaction trong database
+            // 5️⃣ Tìm transaction trong database
             $transaction = Transaction::where('order_code', $orderCode)->first();
 
             if (!$transaction) {
                 Log::warning("⚠️ Transaction not found for orderCode: {$orderCode}");
-                
                 // Tạo transaction mới
                 $transaction = Transaction::create([
                     'user_id' => null,
@@ -80,21 +86,25 @@ class WebhookController extends Controller
                     'status' => 'pending',
                     'description' => $description
                 ]);
-                
                 Log::info("🆕 Created new transaction", ['id' => $transaction->id]);
             }
 
-            // 5️⃣ Xác định trạng thái mới
+            // 6️⃣ Xác định trạng thái mới
             $newStatus = $this->determineStatus($status, $paymentCode);
+            $oldStatus = $transaction->status;
 
             Log::info('🔄 Status mapping', [
                 'original_status' => $status,
                 'payment_code' => $paymentCode,
                 'new_status' => $newStatus,
-                'old_transaction_status' => $transaction->status
+                'old_transaction_status' => $oldStatus
             ]);
 
-            // 6️⃣ Cập nhật transaction
+            if ($newStatus === 'cancelled') {
+                Log::warning("⚠️ Transaction {$orderCode} has been CANCELLED!");
+            }
+
+            // 7️⃣ Cập nhật transaction
             $transaction->update([
                 'status' => $newStatus,
                 'amount' => $amount,
@@ -104,12 +114,12 @@ class WebhookController extends Controller
             Log::info("✅ Transaction updated successfully", [
                 'id' => $transaction->id,
                 'orderCode' => $orderCode,
-                'old_status' => $transaction->getOriginal('status'),
+                'old_status' => $oldStatus,
                 'new_status' => $newStatus,
                 'amount' => $amount
             ]);
 
-            // 7️⃣ Response
+            // 8️⃣ Response
             return response()->json([
                 'error' => 0,
                 'message' => 'ok',
@@ -126,7 +136,6 @@ class WebhookController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-
             return response()->json(['error' => 0, 'message' => 'ok'], 200);
         }
     }
@@ -136,23 +145,24 @@ class WebhookController extends Controller
      */
     private function determineStatus(?string $status, ?string $code): string
     {
-        // Ưu tiên status trước
         if ($status) {
-            return match(strtoupper($status)) {
-                'PAID' => 'success',
-                'CANCELLED' => 'cancelled',
-                'PENDING' => 'pending',
-                default => 'failed'
+            $statusUpper = strtoupper($status);
+            if ($statusUpper === 'PAID') return 'success';
+            if ($statusUpper === 'CANCELLED') return 'cancelled';
+            if ($statusUpper === 'PENDING') return 'pending';
+            return 'failed';
+        }
+
+        if ($code) {
+            return match($code) {
+                '00' => 'success',
+                '01' => 'failed',
+                '02' => 'pending',
+                default => 'cancelled'
             };
         }
 
-        // Sau đó dùng code
-        return match($code) {
-            '00' => 'success',
-            '01' => 'failed',
-            '02' => 'pending',
-            default => 'cancelled'
-        };
+        return 'pending';
     }
 
     /**
@@ -178,12 +188,12 @@ class WebhookController extends Controller
             $dataStr1 = http_build_query($data);
             $signature1 = hash_hmac('sha256', $dataStr1, $checksumKey);
 
-            // Cách 2: Dùng JSON (không có space)
+            // Cách 2: JSON encode
             ksort($data);
             $dataStr2 = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             $signature2 = hash_hmac('sha256', $dataStr2, $checksumKey);
 
-            // Cách 3: Dùng chuỗi đơn giản
+            // Cách 3: Manual concatenation
             $sortedKeys = array_keys($data);
             sort($sortedKeys);
             $dataStr3 = '';
@@ -203,8 +213,7 @@ class WebhookController extends Controller
                 'data_str3' => substr($dataStr3, 0, 100)
             ]);
 
-            // Kiểm tra tất cả các cách
-            $isValid = hash_equals($signature1, $receivedSignature) 
+            $isValid = hash_equals($signature1, $receivedSignature)
                     || hash_equals($signature2, $receivedSignature)
                     || hash_equals($signature3, $receivedSignature);
 
