@@ -47,8 +47,11 @@ class OrderController extends Controller
                 'amount' => $amount,
                 'description' => substr($product->name ?? 'Thanh toán sản phẩm', 0, 25),
                 'orderCode' => $orderCode,
-                'returnUrl' => route('thankyou') . '?orderCode=' . $orderCode,
-                'cancelUrl' => route('products') . '?cancelled=1',
+
+
+
+                'returnUrl' => route('thankyou', ['orderCode' => $orderCode], true),
+                'cancelUrl' => route('payos.cancel-process', [], true),
                 'items' => [
                     [
                         'name' => substr($product->name, 0, 30),
@@ -177,39 +180,36 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * ✅ B4: Hủy link thanh toán (người dùng bấm "Hủy")
-     */
-    public function cancelPaymentLinkOfOrder(Request $request, string $orderCode)
-    {
-        try {
-            $cancelBody = [
-                'cancellationReason' => $request->input('cancellationReason', 'Người dùng hủy đơn hàng')
-            ];
-
-            $response = $this->payOS->cancelPaymentLink($orderCode, $cancelBody);
-
-            // Cập nhật trạng thái trong database
-            $transaction = Transaction::where('order_code', $orderCode)->first();
-            if ($transaction) {
-                $transaction->update([
-                    'status' => 'cancelled',
-                    'description' => 'Cancelled by user: ' . $cancelBody['cancellationReason']
-                ]);
-            }
-
-            Log::info("🚫 Payment link {$orderCode} canceled by user");
-
-            return response()->json([
-                'error' => 0,
-                'message' => 'Canceled successfully',
-                'data' => $response
-            ]);
+/**
+ * 🚫 B4: PayOS gọi về khi user bấm HỦY trên trang thanh toán
+ */
+public function cancelPayment(Request $request)
+{
+    try {
+        $cancelBody = $request->all();
+        $orderCode = $cancelBody['orderCode'] ?? null;
+        
+        $transaction = Transaction::where('order_code', $orderCode)->first();
+        
+        if ($transaction) {
+            // Cập nhật trạng thái giao dịch thành 'cancelled' 
+            $transaction->update(['status' => 'cancelled']); 
             
-        } catch (Exception $e) {
-            return $this->handleException($e);
-        }
+            Log::warning("🚫 Order {$orderCode} status updated to CANCELLED by user.");
+            
+            // Chuyển hướng hoặc trả về View thông báo hủy
+            return redirect()->route('pay.cancel-page', ['orderCode' => $orderCode])
+                             ->with('message', 'Giao dịch đã bị hủy thành công.');
+        } 
+        
+        // Nếu không tìm thấy transaction hoặc không có orderCode
+        return redirect()->route('products')->with('error', 'Không tìm thấy giao dịch.');
+
+    } catch (Exception $e) {
+        // ... xử lý lỗi ...
+        return redirect()->route('products')->with('error', 'Đã xảy ra lỗi hệ thống.');
     }
+}
 
     /**
      * ✅ B5: Trang cảm ơn sau khi thanh toán xong
