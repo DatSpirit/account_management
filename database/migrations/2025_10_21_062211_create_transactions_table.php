@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2)->default(0);
 
             // Trạng thái giao dịch
-            $table->enum('status', ['pending', 'success', 'failed'])->default('success');
+            $table->enum('status', ['pending', 'success', 'failed' , 'cancelled'])->default('pending');
 
             // Mô tả hoặc ghi chú thêm
             $table->string('description')->nullable();
