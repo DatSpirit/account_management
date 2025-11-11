@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -20,16 +21,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+Route::get('/payment/cancel-process', [OrderController::class, 'cancelPayment'])->name('payos.cancel-process');
 
+Route::get('/payment/cancel', function (Request $request) {
+    return view('payment.cancel', [
+        'orderCode' => $request->query('orderCode')
+    ]);
+})->name('pay.cancel-page');
 
-// // API thanh toán (public)
-// Route::post('api/orders/create', [OrderController::class, 'createOrder'])
-//     ->name('api.orders.create');
-
-// // Webhook nhận tín hiệu từ PayOS
-// Route::post('api/payos/webhook', [WebhookController::class, 'handleWebhook'])
-//     ->name('api.payos.webhook');
-
+Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
 // ===========================
 // 🔹 SẢN PHẨM - NGƯỜI DÙNG
 // ===========================
@@ -40,7 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Thanh toán sản phẩm
     Route::get('/pay/{id}', [OrderController::class, 'pay'])->name('pay');
-    Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
+    
+ 
 });
 
 // ===========================
