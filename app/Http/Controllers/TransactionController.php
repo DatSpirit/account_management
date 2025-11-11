@@ -96,8 +96,7 @@ class TransactionController extends Controller
             'sortOrder' => $sortOrder,
         ]);
     }
-
-    /**
+        /**
      * Xem chi tiết transaction
      */
     public function show($id)
@@ -137,16 +136,6 @@ class TransactionController extends Controller
         }
         
         $transaction->save();
-
-        activity()
-            ->performedOn($transaction)
-            ->causedBy(Auth::user())
-            ->withProperties([
-                'old_status' => $oldStatus,
-                'new_status' => $request->status,
-                'note' => $request->note
-            ])
-            ->log('Transaction status updated');
 
         return redirect()
             ->route('admin.transactions.index')
