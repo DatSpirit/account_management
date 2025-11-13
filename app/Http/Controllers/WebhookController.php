@@ -33,7 +33,7 @@ class WebhookController extends Controller
 
 
             // Log dữ liệu để debug
-            // \Log::info('🔔 🔔 🔔 Webhook payload received:', $payload);
+            \Log::info('🔔 🔔 🔔 Webhook payload received:', $payload);
 
             
             // ===================================

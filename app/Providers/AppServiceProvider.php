@@ -10,7 +10,9 @@ use App\Http\Responses\LoginViewResponse;
 use App\Http\Responses\RegisterViewResponse;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Event; // Import Event Facade
+use Illuminate\Auth\Events\Login;      // Import Event Login
+use App\Listeners\UpdateLastLogin;     
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -67,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
             \Laravel\Fortify\Contracts\RegisterResponse::class,
             \App\Http\Responses\RegisterResponse::class
         );
+
+        Event::listen(
+            Login::class,
+            UpdateLastLogin::class
+        );
     }
 
     /**
@@ -78,4 +85,6 @@ class AppServiceProvider extends ServiceProvider
             ->prefix('api')
             ->group(base_path('routes/api.php'));
     }
+
+    
 }

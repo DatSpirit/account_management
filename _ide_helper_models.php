@@ -43,10 +43,22 @@ namespace App\Models{
  * @property numeric $amount
  * @property string $status
  * @property string|null $description
+ * @property bool $is_processed
+ * @property \Illuminate\Support\Carbon|null $processed_at
+ * @property string|null $webhook_signature
+ * @property string|null $webhook_payload
+ * @property string|null $payment_reference
+ * @property string|null $payment_link_id
+ * @property string|null $account_number
+ * @property string|null $counter_account_name
+ * @property string|null $counter_account_number
+ * @property string|null $counter_account_bank_id
+ * @property string|null $counter_account_bank_name
+ * @property \Illuminate\Support\Carbon|null $transaction_datetime
+ * @property string $currency
  * @property array<array-key, mixed>|null $response_data
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property bool $is_processed
  * @property-read \App\Models\Product|null $product
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction newModelQuery()
@@ -56,17 +68,29 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction success()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction unprocessed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereAccountNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCounterAccountBankId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCounterAccountBankName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCounterAccountName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCounterAccountNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCurrency($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereIsProcessed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereOrderCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction wherePaymentLinkId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction wherePaymentReference($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereProcessedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereProductId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereResponseData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereTransactionDatetime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereWebhookPayload($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereWebhookSignature($value)
  */
 	class Transaction extends \Eloquent {}
 }
@@ -79,6 +103,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $last_login_at
+ * @property int $login_count
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property bool $is_admin
@@ -97,6 +123,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsAdmin($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLastLoginAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLoginCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereNotes($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)

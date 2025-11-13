@@ -23,6 +23,8 @@ class User extends Authenticatable
         'password',
         'notes',
         'is_admin',
+        'last_login_at', 
+        'login_count',
     ];
 
     /**
@@ -46,6 +48,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
     /**
