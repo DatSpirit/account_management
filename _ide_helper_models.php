@@ -46,15 +46,21 @@ namespace App\Models{
  * @property array<array-key, mixed>|null $response_data
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property bool $is_processed
  * @property-read \App\Models\Product|null $product
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction pending()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction processed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction success()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction unprocessed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereIsProcessed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereOrderCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereProductId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transaction whereResponseData($value)

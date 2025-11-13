@@ -2,65 +2,100 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
+        // Basic
         'user_id',
         'product_id',
         'order_code',
         'amount',
         'status',
         'description',
+        
+        // Webhook security
+        'is_processed',
+        'processed_at',
+        'webhook_signature',
+        'webhook_payload',
+        
+        // Payment details
+        'payment_reference',
+        'payment_link_id',
+        'account_number',
+        'counter_account_name',
+        'counter_account_number',
+        'counter_account_bank_id',
+        'counter_account_bank_name',
+        'transaction_datetime',
+        'currency',
+        
+        // Legacy
         'response_data',
     ];
 
     protected $casts = [
-        'response_data' => 'array',
+        'is_processed' => 'boolean',
+        'processed_at' => 'datetime',
+        'transaction_datetime' => 'datetime',
         'amount' => 'decimal:2',
+        'response_data' => 'array',
     ];
 
-    /**
-     * Liên kết tới người dùng (user thực hiện giao dịch)
-     */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Liên kết tới sản phẩm được mua
-     */
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
     /**
-     * Kiểm tra giao dịch thành công
+     * Check if webhook is duplicate
      */
-    public function isSuccessful(): bool
+    public function isDuplicateWebhook(string $signature): bool
     {
-        return $this->status === 'success';
+        return $this->webhook_signature === $signature && $this->is_processed;
     }
 
     /**
-     * Kiểm tra giao dịch thất bại
+     * Mark transaction as processed
      */
-    public function isFailed(): bool
+    public function markAsProcessed(string $signature, array $payload): void
     {
-        return $this->status === 'failed';
+        $this->update([
+            'is_processed' => true,
+            'processed_at' => now(),
+            'webhook_signature' => $signature,
+            'webhook_payload' => json_encode($payload),
+        ]);
     }
 
     /**
-     * Kiểm tra giao dịch đang chờ xử lý
+     * Scopes
      */
-    public function isPending(): bool
+    public function scopeProcessed($query)
     {
-        return $this->status === 'pending';
+        return $query->where('is_processed', true);
+    }
+
+    public function scopeUnprocessed($query)
+    {
+        return $query->where('is_processed', false);
+    }
+
+    public function scopeSuccess($query)
+    {
+        return $query->where('status', 'success');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
     }
 }
