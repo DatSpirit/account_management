@@ -22,7 +22,7 @@ class WebhookController extends Controller
         $orderCode = null; // Khởi tạo biến orderCode
 
         // Log request info đầu tiên
-        Log::info("🔔 [{$requestId}] Webhook received", [
+        Log::info("1. [{$requestId}] Webhook received", [
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
@@ -33,14 +33,14 @@ class WebhookController extends Controller
 
 
             // Log dữ liệu để debug
-            \Log::info('🔔 🔔 🔔 Webhook payload received:', $payload);
+            \Log::info('*** Webhook payload received:', $payload);
 
             
             // ===================================
             // 1️⃣ VALIDATE PAYLOAD STRUCTURE & EXTRACT ORDER CODE
             // ===================================
             if (!isset($payload['data'], $payload['signature'])) {
-                Log::warning("⚠️ [{$requestId}] Invalid payload structure");
+                Log::warning("ERROR 1[{$requestId}] Invalid payload structure");
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
 
@@ -48,7 +48,7 @@ class WebhookController extends Controller
             $orderCode = $payload['data']['orderCode'] ?? null;
             
             if (!$orderCode) {
-                Log::warning("⚠️ [{$requestId}] Missing orderCode");
+                Log::warning("ERROR 2[{$requestId}] Missing orderCode");
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
             
@@ -61,7 +61,7 @@ class WebhookController extends Controller
 
             // Sử dụng Cache::add() để tạo lock bất khả xâm phạm.
             if (!Cache::add($cacheKey, $requestId, $lockDurationSeconds)) {
-                Log::warning("🚫 [{$requestId}] Duplicate webhook blocked (Early)", [
+                Log::warning("ERROR 3[{$requestId}] Duplicate webhook blocked (Early)", [
                     'orderCode' => $orderCode,
                     'current_lock_holder' => Cache::get($cacheKey)
                 ]);
@@ -73,7 +73,7 @@ class WebhookController extends Controller
                     'data' => ['orderCode' => $orderCode]
                 ], 200);
             }
-            Log::info("🔒 [{$requestId}] Acquired cache lock for processing");
+            Log::info("2. [{$requestId}] Acquired cache lock for processing");
 
             // ===================================
             // 3️⃣ VERIFY SIGNATURE 
@@ -94,7 +94,7 @@ class WebhookController extends Controller
                 return response()->json(['error' => 1, 'message' => 'Invalid signature'], 401);
             }
 
-            Log::info("✅ [{$requestId}] Signature verified");
+            Log::info("3. [{$requestId}] Signature verified");
 
             // ===================================
             // 4️⃣ EXTRACT PAYMENT DATA
@@ -114,7 +114,7 @@ class WebhookController extends Controller
             $paymentLinkId = $data['paymentLinkId'] ?? null;
             $transactionDateTime = $data['transactionDateTime'] ?? null;
             
-            Log::info("💳 [{$requestId}] Payment details", [
+            Log::info("4. [{$requestId}] Payment details", [
                 'orderCode' => $orderCode,
                 'amount' => $amount,
                 'reference' => $paymentReference,
@@ -136,7 +136,7 @@ class WebhookController extends Controller
                 // 6️⃣ CREATE NEW TRANSACTION IF NOT EXISTS
                 // ===================================
                 if (!$transaction) {
-                    Log::info("🆕 [{$requestId}] Creating new transaction", [
+                    Log::info("5. [{$requestId}] Creating new transaction", [
                         'orderCode' => $orderCode
                     ]);
                     
@@ -164,7 +164,7 @@ class WebhookController extends Controller
                 // 7️⃣ CHECK DUPLICATE BY SIGNATURE (Lớp bảo vệ vĩnh viễn trong DB)
                 // ===================================
                 if ($transaction->isDuplicateWebhook($signature)) {
-                    Log::warning("🚫 [{$requestId}] Duplicate webhook ignored by signature (DB check)", [
+                    Log::warning("ERROR 4: [{$requestId}] Duplicate webhook ignored by signature (DB check)", [
                         'orderCode' => $orderCode,
                         'current_status' => $transaction->status,
                         'is_processed' => $transaction->is_processed,
@@ -191,7 +191,7 @@ class WebhookController extends Controller
                 $newStatus = $this->determineStatus($status, $paymentCode);
                 $oldStatus = $transaction->status;
 
-                Log::info("🔄 [{$requestId}] Status mapping", [
+                Log::info("6. [{$requestId}] Status mapping", [
                     'orderCode' => $orderCode,
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
@@ -224,7 +224,7 @@ class WebhookController extends Controller
 
                 $processingTime = round((microtime(true) - $startTime) * 1000, 2);
 
-                Log::info("✅ [{$requestId}] Transaction processed successfully", [
+                Log::info("7. [{$requestId}] Transaction processed successfully", [
                     'id' => $transaction->id,
                     'orderCode' => $orderCode,
                     'old_status' => $oldStatus,
@@ -258,7 +258,7 @@ class WebhookController extends Controller
         } catch (Exception $e) {
             $processingTime = round((microtime(true) - $startTime) * 1000, 2);
             
-            Log::error("❌ [{$requestId}] Webhook processing error", [
+            Log::error("ERROR 5: [{$requestId}] Webhook processing error", [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -330,7 +330,7 @@ class WebhookController extends Controller
             return hash_equals($computedSignature, $receivedSignature);
 
         } catch (Exception $e) {
-            Log::error('❌ Signature verification exception', [
+            Log::error('ERROR 6: Signature verification exception', [
                 'message' => $e->getMessage()
             ]);
             return false;
