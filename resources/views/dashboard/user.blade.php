@@ -280,6 +280,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Pie Chart
+            const successCount = {{ $stats['success'] }};
+            const pendingCount = {{ $stats['pending'] }};
+            const failedCount = {{ $stats['failed'] }};
+           // Tính tổng số giao dịch để phục vụ tính toán phần trăm
+            const totalTransactions = successCount + pendingCount + failedCount;
+
             const pieCtx = document.getElementById('transactionPieChart')?.getContext('2d');
             if (pieCtx) {
                 new Chart(pieCtx, {
@@ -287,10 +293,10 @@
                     data: {
                         labels: ['Thành công', 'Chờ xử lý', 'Thất bại'],
                         datasets: [{
-                            data: [{{ $stats['success'] }}, {{ $stats['pending'] }}, {{ $stats['failed'] }}],
+                            data: [successCount, pendingCount, failedCount],
                             backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-                            borderWidth: 0,
-                            hoverOffset: 10
+                            borderWidth: 2,
+                            hoverOffset: 8
                         }]
                     },
                     options: {
@@ -306,7 +312,14 @@
                                 bodyFont: { size: 13 },
                                 callbacks: {
                                     label: function(context) {
-                                        return context.label + ': ' + context.parsed + ' GD';
+                                        const count = context.parsed; // Số lượng giao dịch
+                                    let percentage = 0;
+
+                                    if (totalTransactions > 0) {
+                                        // Tính tỉ lệ phần trăm và làm tròn 1 chữ số thập phân
+                                        percentage = ((count / totalTransactions) * 100).toFixed(1);
+                                    }
+                                        return context.label + ': ' + count + ' GD (' + percentage + '%)';
                                     }
                                 }
                             }
@@ -329,7 +342,7 @@
                             backgroundColor: 'rgba(99, 102, 241, 0.8)',
                             borderColor: 'rgba(79, 70, 229, 1)',
                             borderWidth: 2,
-                            borderRadius: 8,
+                            borderRadius: 6,
                             hoverBackgroundColor: 'rgba(79, 70, 229, 1)'
                         }]
                     },
