@@ -12,45 +12,135 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
-<!-- Styles -->
-@if (app()->environment('local'))
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-@else
-    <link rel="stylesheet" href="{{ secure_asset('build/assets/app-CfAMAoGE.css') }}">
-    <script src="{{ secure_asset('build/assets/app-ByAQDGt7.js') }}" defer></script>
-@endif
+    <!-- Scripts & Styles -->
+    @if (app()->environment('local'))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="{{ secure_asset('build/assets/app-CfAMAoGE.css') }}">
+        <script src="{{ secure_asset('build/assets/app-ByAQDGt7.js') }}" defer></script>
+    @endif
 
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
     
+    {{-- Toast Container --}}
+    <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-3"></div>
+
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-        @include('layouts.navigation')
+        
+        {{-- Include Navigation (có thể là old navigation hoặc new sidebar) --}}
+        @if(request()->routeIs('dashboard') || request()->routeIs('products') || request()->routeIs('admin.*'))
+            {{-- Sidebar Navigation for Dashboard & Admin Pages --}}
+            <x-sidebar-navigation :user="Auth::user()" />
+            
+            {{-- Main Content with Top Padding for Fixed Navbar --}}
+            <div class="pt-16">
+                <!-- Page Heading -->
+                @isset($header)
+                    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
 
-        <!-- Page Heading -->
-        @isset($header)
-            <header class="bg-white dark:bg-gray-800 shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endisset
+                <!-- Page Content -->
+                <main class="py-8 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-7xl mx-auto">
+                        {{ $slot }}
+                    </div>
+                </main>
+            </div>
+        @else
+            {{-- Old Navigation for Other Pages (Profile, etc.) --}}
+            @include('layouts.navigation')
 
-        <!-- Page Content -->
-        <main>
-            {{ $slot }}
-        </main>
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white dark:bg-gray-800 shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        @endif
     </div>
 
-    <!-- Script chuyển chế độ Dark/Light -->
+    {{-- Toast Notification Script --}}
+    <script>
+        // Toast Notification Function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            
+            const icons = {
+                success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>',
+                error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>',
+                warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>',
+                info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>'
+            };
+            
+            const colors = {
+                success: 'bg-green-50 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700',
+                error: 'bg-red-50 dark:bg-red-900/50 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700',
+                warning: 'bg-yellow-50 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700',
+                info: 'bg-blue-50 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700'
+            };
+            
+            toast.className = `flex items-center space-x-3 px-6 py-4 rounded-xl shadow-2xl border-2 ${colors[type]} transform transition-all duration-300 translate-x-full opacity-0`;
+            toast.innerHTML = `
+                <div class="flex-shrink-0">${icons[type]}</div>
+                <p class="font-medium text-sm flex-1">${message}</p>
+                <button onclick="this.parentElement.remove()" class="ml-4 hover:opacity-70 transition-opacity">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Display Laravel Flash Messages
+        @if(session('success'))
+            showToast("{{ session('success') }}", 'success');
+        @endif
+        @if(session('error'))
+            showToast("{{ session('error') }}", 'error');
+        @endif
+        @if(session('warning'))
+            showToast("{{ session('warning') }}", 'warning');
+        @endif
+        @if(session('info'))
+            showToast("{{ session('info') }}", 'info');
+        @endif
+    </script>
+
+    <!-- Script chuyển chế độ Dark/Light - GIỮ NGUYÊN CODE CŨ -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Lấy các phần tử
         const html = document.documentElement;
 
-        // Lấy các nút và icon từ Navigation component
+        // Lấy các nút và icon từ Navigation component (OLD)
         const desktopToggle = document.getElementById('theme-toggle');
         const desktopDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const desktopLightIcon = document.getElementById('theme-toggle-light-icon');
@@ -59,6 +149,10 @@
         const mobileDarkIcon = document.getElementById('theme-toggle-dark-icon-mobile');
         const mobileLightIcon = document.getElementById('theme-toggle-light-icon-mobile');
 
+        // Lấy nút từ Sidebar Navigation (NEW)
+        const sidebarToggle = document.getElementById('theme-toggle-header');
+        const sidebarIconLight = document.getElementById('theme-icon-light');
+        const sidebarIconDark = document.getElementById('theme-icon-dark');
 
         // --- Hàm áp dụng theme ---
         function applyTheme(isDark) {
@@ -66,17 +160,25 @@
                 html.classList.add('dark');
                 localStorage.theme = 'dark';
                 
-                // Hiển thị icon Light (Mặt Trăng) - Ẩn icon Dark (Mặt Trời)
+                // OLD Navigation Icons
                 [desktopLightIcon, mobileLightIcon].forEach(el => el && el.classList.remove('hidden'));
                 [desktopDarkIcon, mobileDarkIcon].forEach(el => el && el.classList.add('hidden'));
+
+                // NEW Sidebar Icons
+                if (sidebarIconLight) sidebarIconLight.classList.remove('hidden');
+                if (sidebarIconDark) sidebarIconDark.classList.add('hidden');
 
             } else {
                 html.classList.remove('dark');
                 localStorage.theme = 'light';
                 
-                // Hiển thị icon Dark (Mặt Trời) - Ẩn icon Light (Mặt Trăng)
+                // OLD Navigation Icons
                 [desktopDarkIcon, mobileDarkIcon].forEach(el => el && el.classList.remove('hidden'));
                 [desktopLightIcon, mobileLightIcon].forEach(el => el && el.classList.add('hidden'));
+
+                // NEW Sidebar Icons
+                if (sidebarIconLight) sidebarIconLight.classList.add('hidden');
+                if (sidebarIconDark) sidebarIconDark.classList.remove('hidden');
             }
         }
 
@@ -93,17 +195,22 @@
         // 2. Khi click đổi chế độ
         function handleThemeToggle() {
             const isDark = html.classList.contains('dark');
-            applyTheme(!isDark); // Chuyển đổi trạng thái hiện tại
+            applyTheme(!isDark);
         }
 
-        // Gắn sự kiện cho cả nút Desktop và Mobile
+        // Gắn sự kiện cho cả OLD và NEW navigation
         if (desktopToggle) {
             desktopToggle.addEventListener('click', handleThemeToggle);
         }
         if (mobileToggle) {
             mobileToggle.addEventListener('click', handleThemeToggle);
         }
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', handleThemeToggle);
+        }
     });
     </script>
+
+    @stack('scripts')
 </body>
 </html>
