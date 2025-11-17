@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\SupportController; 
 
 // ===========================
 // 🔹 TRANG CHỦ
@@ -21,15 +22,19 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Xử lý thanh toán
 Route::get('/payment/cancel-process', [OrderController::class, 'cancelPayment'])->name('payos.cancel-process');
 
+// Trang thông báo hủy thanh toán
 Route::get('/payment/cancel', function (Request $request) {
     return view('payment.cancel', [
         'orderCode' => $request->query('orderCode')
     ]);
 })->name('pay.cancel-page');
 
+// Trang cảm ơn sau khi thanh toán thành công
 Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
+
 // ===========================
 // 🔹 SẢN PHẨM - NGƯỜI DÙNG
 // ===========================
@@ -74,6 +79,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Trang hồ sơ riêng
     Route::get('/profile/user', [UserController::class, 'index'])->name('user.profile');
+
+     // Trung tâm Trợ giúp / FAQ
+    Route::get('/help-center', [SupportController::class, 'helpCenter'])->name('support.help_center');
+    
+    // Liên hệ Hỗ trợ / Contact Form
+    Route::get('/contact', [SupportController::class, 'contactSupport'])->name('support.contact');
+    Route::post('/contact', [SupportController::class, 'submitContact'])->name('support.contact.submit');
 
     // Gửi lại email xác minh
     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
