@@ -23,43 +23,20 @@
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 
-<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     
     {{-- Toast Container --}}
     <div id="toast-container" class="fixed top-20 right-4 z-[100] space-y-3"></div>
 
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen">
+        {{-- SIDEBAR NAVIGATION ONLY - No more old navigation --}}
+        <x-main-navigation :user="Auth::user()" />
         
-        {{-- Include Navigation (có thể là old navigation hoặc new sidebar) --}}
-        @if(request()->routeIs('dashboard') || request()->routeIs('products') || request()->routeIs('admin.*'))
-            {{-- Sidebar Navigation for Dashboard & Admin Pages --}}
-            <x-sidebar-navigation :user="Auth::user()" />
-            
-            {{-- Main Content with Top Padding for Fixed Navbar --}}
-            <div class="pt-16">
-                <!-- Page Heading -->
-                @isset($header)
-                    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
-
-                <!-- Page Content -->
-                <main class="py-8 px-4 sm:px-6 lg:px-8">
-                    <div class="max-w-7xl mx-auto">
-                        {{ $slot }}
-                    </div>
-                </main>
-            </div>
-        @else
-            {{-- Old Navigation for Other Pages (Profile, etc.) --}}
-            @include('layouts.navigation')
-
+        {{-- Main Content with Top Padding for Fixed Navbar --}}
+        <div class="pt-16">
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
+                <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -67,10 +44,12 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
-                {{ $slot }}
+            <main class="py-8 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
+                    {{ $slot }}
+                </div>
             </main>
-        @endif
+        </div>
     </div>
 
     {{-- Toast Notification Script --}}
@@ -132,83 +111,6 @@
         @if(session('info'))
             showToast("{{ session('info') }}", 'info');
         @endif
-    </script>
-
-    <!-- Script chuyển chế độ Dark/Light - GIỮ NGUYÊN CODE CŨ -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Lấy các phần tử
-        const html = document.documentElement;
-
-        // Lấy các nút và icon từ Navigation component (OLD)
-        const desktopToggle = document.getElementById('theme-toggle');
-        const desktopDarkIcon = document.getElementById('theme-toggle-dark-icon');
-        const desktopLightIcon = document.getElementById('theme-toggle-light-icon');
-        
-        const mobileToggle = document.getElementById('theme-toggle-mobile');
-        const mobileDarkIcon = document.getElementById('theme-toggle-dark-icon-mobile');
-        const mobileLightIcon = document.getElementById('theme-toggle-light-icon-mobile');
-
-        // Lấy nút từ Sidebar Navigation (NEW)
-        const sidebarToggle = document.getElementById('theme-toggle-header');
-        const sidebarIconLight = document.getElementById('theme-icon-light');
-        const sidebarIconDark = document.getElementById('theme-icon-dark');
-
-        // --- Hàm áp dụng theme ---
-        function applyTheme(isDark) {
-            if (isDark) {
-                html.classList.add('dark');
-                localStorage.theme = 'dark';
-                
-                // OLD Navigation Icons
-                [desktopLightIcon, mobileLightIcon].forEach(el => el && el.classList.remove('hidden'));
-                [desktopDarkIcon, mobileDarkIcon].forEach(el => el && el.classList.add('hidden'));
-
-                // NEW Sidebar Icons
-                if (sidebarIconLight) sidebarIconLight.classList.remove('hidden');
-                if (sidebarIconDark) sidebarIconDark.classList.add('hidden');
-
-            } else {
-                html.classList.remove('dark');
-                localStorage.theme = 'light';
-                
-                // OLD Navigation Icons
-                [desktopDarkIcon, mobileDarkIcon].forEach(el => el && el.classList.remove('hidden'));
-                [desktopLightIcon, mobileLightIcon].forEach(el => el && el.classList.add('hidden'));
-
-                // NEW Sidebar Icons
-                if (sidebarIconLight) sidebarIconLight.classList.add('hidden');
-                if (sidebarIconDark) sidebarIconDark.classList.remove('hidden');
-            }
-        }
-
-        // 1. Kiểm tra theme đã lưu khi tải trang
-        const savedTheme = localStorage.theme;
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            applyTheme(true);
-        } else {
-            applyTheme(false);
-        }
-
-        // 2. Khi click đổi chế độ
-        function handleThemeToggle() {
-            const isDark = html.classList.contains('dark');
-            applyTheme(!isDark);
-        }
-
-        // Gắn sự kiện cho cả OLD và NEW navigation
-        if (desktopToggle) {
-            desktopToggle.addEventListener('click', handleThemeToggle);
-        }
-        if (mobileToggle) {
-            mobileToggle.addEventListener('click', handleThemeToggle);
-        }
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', handleThemeToggle);
-        }
-    });
     </script>
 
     @stack('scripts')
