@@ -203,7 +203,7 @@
                                                 <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                                 </svg>
-                                                {{ $transaction->created_at->format('d/m/Y H:i') }}
+                                                {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}
                                             </span>
                                             <span class="lg:hidden text-xs text-gray-700 dark:text-gray-300 font-medium">
                                                 <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,9 +279,9 @@
                                     
                                     <td class="px-3 sm:px-6 py-4 hidden sm:table-cell">
                                         <div class="flex flex-col text-sm">
-                                            <span class="text-gray-900 dark:text-gray-100">{{ $transaction->created_at->format('d/m/Y') }}</span>
-                                            <span class="text-gray-500 dark:text-gray-400 text-xs">{{ $transaction->created_at->format('H:i:s') }}</span>
-                                            <span class="text-gray-400 dark:text-gray-500 text-xs">{{ $transaction->created_at->diffForHumans() }}</span>
+                                            <span class="text-gray-900 dark:text-gray-100">{{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}</span>
+                                            <span class="text-gray-500 dark:text-gray-400 text-xs">{{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('H:i:s') }}</span>
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs">{{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->diffForHumans() }}</span>
                                         </div>
                                     </td>
 
