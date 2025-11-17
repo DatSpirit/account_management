@@ -23,6 +23,7 @@ class Transaction extends Model
         'webhook_payload',
         
         // Payment details
+        'raw_payload',
         'payment_reference',
         'payment_link_id',
         'account_number',
@@ -43,6 +44,7 @@ class Transaction extends Model
         'transaction_datetime' => 'datetime',
         'amount' => 'decimal:2',
         'response_data' => 'array',
+        'raw_payload' => 'string',
     ];
 
     public function user(): BelongsTo
@@ -66,13 +68,14 @@ class Transaction extends Model
     /**
      * Mark transaction as processed
      */
-    public function markAsProcessed(string $signature, array $payload): void
+    public function markAsProcessed(string $signature, array $payload, string $rawPayload = null): void
     {
         $this->update([
             'is_processed' => true,
             'processed_at' => now(),
             'webhook_signature' => $signature,
-            'webhook_payload' => json_encode($payload),
+            'webhook_payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            'raw_payload' => is_string($rawPayload) ? $rawPayload : json_encode($rawPayload, JSON_UNESCAPED_UNICODE),
         ]);
     }
 

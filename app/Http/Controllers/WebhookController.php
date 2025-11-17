@@ -31,9 +31,14 @@ class WebhookController extends Controller
             // Lấy toàn bộ payload ngay lập tức
             $payload = $request->all();
 
+            $rawPayload = $request->getContent();
+
 
             // Log dữ liệu để debug
-            \Log::info('*** Webhook payload received:', $payload);
+            // Log::info("Webhook RAW:", ['raw' => $rawPayload]);
+            // Log::info("Webhook DATA:", $payload);
+
+            // cách xem dữ liệu: notepad storage/logs/laravel.log
 
             
             // ===================================
@@ -44,7 +49,7 @@ class WebhookController extends Controller
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
 
-            // Lấy orderCode ngay sau khi xác thực cấu trúc cơ bản
+            // Lấy orderCode ngay sau khi xác thực
             $orderCode = $payload['data']['orderCode'] ?? null;
             
             if (!$orderCode) {
@@ -57,16 +62,16 @@ class WebhookController extends Controller
             // Chặn ngay lập tức TẤT CẢ các webhook có cùng orderCode trong X giây.
             // ===================================
             $cacheKey = "webhook_processing:{$orderCode}";
-            $lockDurationSeconds = 300; // Khóa trong 300 giây
+            $lockDurationSeconds = 300; // Khóa trong 300 giây, 1 tuần = 604800 giây
 
-            // Sử dụng Cache::add() để tạo lock bất khả xâm phạm.
+            // Sử dụng Cache::add() để tạo lock ngăn chặn.
             if (!Cache::add($cacheKey, $requestId, $lockDurationSeconds)) {
                 Log::warning("ERROR 3[{$requestId}] Duplicate webhook blocked (Early)", [
                     'orderCode' => $orderCode,
                     'current_lock_holder' => Cache::get($cacheKey)
                 ]);
                 
-                // Trả về 200 OK ngay lập tức.
+               
                 return response()->json([
                     'error' => 0,
                     'message' => 'cache_lock_blocked_early',
@@ -157,6 +162,8 @@ class WebhookController extends Controller
                         'payment_link_id' => $paymentLinkId,
                         'transaction_datetime' => $transactionDateTime ? date('Y-m-d H:i:s', strtotime($transactionDateTime)) : null,
                         'currency' => $data['currency'] ?? 'VND',
+                        'raw_payload' => $rawPayload,
+                        'response_data' => $data,  
                     ]);
                 }
 
@@ -214,13 +221,14 @@ class WebhookController extends Controller
                     'payment_link_id' => $paymentLinkId,
                     'transaction_datetime' => $transactionDateTime ? date('Y-m-d H:i:s', strtotime($transactionDateTime)) : null,
                     'currency' => $data['currency'] ?? 'VND',
+                    'raw_payload' => $rawPayload,
                     'response_data' => $data, // Backup full data
                 ]);
 
                 // ===================================
                 // 🔟 MARK AS PROCESSED
                 // ===================================
-                $transaction->markAsProcessed($signature, $payload);
+                $transaction->markAsProcessed($signature, $payload, $rawPayload);
 
                 $processingTime = round((microtime(true) - $startTime) * 1000, 2);
 
