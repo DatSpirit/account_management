@@ -109,7 +109,7 @@
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
-                <form method="GET" action="{{ route('admin.transactions.index') }}" class="space-y-4">
+                <form method="GET" action="{{ route('admin.transactions.all-transactions') }}" class="space-y-4">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
@@ -139,7 +139,7 @@
                         </div>
                         
                         <div class="pt-6">
-                            <a href="{{ route('admin.transactions.index') }}" 
+                            <a href="{{ route('admin.transactions.all-transactions') }}" 
                                class="w-full flex items-center justify-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-all duration-200 text-sm h-full">
                                 Reset
                             </a>

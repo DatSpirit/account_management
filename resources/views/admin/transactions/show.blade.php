@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 {{-- Nút Back: Liên kết về trang danh sách --}}
-                <a href="{{ route('admin.transactions.index') }}"
+                <a href="{{ route('admin.transactions.all-transactions') }}"
                     class="p-2 rounded-full text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 bg-gray-100 dark:bg-gray-700 transition-all duration-200 shadow-md">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

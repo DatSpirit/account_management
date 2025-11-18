@@ -82,7 +82,7 @@ class TransactionController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        return view('admin.transactions.index', [
+        return view('admin.transactions.all-transactions', [
             'transactions' => $transactions,
             'stats' => $stats,
             'chartData' => $chartData,
@@ -138,7 +138,7 @@ class TransactionController extends Controller
         $transaction->save();
 
         return redirect()
-            ->route('admin.transactions.index')
+            ->route('admin.transactions.all-transactions')
             ->with('success', 'Transaction status updated successfully');
     }
 
