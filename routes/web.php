@@ -12,10 +12,9 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AllTransactionController;
-use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\SupportController; 
 use App\Http\Controllers\MyTransactionController;
-
+use App\Http\Controllers\AnalyticsController;
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -75,6 +74,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // My Transactions
     Route::get('/my-transactions', [MyTransactionController::class, 'index'])->name('transactions.index');
+
+    // Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'index']) ->name('analytics.index');
 
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
