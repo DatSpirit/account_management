@@ -11,7 +11,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AllTransactionController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\SupportController; 
 
@@ -104,10 +104,10 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // Quản lý giao dịch
-        Route::get('/transactions', [TransactionController::class, 'index'])->name('admin.transactions.all-transactions');
-        Route::get('/transactions/{id}', [TransactionController::class, 'show'])->name('admin.transactions.show');
-        Route::patch('/transactions/{id}/status', [TransactionController::class, 'updateStatus'])->name('admin.transactions.update-status');
-        Route::get('/transactions/export', [TransactionController::class, 'export'])->name('admin.transactions.export');
+        Route::get('/transactions', [AllTransactionController::class, 'index'])->name('admin.transactions.all-transactions');
+        Route::get('/transactions/{id}', [AllTransactionController::class, 'show'])->name('admin.transactions.show');
+        Route::patch('/transactions/{id}/status', [AllTransactionController::class, 'updateStatus'])->name('admin.transactions.update-status');
+        Route::get('/transactions/export', [AllTransactionController::class, 'export'])->name('admin.transactions.export');
 
         // Quản lý người dùng
         Route::get('/users', [AdminController::class, 'index'])->name('admin.users');

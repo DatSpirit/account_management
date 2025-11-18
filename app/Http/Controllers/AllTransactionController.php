@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class TransactionController extends Controller
+class AllTransactionController extends Controller
 {
     public function index(Request $request)
     {
