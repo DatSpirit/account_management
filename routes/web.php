@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AllTransactionController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\SupportController; 
+use App\Http\Controllers\MyTransactionController;
 
 // ===========================
 // 🔹 TRANG CHỦ
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard của người dùng
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+
+    // My Transactions
+    Route::get('/my-transactions', [MyTransactionController::class, 'index'])->name('transactions.index');
 
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
