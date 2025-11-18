@@ -9,12 +9,12 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AllTransactionController;
 use App\Http\Controllers\SupportController; 
 use App\Http\Controllers\MyTransactionController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\SettingsController;
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -77,6 +77,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Analytics
     Route::get('/analytics', [AnalyticsController::class, 'index']) ->name('analytics.index');
+
+     // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])
+        ->name('settings.index');
+    Route::post('/settings', [SettingsController::class, 'update'])
+        ->name('settings.update');
 
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
