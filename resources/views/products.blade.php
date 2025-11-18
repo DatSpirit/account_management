@@ -3,33 +3,36 @@
     <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-3"></div>
 
     <x-slot name="header">
-        <div class="flex items-center justify-center space-x-3">
-            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-100 tracking-tight">
-                Product
-            </h2>
+        <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between space-y-2 sm:space-y-0 sm:space-x-3">
+            <div class="flex items-center space-x-2">
+                <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <h2 class="font-bold text-2xl sm:text-3xl text-gray-800 dark:text-gray-100 tracking-tight">Product</h2>
+            </div>
+            <div class="text-center sm:text-left">
+                <div class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100" id="total-products">{{ count($products) }}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wide">Sản Phẩm</div>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="py-6 px-2 sm:px-6 lg:px-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div class="max-w-7xl mx-auto space-y-6">
 
             <!-- Header Section -->
-            <div
-                class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-6 sm:p-8">
+            <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 transition-colors duration-300">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="space-y-2">
                         <h3 class="text-xl sm:text-2xl font-bold text-white">Cửa Hàng Sản Phẩm</h3>
-                        <p class="text-white/90 text-sm sm:text-base">Khám phá các sản phẩm chất lượng cao</p>
+                        <p class="text-white text-opacity-90 text-sm sm:text-base">Khám phá các sản phẩm chất lượng cao</p>
                     </div>
                     <div class="flex items-center space-x-4">
                         @if ($isAdmin)
                             <a href="{{ route('admin.products.create') }}"
-                                class="px-4 py-2 bg-white hover:bg-gray-100 text-indigo-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2">
+                                class="px-3 py-2 sm:px-4 sm:py-2 bg-white hover:bg-gray-100 text-indigo-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2 text-sm sm:text-base">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -37,31 +40,22 @@
                                 <span>Add Product</span>
                             </a>
                         @endif
-                        <div class="text-center">
-                            <div class="text-3xl font-bold text-white" id="total-products">{{ count($products) }}</div>
-                            <div class="text-xs text-white/90 uppercase tracking-wide">Sản Phẩm</div>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Search & Filter Section -->
-            <div
-                class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                     <!-- Search Input -->
                     <div class="lg:col-span-6">
-                        <label
-                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             Tìm Kiếm Sản Phẩm
                         </label>
                         <div class="relative">
                             <input type="text" id="search-input" placeholder="Nhập tên sản phẩm..."
-                                class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 
-                                          rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
-                                          focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 
-                                          transition-all duration-200">
+                                class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200">
 
                             <button type="button" id="search-btn"
                                 class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200">
@@ -75,15 +69,11 @@
 
                     <!-- Category Filter -->
                     <div class="lg:col-span-4">
-                        <label
-                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             Danh Mục
                         </label>
                         <select id="category-filter"
-                            class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 
-                                   rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100
-                                   focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 
-                                   transition-all duration-200 cursor-pointer">
+                            class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 cursor-pointer">
                             <option value="">Tất cả danh mục</option>
                             <option value="laptop">💻 Laptop</option>
                             <option value="phone">📱 Điện thoại</option>
@@ -95,15 +85,11 @@
 
                     <!-- Price Sort -->
                     <div class="lg:col-span-2">
-                        <label
-                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             Sắp Xếp
                         </label>
                         <select id="price-sort"
-                            class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 
-                                   rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100
-                                   focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 
-                                   transition-all duration-200 cursor-pointer">
+                            class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 cursor-pointer">
                             <option value="">Mặc định</option>
                             <option value="price-asc">Giá tăng dần</option>
                             <option value="price-desc">Giá giảm dần</option>
@@ -122,8 +108,7 @@
                         data-price="{{ $product['price'] }}" data-category="{{ $product['category'] ?? '' }}">
 
                         <!-- Product Image -->
-                        <div
-                            class="relative bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 h-48 flex items-center justify-center p-6">
+                        <div class="relative bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 h-48 flex items-center justify-center p-4 sm:p-6">
                             @if (isset($product['image']))
                                 <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}"
                                     class="w-full h-full object-contain">
@@ -137,15 +122,14 @@
 
                             <!-- Category Badge -->
                             @if (isset($product['category']))
-                                <span
-                                    class="absolute top-3 right-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-xs font-semibold text-gray-700 dark:text-gray-300 rounded-full border border-gray-200 dark:border-gray-600">
+                                <span class="absolute top-3 right-3 px-2 py-1 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 backdrop-blur-sm text-xs font-semibold text-gray-700 dark:text-gray-300 rounded-full border border-gray-200 dark:border-gray-600">
                                     {{ $product['category'] }}
                                 </span>
                             @endif
                         </div>
 
                         <!-- Product Info -->
-                        <div class="p-5 space-y-3">
+                        <div class="p-4 sm:p-5 space-y-3">
                             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-2 min-h-[3.5rem]">
                                 {{ $product['name'] }}
                             </h3>
@@ -166,7 +150,7 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex gap-2 pt-3">
+                            <div class="flex gap-2 pt-3 flex-wrap">
                                 <a href="{{ route('pay', $product['id']) }}"
                                     class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-600 dark:hover:from-indigo-600 dark:hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-center text-sm">
                                     <span class="flex items-center justify-center space-x-2">
@@ -201,7 +185,6 @@
                                         </svg>
                                     </a>
                                 @endif
-
                             </div>
                         </div>
                     </div>
@@ -229,20 +212,17 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
     <!-- Product Detail Modal -->
-    <div id="productModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <div id="productModal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-2 sm:p-4">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-
-        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-95 opacity-0 border border-gray-200 dark:border-gray-700"
-            id="modalContent">
-
+        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full sm:max-w-2xl transform transition-all duration-300 scale-95 opacity-0 border border-gray-200 dark:border-gray-700 p-4 sm:p-6" id="modalContent">
             <!-- Modal Header -->
-            <div
-                class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-t-2xl">
-                <h3 class="text-2xl font-bold text-white">Chi Tiết Sản Phẩm</h3>
+            <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-t-2xl">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Chi Tiết Sản Phẩm</h3>
                 <button onclick="closeModal()" class="p-2 rounded-lg hover:bg-white/20 transition-colors">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -250,27 +230,19 @@
                     </svg>
                 </button>
             </div>
-
             <!-- Modal Body -->
-            <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto bg-gray-50 dark:bg-gray-900">
-                <div id="modal-product-content"></div>
-            </div>
-
+            <div class="p-4 sm:p-6 space-y-4 max-h-[60vh] overflow-y-auto bg-gray-50 dark:bg-gray-900" id="modal-product-content"></div>
             <!-- Modal Footer -->
-            <div
-                class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-2xl">
-                <button onclick="closeModal()"
-                    class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-all duration-200">
+            <div class="flex items-center justify-end space-x-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-2xl">
+                <button onclick="closeModal()" class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-all duration-200">
                     Đóng
                 </button>
-                <a id="modal-pay-link" href="#"
-                    class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                <a id="modal-pay-link" href="#" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
                     Thanh toán ngay
                 </a>
             </div>
         </div>
     </div>
-
 
     <script>
         // Toast System

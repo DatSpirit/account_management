@@ -15,11 +15,11 @@
         </div>
     </x-slot>
 
-    <div class="space-y-6">
+    <div class="space-y-6" x-data="{ activeTab: 'account' }">
         
         {{-- Settings Navigation Tabs --}}
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-            <div class="flex flex-wrap gap-2" x-data="{ activeTab: 'account' }">
+            <div class="flex flex-wrap gap-2" >
                 <button @click="activeTab = 'account'" :class="activeTab === 'account' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold transition-all">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -48,7 +48,7 @@
         </div>
 
         {{-- Account Settings --}}
-        <div x-show="activeTab === 'account'" x-data class="space-y-6">
+        <div x-show="activeTab === 'account'"  class="space-y-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                     <span class="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg mr-3">
@@ -133,7 +133,7 @@
         </div>
 
         {{-- Security Settings --}}
-        <div x-show="activeTab === 'security'" x-data class="space-y-6" style="display: none;">
+        <div x-show="activeTab === 'security'" class="space-y-6" style="display: none;">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                     <span class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg mr-3">
@@ -212,7 +212,7 @@
         </div>
 
         {{-- Notification Settings --}}
-        <div x-show="activeTab === 'notifications'" x-data class="space-y-6" style="display: none;">
+        <div x-show="activeTab === 'notifications'"  class="space-y-6" style="display: none;">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Email Notifications</h3>
                 <div class="space-y-4">
@@ -241,7 +241,7 @@
         </div>
 
         {{-- Preferences --}}
-        <div x-show="activeTab === 'preferences'" x-data class="space-y-6" style="display: none;">
+        <div x-show="activeTab === 'preferences'"  class="space-y-6" style="display: none;">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Display Preferences</h3>
                 <div class="space-y-6">

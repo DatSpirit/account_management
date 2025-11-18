@@ -58,7 +58,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Failed</p>
+                <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Cancelled</p>
                 <p class="text-3xl font-bold">{{ $stats['failed'] ?? 0 }}</p>
                 <p class="text-xs opacity-75 mt-2">Cancelled & Failed</p>
             </div>
@@ -91,8 +91,8 @@
                             <option value="">All Status</option>
                             <option value="success" {{ request('status') === 'success' ? 'selected' : '' }}>✅ Success</option>
                             <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed</option>
                             <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>⊘ Cancelled</option>
+                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed</option>
                         </select>
                     </div>
 
