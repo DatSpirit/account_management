@@ -90,6 +90,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/analytics/export', [AnalyticsController::class, 'export'])
         ->name('analytics.export');
 
+      // Export Actions
+    Route::post('/analytics/export/excel', [AnalyticsController::class, 'exportExcel'])
+        ->name('analytics.export.excel');
+    Route::post('/analytics/export/pdf', [AnalyticsController::class, 'exportPdf'])
+        ->name('analytics.export.pdf');
+    Route::post('/analytics/export/csv', [AnalyticsController::class, 'exportCsv'])
+        ->name('analytics.export.csv');  
+
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])
         ->name('settings.index');
