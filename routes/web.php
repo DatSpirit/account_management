@@ -11,7 +11,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AllTransactionController;
-use App\Http\Controllers\SupportController; 
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\MyTransactionController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SettingsController;
@@ -45,8 +45,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Thanh toán sản phẩm
     Route::get('/pay/{id}', [OrderController::class, 'pay'])->name('pay');
-    
- 
 });
 
 // ===========================
@@ -74,11 +72,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // My Transactions
     Route::get('/my-transactions', [MyTransactionController::class, 'index'])->name('transactions.index');
+    // Transaction Detail 
+    Route::get('/my-transactions/{id}', [MyTransactionController::class, 'show'])->name('transactions.show');
+
+    Route::post('/my-transactions/{id}/cancel', [MyTransactionController::class, 'cancel'])
+        ->name('transactions.cancel');
+
+    Route::post('/my-transactions/{id}/refund', [MyTransactionController::class, 'requestRefund'])
+        ->name('transactions.refund');
+
+    Route::get('/my-transactions/{id}/invoice', [MyTransactionController::class, 'downloadInvoice'])
+        ->name('transactions.invoice');
 
     // Analytics
-    Route::get('/analytics', [AnalyticsController::class, 'index']) ->name('analytics.index');
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
-     // Settings
+    // Settings
     Route::get('/settings', [SettingsController::class, 'index'])
         ->name('settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])
@@ -92,9 +101,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Trang hồ sơ riêng
     Route::get('/profile/user', [UserController::class, 'index'])->name('user.profile');
 
-     // Trung tâm Trợ giúp / FAQ
+    // Trung tâm Trợ giúp / FAQ
     Route::get('/help-center', [SupportController::class, 'helpCenter'])->name('support.help_center');
-    
+
     // Liên hệ Hỗ trợ / Contact Form
     Route::get('/contact', [SupportController::class, 'contactSupport'])->name('support.contact');
     Route::post('/contact', [SupportController::class, 'submitContact'])->name('support.contact.submit');
@@ -133,7 +142,7 @@ Route::middleware(['auth', 'verified', 'admin'])
 // ===========================
 // 🔹 XÁC THỰC / ĐĂNG NHẬP
 // ===========================
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // 🔹 CUSTOM CONFIRM PASSWORD (nếu cần giữ /confirm-password cũ)
 // ===========================

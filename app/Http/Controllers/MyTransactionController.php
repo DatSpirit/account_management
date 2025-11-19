@@ -52,4 +52,53 @@ class MyTransactionController extends Controller
 
         return view('transactions.index', compact('transactions', 'stats'));
     }
+    public function show($id)
+    {
+        $transaction = Transaction::with(['user', 'product'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        return view('transactions.show', compact('transaction'));
+    }
+
+    // NEW: Cancel transaction
+    public function cancel($id)
+    {
+        $transaction = Transaction::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        if ($transaction->status === 'pending') {
+            $transaction->update(['status' => 'cancelled']);
+            return back()->with('success', 'Transaction cancelled successfully');
+        }
+
+        return back()->with('error', 'Cannot cancel this transaction');
+    }
+
+    // NEW: Request refund
+    public function requestRefund($id)
+    {
+        $transaction = Transaction::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        if ($transaction->status === 'success') {
+            // Logic to create refund request
+            return back()->with('success', 'Refund request submitted successfully');
+        }
+
+        return back()->with('error', 'Cannot request refund for this transaction');
+    }
+
+    // NEW: Download invoice
+    public function downloadInvoice($id)
+    {
+        $transaction = Transaction::with(['user', 'product'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        // Generate PDF invoice
+        // Use package like dompdf or snappy
+        
+        return response()->download($pdfPath);
+    }
 }

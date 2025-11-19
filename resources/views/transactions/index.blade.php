@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -214,12 +213,14 @@
                                 </td>
 
                                 <td class="px-6 py-4 text-center">
-                                    <button onclick="viewTransaction({{ $transaction->id }})" class="p-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-all transform hover:scale-110">
+                                    <a href="{{ route('transactions.show', $transaction->id) }}" 
+                                       class="inline-flex p-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-all transform hover:scale-110 shadow-md hover:shadow-lg"
+                                       title="View Details">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         @empty
@@ -235,7 +236,7 @@
                                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No transactions found</h3>
                                             <p class="text-sm text-gray-500 dark:text-gray-400">Start shopping to see your transactions here</p>
                                         </div>
-                                        <a href="{{ route('products') }}" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all">
+                                        <a href="{{ route('products') }}" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/30">
                                             Browse Products
                                         </a>
                                     </div>
@@ -248,7 +249,7 @@
 
             {{-- Pagination --}}
             @if($transactions->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:dark:bg-gray-800">
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                     {{ $transactions->appends(request()->query())->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
@@ -256,13 +257,97 @@
 
     </div>
 
+    {{-- Success/Error Messages --}}
+    @if(session('success'))
+        <div x-data="{ show: true }" 
+             x-show="show" 
+             x-init="setTimeout(() => show = false, 5000)"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-full"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform translate-x-full"
+             class="fixed top-4 right-4 z-50 max-w-md">
+            <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="font-medium">{{ session('success') }}</span>
+                <button @click="show = false" class="ml-auto hover:bg-white/20 rounded-lg p-1 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div x-data="{ show: true }" 
+             x-show="show" 
+             x-init="setTimeout(() => show = false, 5000)"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-x-full"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform translate-x-full"
+             class="fixed top-4 right-4 z-50 max-w-md">
+            <div class="bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="font-medium">{{ session('error') }}</span>
+                <button @click="show = false" class="ml-auto hover:bg-white/20 rounded-lg p-1 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
     @push('scripts')
     <script>
-        function viewTransaction(id) {
-            // Implement view transaction detail modal or redirect
-            alert('View transaction #' + id);
-            // window.location.href = `/transactions/${id}`;
+        // Auto-refresh transactions every 30 seconds if there are pending transactions
+        @if($transactions->contains('status', 'pending'))
+            setInterval(() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const hasPendingOnly = urlParams.get('status') === 'pending' || !urlParams.get('status');
+                
+                if (hasPendingOnly) {
+                    console.log('Auto-refreshing pending transactions...');
+                    window.location.reload();
+                }
+            }, 30000); // 30 seconds
+        @endif
+
+        // Print function for invoices (if needed)
+        function printInvoice(transactionId) {
+            window.open(`/my-transactions/${transactionId}/invoice`, '_blank');
         }
+
+        // Quick status filter
+        function quickFilter(status) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('status', status);
+            window.location.href = url.toString();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + R: Refresh
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                window.location.reload();
+            }
+            
+            // Escape: Clear filters
+            if (e.key === 'Escape') {
+                window.location.href = '{{ route("transactions.index") }}';
+            }
+        });
     </script>
     @endpush
 </x-app-layout>
