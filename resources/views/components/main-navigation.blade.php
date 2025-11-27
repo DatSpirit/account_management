@@ -387,17 +387,30 @@
         </div>
     </aside>
 
-    {{-- Dark Mode Toggle Script --}}
+    {{-- Dark Mode Toggle Script - Tailwind 4 Compatible --}}
     <script>
+        // Initialize theme immediately to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
+        // Main theme toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('theme-toggle');
             const htmlElement = document.documentElement;
             const iconSun = document.getElementById('theme-icon-sun');
             const iconMoon = document.getElementById('theme-icon-moon');
 
-            function updateTheme() {
-                const currentTheme = localStorage.getItem('theme') || 'light';
-                if (currentTheme === 'dark') {
+            function updateTheme(theme) {
+                if (theme === 'dark') {
                     htmlElement.classList.add('dark');
                     if (iconSun) iconSun.classList.remove('hidden');
                     if (iconMoon) iconMoon.classList.add('hidden');
@@ -408,14 +421,25 @@
                 }
             }
 
+            // Toggle theme on button click
             themeToggle?.addEventListener('click', () => {
-                const currentTheme = localStorage.getItem('theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                const isDark = htmlElement.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
                 localStorage.setItem('theme', newTheme);
-                updateTheme();
+                updateTheme(newTheme);
             });
 
-            updateTheme();
+            // Initialize icons based on current theme
+            const currentTheme = localStorage.getItem('theme') || 
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            updateTheme(currentTheme);
+
+            // Listen to system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('theme')) {
+                    updateTheme(e.matches ? 'dark' : 'light');
+                }
+            });
         });
     </script>
 </div>

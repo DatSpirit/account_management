@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+/* Cấu hình dark mode cho Tailwind 4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Theme Configuration */
+@theme {
+  /* Light mode colors */
+  --color-primary: #4f46e5;
+  --color-primary-dark: #6366f1;
+  --color-background: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+}
+
+/* Dark mode color overrides */
+@layer theme {
+  .dark {
+    --color-primary: #6366f1;
+    --color-primary-dark: #818cf8;
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-text: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-border: #334155;
+  }
+}
