@@ -49,50 +49,6 @@ class AdminController extends Controller
         return view('admin.users', compact('users', 'search', 'filter'));
     }
 
-
-     
-    /**
-     * Hiển thị trang lịch sử giao dịch (Transaction History)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
-    public function transactionsIndex(Request $request): View
-    {
-        // Lấy trạng thái từ bộ lọc
-        $status = $request->input('status');
-        
-        // 1. TÍNH TOÁN CÁC CHỈ SỐ THỐNG KÊ TỔNG QUAN
-        $totalTransactions = Transaction::count();
-        $successCount = Transaction::where('status', 'success')->count();
-        $pendingCount = Transaction::where('status', 'pending')->count();
-        
-        // 2. LẤY DỮ LIỆU GIAO DỊCH CHÍNH
-        $transactionsQuery = Transaction::query()
-            ->with(['user', 'product']); // Load quan hệ user và product để tránh N+1
-            
-        // Áp dụng bộ lọc trạng thái
-        if ($status) {
-            $transactionsQuery->where('status', $status);
-        }
-        
-        // Phân trang
-        $transactions = $transactionsQuery
-            ->orderBy('created_at', 'desc')
-            ->paginate(10) // Ví dụ: 10 giao dịch mỗi trang
-            ->withQueryString();
-            
-        // Trả về view, truyền tất cả dữ liệu thực tế
-        return view('admin.transactions', compact(
-            'transactions', 
-            'status', 
-            'totalTransactions', 
-            'successCount', 
-            'pendingCount'
-        ));
-    }
-
-
     /**
      * Trả về thông tin chi tiết người dùng (dùng cho xem trước qua AJAX).
      *
