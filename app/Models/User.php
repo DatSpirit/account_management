@@ -2,20 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes; // Thêm nếu dùng soft delete
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Các thuộc tính được phép gán.
      */
     protected $fillable = [
         'name',
@@ -23,14 +20,17 @@ class User extends Authenticatable
         'password',
         'notes',
         'is_admin',
-        'last_login_at', 
+        'last_login_at',
         'login_count',
+
+        // Các trường liên quan đến quản lý thời hạn tài khoản
+        'expires_at',
+        'account_status',
+        'account_notes',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Các trường cần ẩn khi serialize.
      */
     protected $hidden = [
         'password',
@@ -38,9 +38,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Các trường cần cast kiểu dữ liệu.
      */
     protected function casts(): array
     {
@@ -49,13 +47,25 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'last_login_at' => 'datetime',
+
+            // Cast quan trọng cho hệ thống expiration
+            'expires_at' => 'datetime',
         ];
     }
+
     /**
-     * Hàm tiện ích kiểm tra có phải admin không.
+     * Kiểm tra tài khoản có phải admin không.
      */
     public function isAdmin(): bool
     {
         return $this->is_admin === true;
+    }
+
+    /**
+     * Quan hệ với bảng Transaction.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
     }
 }

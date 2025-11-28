@@ -17,9 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Http\Middleware\VerifyCsrfToken::class,
     ]);
 
+    $middleware->appendToGroup('web', [
+        \App\Http\Middleware\CheckAccountExpiration::class,
+    ]);
+
      // Đăng ký alias cho middleware tuỳ chỉnh
     $middleware->alias([
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'check.expiration' => \App\Http\Middleware\CheckAccountExpiration::class, // Thêm alias cho middleware kiểm tra expiration
     ]);
 
     // Middleware mặc định của API
