@@ -26,7 +26,7 @@ class AdminDashboardController extends Controller
     {
         // Lấy filter period (mặc định 30 ngày)
         $period = $request->get('period', 30);
-        
+
         // ===== THỐNG KÊ TỔNG QUAN =====
         $totalUsers = User::count();
         $recentUsers = User::latest()->take(10)->get();
@@ -34,15 +34,15 @@ class AdminDashboardController extends Controller
         // ===== TÍNH TOÁN TĂNG TRƯỞNG THEO THÁNG =====
         $currentMonth = now()->month;
         $currentYear = now()->year;
-        
+
         $usersThisMonth = User::whereMonth('created_at', $currentMonth)
-                              ->whereYear('created_at', $currentYear)
-                              ->count();
+            ->whereYear('created_at', $currentYear)
+            ->count();
 
         $lastMonth = now()->subMonth();
         $usersLastMonth = User::whereMonth('created_at', $lastMonth->month)
-                              ->whereYear('created_at', $lastMonth->year)
-                              ->count();
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
 
         if ($usersLastMonth > 0) {
             $growthPercentage = (($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100;
@@ -56,8 +56,8 @@ class AdminDashboardController extends Controller
         $growthData = [];
         for ($month = 1; $month <= 12; $month++) {
             $growthData[] = User::whereMonth('created_at', $month)
-                               ->whereYear('created_at', $currentYear)
-                               ->count();
+                ->whereYear('created_at', $currentYear)
+                ->count();
         }
 
         $totalGrowthThisYear = array_sum($growthData);
@@ -76,13 +76,15 @@ class AdminDashboardController extends Controller
         $userDistribution = [
             'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
             'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
-            'expired' => User::where('account_status', 'expired')
-                            ->orWhere(function($q) {
-                                $q->where('account_status', 'active')
-                                  ->whereNotNull('expires_at')
-                                  ->where('expires_at', '<', now());
-                            })->count(),
-            'deleted' => User::onlyTrashed()->count() ?? 0, 
+            'expired' => User::where(function ($q) {
+                $q->where('account_status', 'expired')
+                    ->orWhere(function ($q2) {
+                        $q2->where('account_status', 'active')
+                            ->whereNotNull('expires_at')
+                            ->where('expires_at', '<', now());
+                    });
+            })->count(),
+            'deleted' => User::onlyTrashed()->count() ?? 0,
         ];
 
         // ===== BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG =====
@@ -91,8 +93,8 @@ class AdminDashboardController extends Controller
             'active' => User::whereBetween('last_login_at', [now()->subDays(7), now()->subDays(1)])->count(), // 1-7 ngày
             'inactive' => User::whereBetween('last_login_at', [now()->subDays(30), now()->subDays(7)])->count(), // 7-30 ngày
             'dormant' => User::where('last_login_at', '<', now()->subDays(30))
-                           ->orWhereNull('last_login_at')
-                           ->count(), // Trên 30 ngày hoặc chưa login
+                ->orWhereNull('last_login_at')
+                ->count(), // Trên 30 ngày hoặc chưa login
         ];
 
         // ===== TOP 10 NGƯỜI MUA HÀNG NHIỀU NHẤT =====
@@ -103,13 +105,13 @@ class AdminDashboardController extends Controller
             ->limit(10)
             ->with('user')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'user' => $item->user,
                     'purchase_count' => $item->purchase_count,
                     'total_spent' => Transaction::where('user_id', $item->user_id)
-                                               ->where('status', 'success')
-                                               ->sum('amount')
+                        ->where('status', 'success')
+                        ->sum('amount')
                 ];
             });
 
@@ -121,13 +123,13 @@ class AdminDashboardController extends Controller
             ->limit(10)
             ->with('user')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'user' => $item->user,
                     'total_spent' => $item->total_spent,
                     'purchase_count' => Transaction::where('user_id', $item->user_id)
-                                                  ->where('status', 'success')
-                                                  ->count()
+                        ->where('status', 'success')
+                        ->count()
                 ];
             });
 
@@ -140,7 +142,7 @@ class AdminDashboardController extends Controller
             ->limit(10)
             ->with('product')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'product' => $item->product,
                     'sales_count' => $item->sales_count,
@@ -156,7 +158,7 @@ class AdminDashboardController extends Controller
             ->orderBy('expires_at', 'asc')
             ->limit(10)
             ->get()
-            ->map(function($user) {
+            ->map(function ($user) {
                 return [
                     'user' => $user,
                     'days_remaining' => $this->expirationService->getDaysRemaining($user),
@@ -172,16 +174,16 @@ class AdminDashboardController extends Controller
             'failed' => Transaction::where('status', 'failed')->count(),
             'total_revenue' => Transaction::where('status', 'success')->sum('amount'),
             'today_revenue' => Transaction::where('status', 'success')
-                                         ->whereDate('created_at', today())
-                                         ->sum('amount'),
+                ->whereDate('created_at', today())
+                ->sum('amount'),
         ];
 
         // ===== BIỂU ĐỒ DOANH THU 7 NGÀY =====
         $revenueChart = Transaction::select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(CASE WHEN status = "success" THEN amount ELSE 0 END) as revenue'),
-                DB::raw('COUNT(CASE WHEN status = "success" THEN 1 END) as orders')
-            )
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(CASE WHEN status = "success" THEN amount ELSE 0 END) as revenue'),
+            DB::raw('COUNT(CASE WHEN status = "success" THEN 1 END) as orders')
+        )
             ->where('created_at', '>=', now()->subDays(7))
             ->groupBy('date')
             ->orderBy('date', 'asc')
@@ -199,42 +201,22 @@ class AdminDashboardController extends Controller
             'yearlyGrowthPercentage',
             'isYearlyGrowth',
             'period',
-            
+
             // Biểu đồ tròn
             'userDistribution',
             'activityStatus',
-            
+
             // Top lists
             'topBuyers',
             'topSpenders',
             'topProducts',
-            
+
             // Người dùng sắp hết hạn
             'expiringUsers',
-            
+
             // Thống kê giao dịch
             'transactionStats',
             'revenueChart'
         ));
-    }
-
-    /**
-     * Gia hạn nhanh từ dashboard
-     */
-    public function quickExtend(Request $request, $userId)
-    {
-        $request->validate([
-            'days' => 'required|integer|min:1|max:365'
-        ]);
-
-        $user = User::findOrFail($userId);
-        $this->expirationService->extendAccount($user, $request->days, 'Quick extend from dashboard');
-
-        return response()->json([
-            'success' => true,
-            'message' => "Đã gia hạn {$request->days} ngày cho {$user->name}",
-            'expires_at' => $user->expires_at,
-            'days_remaining' => $this->expirationService->getDaysRemaining($user)
-        ]);
     }
 }
