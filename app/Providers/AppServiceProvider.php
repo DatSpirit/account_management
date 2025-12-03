@@ -30,8 +30,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         // Luôn dùng HTTPS khi chạy qua ngrok hoặc production
-        if ($this->app->environment('local', 'production')) {
+        // Luôn dùng HTTPS khi chạy qua ngrok hoặc production
+        // if ($this->app->environment('local', 'production')) {
+        //     URL::forceScheme('https');
+        // }
+
+        // Lấy môi trường hiện tại
+        $environment = $this->app->environment();
+
+        if ($environment ==='production') { // Luôn dùng HTTPS trong production
+            URL::forceScheme('https');
+        }
+        elseif ($environment === 'local' && str_starts_with(env('APP_URL', 'http://localhost'), 'https://')) { // Nếu chạy local với APP_URL là HTTPS
             URL::forceScheme('https');
         }
 
