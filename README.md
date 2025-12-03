@@ -1,116 +1,183 @@
-# Quản Lý Tài Khoản (Account Management System)
+### Quản Lý Tài Khoản (Account Management System)
 
-Đây là hệ thống quản lý người dùng được xây dựng bằng Laravel và sử dụng cơ sở dữ liệu MySQL/MariaDB.
+Đây là hệ thống quản lý người dùng được xây dựng bằng **Laravel** và sử dụng cơ sở dữ liệu **MySQL/MariaDB**.
 
 Dưới đây là các bước cần thiết để thiết lập và chạy dự án trên máy cục bộ của bạn.
 
-1. Yêu Cầu Hệ Thống
+--- 
+
+## 1. Yêu Cầu Hệ Thống
 
 Để chạy ứng dụng này, bạn cần cài đặt các công cụ sau:
 
-- Web Server & Database: XAMPP (bao gồm Apache và MySQL/MariaDB) hoặc môi trường tương đương (WAMP, MAMP, Docker, v.v.).
+- **Web Server & Database**: XAMPP (bao gồm Apache và MySQL/MariaDB) hoặc môi trường tương đương (WAMP, MAMP, Docker, v.v.).
 
-- PHP: Phiên bản PHP 8.x (Tùy thuộc vào phiên bản Laravel bạn đang dùng).
+- **PHP**: Phiên bản PHP 8.x (Tùy thuộc vào phiên bản Laravel bạn đang dùng).
 
-- Composer: Công cụ quản lý thư viện cho PHP.
+- **Composer**: Trình quản lý thư viện PHP.
 
-- Git: Hệ thống kiểm soát phiên bản (để clone dự án).
+- **Git**: Dùng để clone mã nguồn.
 
-2. Thiết Lập Môi Trường Cục Bộ
+---
 
-2.1. Clone Dự Án
+
+## 2. Thiết Lập Môi Trường Cục Bộ
+
+# 2.1. Clone Dự Án
 
 - Mở Git Bash hoặc Command Prompt và thực hiện lệnh sau để tải mã nguồn về:
 
-
+```bash
 git clone [https://github.com/DatSpirit/account_management.git](https://github.com/DatSpirit/account_management.git)
-cd account_management
+cd (tên dự án của bạn)
+```
+---
 
-2.2. Khởi động Web Server và Database
+# 2.2. Khởi động Web Server và Database
 
-- Mở XAMPP Control Panel.
+1. Mở **XAMPP Control Panel**
+2. Nhấn **Start Apache**
+3. Nhấn **Start MySQL**
 
-- Khởi động module Apache (Web Server).
+---
 
-- Khởi động module MySQL (Database Server).
+# 2.3. Cài đặt các Thư viện PHP
+Trong thư mục dự án bạn tải về, chạy lệnh Composer để tải các dependency cần thiết:
 
-2.3. Cài đặt các Thư viện PHP
-Trong thư mục dự án (vd: D:\xampp\htdocs\account_management), chạy lệnh Composer để tải các dependency cần thiết:
-
+```bash
 composer install
+```
 
-2.4. Tạo Tệp Cấu Hình Môi Trường (.env)
+---
+
+# 2.4. Tạo Tệp Cấu Hình Môi Trường (.env)
 
 - Tạo một bản sao của tệp mẫu và đổi tên:
 
+## Windows
+```bash
 copy .env.example .env
+```
 
-Hoặc: cp .env.example .env (trên môi trường Unix/Linux/Git Bash)
+Hoặc: 
+
+## Linux/Mac/Git Bash
+```bash
+cp .env.example .env
+```
 
 - Sau đó, tạo khóa ứng dụng (Application Key):
 
+```bash
 php artisan key:generate
+```
 
-3. Cấu Hình Cơ Sở Dữ Liệu (Database)
-3.1. Cấu hình Kết nối trong .env
+---
 
-Mở tệp .env và cập nhật các thông số kết nối cơ sở dữ liệu:
+## 3. Cấu Hình Cơ Sở Dữ Liệu (Database)
 
+# 3.1. Cấu hình Kết nối trong `.env`
+
+Mở tệp .env và cập nhật các thông số kết nối cơ sở dữ liệu:  
+
+```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 
-- Đổi thành tên DB bạn vừa tạo
+DB_DATABASE=your_database_name
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-DB_DATABASE=account_management_db 
+> 🔹 Nếu dùng XAMPP mặc định → **username: root**, **password để trống**
 
-- Thường là root nếu dùng XAMPP mặc định
+---
 
-DB_USERNAME=root      
-- Để trống nếu dùng XAMPP mặc định (hoặc điền mật khẩu của bạn)
-       
-DB_PASSWORD=                    
-3.2. Chạy Migration và Seeder
+# 3.2. Chạy Migration và Seeder
 
-Chạy các lệnh sau để tạo bảng trong cơ sở dữ liệu và điền dữ liệu mẫu (nếu có Seeder):
+Nếu muốn dùng tài khoản Admin mẫu → mở:
 
+```
+database/seeders/UserSeeder.php
+```
+
+→ Bỏ comment tài khoản Admin.
+
+Chạy migration + seeder:
+
+```bash
 php artisan migrate --seed
+```
 
-3.3. (Tùy chọn) Tạo Storage Link
-Nếu ứng dụng có sử dụng lưu trữ file, bạn cần tạo liên kết tượng trưng (symlink):
+Sẽ hiện:
 
+```
+Would you like to create it? (yes/no) [yes]
+```
+
+Nhập:
+
+```
+yes
+```
+
+---
+
+- Nếu bạn chạy php artisan migrate --seed thành công.
+- Bạn có thể sử dụng thông tin đăng nhập (Admin) mặc định để kiểm tra khi set-up xong.
+
+# 3.3. (Tùy chọn) Tạo Storage Link
+- Để ứng dụng có sử dụng lưu trữ file, bạn cần tạo liên kết tượng trưng (symlink):
+
+```bash
 php artisan storage:link
+```
 
-3.4 Cài đặt các gói phụ thuộc frontend
+---
+
+# 3.4 Cài đặt các gói phụ thuộc frontend
 - Dùng lệnh:
-
+```bash
 npm install
-
-Lệnh này sẽ tải xuống tất cả các gói được liệt kê trong file package.json
-- Chạy lệnh build Vite:
-
 npm run build
+```
 
-4. Chạy Ứng Dụng
+---
+
+## 4. Chạy Ứng Dụng
 Sau khi hoàn tất các bước trên, bạn có thể chạy ứng dụng theo hai cách:
 
-Cách 1: Sử dụng Server Laravel tích hợp (Khuyến nghị)
+# Sử dụng Server Laravel tích hợp 
 
+```bash
 php artisan serve
+```
 
-Ứng dụng sẽ chạy tại địa chỉ: http://127.0.0.1:8000
+Truy cập:
 
-Cách 2: Sử dụng Web Server Apache của XAMPP
+```
+http://127.0.0.1:8000
+```
 
-Truy cập vào địa chỉ: http://localhost/account_management/public
+---
 
-5. Đăng Nhập (Testing)
-Nếu bạn đã chạy php artisan migrate --seed thành công, bạn có thể sử dụng thông tin đăng nhập mặc định để kiểm tra.
+## 5. Lưu Ý
+Nên kiểm tra lại tạo tài khoản Admin tránh bị trùng sẽ báo lỗi.
 
-Tài khoản Admin mẫu: 
+Xóa cache nếu lỗi cấu hình:
 
-Email: admin@test.com
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
 
-Mật khẩu: password 
+---
 
-Chúc bạn thành công! Nếu gặp bất kỳ lỗi nào, vui lòng kiểm tra lại cấu hình .env và đảm bảo các module Apache và MySQL đang chạy trong XAMPP.
+# Chúc bạn thành công! Nếu gặp bất kỳ lỗi nào, vui lòng kiểm tra lại: 
+- File `.env`  
+- Apache/MySQL đã chạy chưa  
+- Phiên bản PHP  
+- Đã migrate database chưa  
+
+
