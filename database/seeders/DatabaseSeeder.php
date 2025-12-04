@@ -15,17 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-    //    User::factory()->create([
-    //     'name' => 'Test User',
-    //     'email' => 'test' . uniqid() . '@example.com',
-    //     ]);
+        //    User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test' . uniqid() . '@example.com',
+        //     ]);
 
-        
-    // Tạo thêm user ngẫu nhiên
-    $this->call(UserSeeder::class);
-    
-
-    // Tạo thêm Product ngẫu nhiên
-    $this->call(ProductSeeder::class);
+        $this->call([
+            UserSeeder::class,// Tạo thêm user ngẫu nhiên
+            ProductSeeder::class, // Tạo thêm Product ngẫu nhiên
+            TransactionSeeder::class, // Tạo thêm Transaction ngẫu nhiên
+        ]);
     }
 }
+
