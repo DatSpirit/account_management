@@ -72,30 +72,74 @@ class AdminDashboardController extends Controller
         $yearlyGrowthPercentage = round($yearlyGrowthPercentage, 1);
         $isYearlyGrowth = $yearlyGrowthPercentage >= 0;
 
-        // ===== BIỂU ĐỒ TRÒN 1: PHÂN LOẠI NGƯỜI DÙNG =====
-        $userDistribution = [
-            'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
-            'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
-            'expired' => User::where(function ($q) {
-                $q->where('account_status', 'expired')
-                    ->orWhere(function ($q2) {
-                        $q2->where('account_status', 'active')
-                            ->whereNotNull('expires_at')
-                            ->where('expires_at', '<', now());
-                    });
-            })->count(),
-            'deleted' => User::onlyTrashed()->count() ?? 0,
-        ];
+        // // ===== BIỂU ĐỒ TRÒN 1: PHÂN LOẠI NGƯỜI DÙNG =====
+        // $userDistribution = [
+        //     'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
+        //     'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
+        //     'expired' => User::where(function ($q) {
+        //         $q->where('account_status', 'expired')
+        //             ->orWhere(function ($q2) {
+        //                 $q2->where('account_status', 'active')
+        //                     ->whereNotNull('expires_at')
+        //                     ->where('expires_at', '<', now());
+        //             });
+        //     })->count(),
+        //     'deleted' => User::onlyTrashed()->count() ?? 0,
+        // ];
 
-        // ===== BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG =====
-        $activityStatus = [
-            'very_active' => User::where('last_login_at', '>=', now()->subDays(1))->count(), // Hoạt động hôm nay
-            'active' => User::whereBetween('last_login_at', [now()->subDays(7), now()->subDays(1)])->count(), // 1-7 ngày
-            'inactive' => User::whereBetween('last_login_at', [now()->subDays(30), now()->subDays(7)])->count(), // 7-30 ngày
-            'dormant' => User::where('last_login_at', '<', now()->subDays(30))
-                ->orWhereNull('last_login_at')
-                ->count(), // Trên 30 ngày hoặc chưa login
-        ];
+        // // ===== BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG =====
+        // $activityStatus = [
+        //     'very_active' => User::where('last_login_at', '>=', now()->subDays(1))->count(), // Hoạt động hôm nay
+        //     'active' => User::whereBetween('last_login_at', [now()->subDays(7), now()->subDays(1)])->count(), // 1-7 ngày
+        //     'inactive' => User::whereBetween('last_login_at', [now()->subDays(30), now()->subDays(7)])->count(), // 7-30 ngày
+        //     'dormant' => User::where('last_login_at', '<', now()->subDays(30))
+        //         ->orWhereNull('last_login_at')
+        //         ->count(), // Trên 30 ngày hoặc chưa login
+        // ];
+
+
+        // ===== BIỂU ĐỒ TRÒN 1: PHÂN LOẠI NGƯỜI DÙNG  =====
+    $userDistribution = [
+        'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
+        'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
+        'expired' => User::where(function ($q) {
+            $q->where('account_status', 'expired')
+                ->orWhere(function ($q2) {
+                    $q2->where('account_status', 'active')
+                        ->whereNotNull('expires_at')
+                        ->where('expires_at', '<', now());
+                });
+        })->count(),
+        'deleted' => User::onlyTrashed()->count() ?? 0,
+    ];
+
+    // =====  BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG THEO GIAO DỊCH (30 NGÀY) =====
+    
+    // 1. Lấy danh sách số lượng giao dịch thành công của từng user trong 30 ngày qua
+    $transactionCounts = Transaction::select('user_id', DB::raw('count(*) as total'))
+        ->where('status', 'success')
+        ->where('created_at', '>=', now()->subDays(365)) // Trong vòng 1 năm
+        ->groupBy('user_id')
+        ->pluck('total');
+
+    // 2. Phân loại dựa trên số lượng
+    // Logic: > 20: Rất hđ, 5-20: Hoạt động, 1-5: Ít, 0: Không hđ
+    $veryActiveCount = $transactionCounts->filter(fn($count) => $count > 20)->count();
+    $activeCount = $transactionCounts->filter(fn($count) => $count >= 5 && $count <= 20)->count();
+    $inactiveCount = $transactionCounts->filter(fn($count) => $count >= 1 && $count < 5)->count();
+    
+    // Những người không có giao dịch nào = Tổng user hiện tại - Tổng user có giao dịch
+    // (Lưu ý: dùng User::count() cho user chưa xóa mềm)
+    $totalActiveUsersInDb = User::count(); 
+    $usersWithTransactions = $transactionCounts->count();
+    $dormantCount = max(0, $totalActiveUsersInDb - $usersWithTransactions);
+
+    $activityStatus = [
+        'very_active' => $veryActiveCount,
+        'active'      => $activeCount,
+        'inactive'    => $inactiveCount,
+        'dormant'     => $dormantCount,
+    ];
 
         // ===== TOP 10 NGƯỜI MUA HÀNG NHIỀU NHẤT =====
         $topBuyers = Transaction::select('user_id', DB::raw('COUNT(*) as purchase_count'))
