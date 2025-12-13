@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory; 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
+    use HasFactory; 
+
     protected $fillable = [
         // Basic
         'user_id',
@@ -21,9 +24,9 @@ class Transaction extends Model
         'processed_at',
         'webhook_signature',
         'webhook_payload',
+        'raw_payload',
         
         // Payment details
-        'raw_payload',
         'payment_reference',
         'payment_link_id',
         'account_number',
@@ -43,9 +46,13 @@ class Transaction extends Model
         'processed_at' => 'datetime',
         'transaction_datetime' => 'datetime',
         'amount' => 'decimal:2',
-        'response_data' => 'array',
-        'raw_payload' => 'string',
+        'response_data' => 'array', // Tự động chuyển JSON DB -> Array PHP
+         'raw_payload' => 'string', 
     ];
+
+    // ==========================================
+    // RELATIONS
+    // ==========================================
 
     public function user(): BelongsTo
     {
@@ -57,31 +64,44 @@ class Transaction extends Model
         return $this->belongsTo(Product::class);
     }
 
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+
     /**
      * Check if webhook is duplicate
      */
     public function isDuplicateWebhook(string $signature): bool
     {
+        // Kiểm tra chữ ký trùng VÀ trạng thái đã xử lý = true
         return $this->webhook_signature === $signature && $this->is_processed;
     }
 
     /**
      * Mark transaction as processed
+     * Cập nhật trạng thái xử lý và lưu log
      */
     public function markAsProcessed(string $signature, array $payload, string $rawPayload = null): void
     {
-        $this->update([
+        $updateData = [
             'is_processed' => true,
             'processed_at' => now(),
             'webhook_signature' => $signature,
             'webhook_payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-            'raw_payload' => is_string($rawPayload) ? $rawPayload : json_encode($rawPayload, JSON_UNESCAPED_UNICODE),
-        ]);
+        ];
+
+        // Chỉ cập nhật raw_payload nếu có dữ liệu truyền vào
+        if ($rawPayload) {
+            $updateData['raw_payload'] = $rawPayload;
+        }
+
+        $this->update($updateData);
     }
 
-    /**
-     * Scopes
-     */
+    // ==========================================
+    // SCOPES (Query nhanh)
+    // ==========================================
+
     public function scopeProcessed($query)
     {
         return $query->where('is_processed', true);
