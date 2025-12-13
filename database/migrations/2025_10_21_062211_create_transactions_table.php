@@ -52,6 +52,7 @@ return new class extends Migration
             // Lưu thông tin webhook để verify
             $table->string('webhook_signature', 255)->nullable();
             $table->text('webhook_payload')->nullable();
+            $table->longText('raw_payload')->nullable()->comment('Raw webhook payload');
 
             // ==========================================
             // PAYMENT DETAILS FROM PAYOS

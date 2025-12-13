@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cache', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->mediumText('value');
-            $table->integer('expiration');
+            $table->string('key')->primary();// Khóa lưu trữ
+            $table->mediumText('value');// Giá trị lưu trữ
+            $table->integer('expiration');// Thời gian hết hạn 
         });
 
         Schema::create('cache_locks', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->string('owner');
-            $table->integer('expiration');
+            $table->string('key')->primary();// Khóa khóa
+            $table->string('owner');// Chủ sở hữu khóa
+            $table->integer('expiration');// Thời gian hết hạn khóa
         });
     }
 
