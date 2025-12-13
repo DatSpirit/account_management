@@ -8,10 +8,11 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use App\Models\Transaction;
+
 class AdminController extends Controller
 {
     /**
-     * Hiển thị trang quản lý người dùng (Dashboard Admin).
+     * Hiển thị trang quản lý người dùng ( Admin).
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
@@ -19,14 +20,26 @@ class AdminController extends Controller
     public function index(Request $request): View
     {
         $search = $request->input('search');
-        $filter = $request->input('filter', 'name');
+        $filter = $request->input('filter', 'all'); // Mặc định lọc tất cả "all"
 
-        // Query builder
+        // Xác định cột lọc
         $query = User::query();
 
         if ($search) {
-            $query->where($filter, 'LIKE', "%{$search}%")
-                ->orderByRaw("
+            if ($filter === 'all') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%")
+                        ->orWhere('id', 'LIKE', "%{$search}%")
+                        ->orWhere('phone_number', 'LIKE', "%{$search}%")
+                        ->orWhere('notes', 'LIKE', "%{$search}%");
+                });
+            } else {
+                // Giới hạn các cột được phép lọc
+                $allowedFilters = ['name', 'email', 'phone_number'];
+                if (in_array($filter, $allowedFilters)) {
+                    $query->where($filter, 'LIKE', "%{$search}%")
+                        ->orderByRaw("
                     CASE 
                         WHEN LOWER($filter) LIKE ? THEN 1
                         WHEN LOWER($filter) LIKE ? THEN 2
@@ -34,10 +47,12 @@ class AdminController extends Controller
                         ELSE 4 
                     END, $filter ASC
                 ", [
-                    strtolower("{$search}%"),
-                    strtolower("% {$search}%"),
-                    strtolower("%{$search}%")
-                ]);
+                            strtolower("{$search}%"),
+                            strtolower("% {$search}%"),
+                            strtolower("%{$search}%")
+                        ]);
+                }
+            }
         }
 
         // Lấy danh sách người dùng, phân trang 20 user mỗi trang
@@ -70,35 +85,43 @@ class AdminController extends Controller
     public function suggestions(Request $request): JsonResponse
     {
         $query = trim($request->input('q'));
-        $filter = $request->input('filter', 'name');
+        $filter = $request->input('filter', 'all');
 
         // Đảm bảo filter hợp lệ
-        if (!in_array($filter, ['id', 'name', 'email'])) {
-            $filter = 'name';
+        if (!in_array($filter, ['all', 'name', 'email', 'phone_number'])) {
+            $filter = 'all';
         }
 
         if (strlen($query) < 1) {
             return response()->json([]);
         }
 
-        $users = User::select('id', 'name', 'email')
-            ->where($filter, 'like', "%{$query}%")
-            ->orderByRaw("
-                CASE 
-                    WHEN LOWER({$filter}) LIKE ? THEN 1 
-                    WHEN LOWER({$filter}) LIKE ? THEN 2 
-                    WHEN LOWER({$filter}) LIKE ? THEN 3 
-                    ELSE 4 
-                END, {$filter} ASC
-            ", [
-                strtolower("{$query}%"),
-                strtolower("% {$query}%"),
-                strtolower("%{$query}%")
-            ])
-            ->limit(30)
-            ->get();
+        $dbQuery = User::select('id', 'name', 'email', 'phone_number');
 
-        return response()->json($users);
+        if ($filter === 'all') {
+            $dbQuery->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                    ->orWhere('email', 'LIKE', "%{$query}%")
+                    ->orWhere('phone_number', 'LIKE', "%{$query}%");
+            })->limit(10);
+        } else {
+            $dbQuery->where($filter, 'like', "%{$query}%")
+                ->orderByRaw("
+                    CASE 
+                        WHEN LOWER({$filter}) LIKE ? THEN 1 
+                        WHEN LOWER({$filter}) LIKE ? THEN 2 
+                        WHEN LOWER({$filter}) LIKE ? THEN 3 
+                        ELSE 4 
+                    END, {$filter} ASC
+                ", [
+                    strtolower("{$query}%"),
+                    strtolower("% {$query}%"),
+                    strtolower("%{$query}%")
+                ])
+                ->limit(10);
+        }
+
+        return response()->json($dbQuery->get());
     }
 
     /**
@@ -125,6 +148,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone_number' => 'required|string|max:20',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -145,7 +169,7 @@ class AdminController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Không cho phép xóa chính Admin hiện tại
+        // Không cho phép xóa chính Admin hiện tại và các admin khác
         if (auth()->id() === $user->id) {
             return redirect()
                 ->route('admin.users')
