@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,45 +14,174 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::id();
-        
-        // Get time range (default: 30 days)
-        $days = $request->input('days', 30);
-        $startDate = now()->subDays($days);
 
-        // Calculate analytics
+        // ============================
+        // 1 FILTERS
+        // ============================
+        $days      = $request->input('days', 30);
+        $status    = $request->input('status');    // success / pending / failed
+        $method    = $request->input('method');    // COINKEY / VND
+        $productId = $request->input('product_id');
+
+        $startDate = now()->subDays($days);
+        $endDate   = now();
+
+        // ============================
+        // 2BASE QUERY
+        // ============================
+        $query = Transaction::where('transactions.user_id', $userId)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->with('product');
+
+        if ($status)    $query->where('transactions.status', $status);
+        if ($method)    $query->where('transactions.currency', $method);
+        if ($productId) $query->where('transactions.product_id', $productId);
+
+        $transactions = $query->orderBy('transactions.created_at', 'desc')->get();
+
+        // ============================
+        // 3) KPI SECTION
+        // ============================
         $analytics = [
-            'total_spent' => Transaction::where('user_id', $userId)
-                ->where('status', 'success')
-                ->where('created_at', '>=', $startDate)
-                ->sum('amount'),
-            
-            'total_orders' => Transaction::where('user_id', $userId)
-                ->where('created_at', '>=', $startDate)
-                ->count(),
-            
-            'avg_transaction' => Transaction::where('user_id', $userId)
-                ->where('status', 'success')
-                ->where('created_at', '>=', $startDate)
-                ->avg('amount') ?? 0,
-            
-            'success_rate' => $this->calculateSuccessRate($userId, $startDate),
+            'totalRevenue'   => $transactions->where('status', 'success')->sum('amount'),
+            'ordersTotal'    => $transactions->count(),
+            'ordersSuccess'  => $transactions->where('status', 'success')->count(),
+            'successRate'    => $this->successRate($transactions),
+            'avgOrder'       => $transactions->where('status', 'success')->avg('amount') ?? 0,
         ];
 
-        // Spending trend data (for chart)
-        $spendingTrend = Transaction::where('user_id', $userId)
+        // ============================
+        // 4) REVENUE TREND (CHART)
+        // ============================
+        $trend = $transactions
             ->where('status', 'success')
-            ->where('created_at', '>=', $startDate)
+            ->groupBy(fn($t) => $t->created_at->format('Y-m-d'))
+            ->map(fn($rows, $date) => [
+                'date'  => $date,
+                'total' => $rows->sum('amount')
+            ])
+            ->values();
+
+        // ============================
+        // 5 PAYMENT DISTRIBUTION
+        // ============================
+        $paymentMethods = [
+            'COINKEY' => $transactions->where('currency', 'COINKEY')->count(),
+            'VND'     => $transactions->where('currency', 'VND')->count(),
+        ];
+
+        // ============================
+        // 6 HOURLY HEATMAP (0–23)
+        // ============================
+        $hourly = array_fill(0, 24, 0);
+
+        foreach ($transactions->where('status', 'success') as $t) {
+            $hour = (int) $t->created_at->format('H');
+            $hourly[$hour] += $t->amount;
+        }
+
+        // ============================
+        // 7 TOP PRODUCTS
+        // ============================
+        $topProducts = Transaction::where('transactions.user_id', $userId)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->where('transactions.status', 'success')
+            ->join('products', 'transactions.product_id', '=', 'products.id')
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(amount) as total')
+                'products.name AS product_name',
+                DB::raw('COUNT(transactions.id) AS orders'),
+                DB::raw('SUM(transactions.amount) AS total')
             )
-            ->groupBy('date')
-            ->orderBy('date')
+            ->groupBy('products.name')
+            ->orderByDesc('total')
+            ->limit(5)
             ->get();
 
-        return view('analytics.index', compact('analytics', 'spendingTrend'));
+        // ============================
+        // 8 TOP CUSTOMERS
+        // ============================
+        $topCustomers = Transaction::where('transactions.user_id', $userId)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->where('transactions.status', 'success')
+            ->join('users', 'transactions.user_id', '=', 'users.id')
+            ->select(
+                'users.name',
+                DB::raw('COUNT(transactions.id) as orders'),
+                DB::raw('SUM(transactions.amount) as total_spent')
+            )
+            ->groupBy('users.name')
+            ->orderByDesc('total_spent')
+            ->limit(5)
+            ->get();
+
+
+        // ============================
+        // 9 COHORT SUMMARY
+        // ============================
+        $newUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+
+        $newUsersRevenue = $transactions
+            ->where('status', 'success')
+            ->filter(function ($t) use ($startDate, $endDate) {
+                if (!$t->assigned_to_email) return false;
+
+                return User::where('email', $t->assigned_to_email)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->exists();
+            })
+            ->sum('amount');
+
+        $cohort = [
+            'newUsers'        => $newUsers,
+            'newUsersRevenue' => $newUsersRevenue,
+            'repeatRate'      => $this->repeatRate($transactions),
+        ];
+
+
+        // ============================
+        // PASS TO VIEW
+        // ============================
+        $products = Product::orderBy('name')->get();
+
+        return view('analytics.index', compact(
+            'analytics',
+            'trend',
+            'paymentMethods',
+            'hourly',
+            'topProducts',
+            'topCustomers',
+            'cohort',
+            'products',
+            'transactions',
+            'startDate',
+            'endDate',
+            'days',
+        ));
     }
-      // Export page
+
+    // ============================
+    // HELPERS
+    // ============================
+    private function successRate($rows)
+    {
+        if ($rows->count() == 0) return 0;
+        $success = $rows->where('status', 'success')->count();
+        return round(($success / $rows->count()) * 100, 1);
+    }
+
+    private function repeatRate($transactions)
+    {
+        $customers = $transactions
+            ->where('status', 'success')
+            ->groupBy('assigned_to_email');
+
+        if ($customers->count() == 0) return 0;
+
+        $repeat = $customers->filter(fn($g) => $g->count() > 1)->count();
+
+        return round(($repeat / $customers->count()) * 100, 1);
+    }
+    // Export page
     public function export()
     {
         return view('analytics.export');
@@ -63,7 +194,7 @@ class AnalyticsController extends Controller
         $userId = Auth::id();
 
         return Excel::download(
-            new AnalyticsExport($userId, $dateRange), 
+            new AnalyticsExport($userId, $dateRange),
             'analytics-' . now()->format('Y-m-d') . '.xlsx'
         );
     }
@@ -85,7 +216,7 @@ class AnalyticsController extends Controller
         ];
 
         $pdf = Pdf::loadView('analytics.pdf-template', $data);
-        
+
         return $pdf->download('analytics-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
@@ -102,18 +233,18 @@ class AnalyticsController extends Controller
             ->get();
 
         $filename = 'analytics-' . now()->format('Y-m-d') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $callback = function() use ($transactions) {
+        $callback = function () use ($transactions) {
             $file = fopen('php://output', 'w');
-            
+
             // Header
             fputcsv($file, ['Date', 'Order Code', 'Product', 'Amount', 'Status']);
-            
+
             // Data
             foreach ($transactions as $t) {
                 fputcsv($file, [
@@ -124,50 +255,10 @@ class AnalyticsController extends Controller
                     $t->status,
                 ]);
             }
-            
+
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
-    }
-
-    // Helper method
-    private function getAnalyticsData($userId, $startDate)
-    {
-        return [
-            'total_spent' => Transaction::where('user_id', $userId)
-                ->where('status', 'success')
-                ->where('created_at', '>=', $startDate)
-                ->sum('amount'),
-            
-            'total_orders' => Transaction::where('user_id', $userId)
-                ->where('created_at', '>=', $startDate)
-                ->count(),
-            
-            'avg_transaction' => Transaction::where('user_id', $userId)
-                ->where('status', 'success')
-                ->where('created_at', '>=', $startDate)
-                ->avg('amount') ?? 0,
-            
-            'success_rate' => $this->calculateSuccessRate($userId, $startDate),
-        ];
-    }
-
-    
-
-    private function calculateSuccessRate($userId, $startDate)
-    {
-        $total = Transaction::where('user_id', $userId)
-            ->where('created_at', '>=', $startDate)
-            ->count();
-        
-        if ($total == 0) return 0;
-        
-        $success = Transaction::where('user_id', $userId)
-            ->where('status', 'success')
-            ->where('created_at', '>=', $startDate)
-            ->count();
-        
-        return round(($success / $total) * 100, 1);
     }
 }
