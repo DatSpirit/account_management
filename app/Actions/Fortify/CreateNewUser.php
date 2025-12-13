@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-
+use App\Http\Controllers\AccountExpirationController;
+use Illuminate\Support\Facades\Log;
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
@@ -17,6 +18,14 @@ class CreateNewUser implements CreatesNewUsers
      *
      * @param  array<string, string>  $input
      */
+// THÊM HÀM CONSTRUCTOR ĐỂ TIÊM DEPENDENCY (Dependency Injection)
+    protected $expirationController;
+
+    public function __construct(AccountExpirationController $expirationController)
+    {
+        $this->expirationController = $expirationController;
+    } 
+
     public function create(array $input): User
     {
         Validator::make($input, [
@@ -35,6 +44,11 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+          
         ]);
+        // GỌI CONTROLLER ĐỂ ÁP DỤNG TRIAL
+        $this->expirationController->assignFreeTrial($user);
+
+        return $user;
     }
 }
