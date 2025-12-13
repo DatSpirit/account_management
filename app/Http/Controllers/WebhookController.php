@@ -7,6 +7,9 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Product;
+use App\Models\User;
+use App\Services\KeyManagementService;
 use Exception;
 
 class WebhookController extends Controller
@@ -31,7 +34,13 @@ class WebhookController extends Controller
             // Lấy toàn bộ payload ngay lập tức
             $payload = $request->all();
 
+            // Lấy Raw Content (để lưu log thô)
             $rawPayload = $request->getContent();
+
+            // Nếu rawPayload rỗng encode lại từ payload
+            if (empty($rawPayload)) {
+                $rawPayload = json_encode($payload);
+            }
 
 
             // Log dữ liệu để debug
@@ -40,7 +49,7 @@ class WebhookController extends Controller
 
             // cách xem dữ liệu: notepad storage/logs/laravel.log
 
-            
+
             // ===================================
             // 1️⃣ VALIDATE PAYLOAD STRUCTURE & EXTRACT ORDER CODE
             // ===================================
@@ -51,12 +60,12 @@ class WebhookController extends Controller
 
             // Lấy orderCode ngay sau khi xác thực
             $orderCode = $payload['data']['orderCode'] ?? null;
-            
+
             if (!$orderCode) {
                 Log::warning("ERROR 2[{$requestId}] Missing orderCode");
                 return response()->json(['error' => 0, 'message' => 'ok'], 200);
             }
-            
+
             // ===================================
             // 2️⃣ CACHE-BASED IMMEDIATE RATE LIMITING
             // Chặn ngay lập tức TẤT CẢ các webhook có cùng orderCode trong X giây.
@@ -70,8 +79,8 @@ class WebhookController extends Controller
                     'orderCode' => $orderCode,
                     'current_lock_holder' => Cache::get($cacheKey)
                 ]);
-                
-               
+
+
                 return response()->json([
                     'error' => 0,
                     'message' => 'cache_lock_blocked_early',
@@ -87,13 +96,13 @@ class WebhookController extends Controller
             $signature = $payload['signature'];
             $code = $payload['code'] ?? null;
             $desc = $payload['desc'] ?? null;
-            
+
             if (!$this->verifySignature($data, $signature)) {
                 Log::error("❌ [{$requestId}] INVALID SIGNATURE - Possible attack!", [
                     'ip' => $request->ip(),
                     'signature' => substr($signature, 0, 20) . '...'
                 ]);
-                
+
                 // Giải phóng lock Cache trước khi trả về lỗi.
                 Cache::forget($cacheKey);
                 return response()->json(['error' => 1, 'message' => 'Invalid signature'], 401);
@@ -108,7 +117,7 @@ class WebhookController extends Controller
             $paymentCode = $data['code'] ?? $code;
             $description = $data['description'] ?? '';
             $status = $data['status'] ?? null;
-            
+
             // Payment details
             $paymentReference = $data['reference'] ?? null;
             $accountNumber = $data['accountNumber'] ?? null;
@@ -118,7 +127,7 @@ class WebhookController extends Controller
             $counterAccountBankName = $data['counterAccountBankName'] ?? null;
             $paymentLinkId = $data['paymentLinkId'] ?? null;
             $transactionDateTime = $data['transactionDateTime'] ?? null;
-            
+
             Log::info("4. [{$requestId}] Payment details", [
                 'orderCode' => $orderCode,
                 'amount' => $amount,
@@ -130,7 +139,7 @@ class WebhookController extends Controller
             // 5️⃣ DATABASE TRANSACTION WITH LOCKING
             // ===================================
             DB::beginTransaction();
-            
+
             try {
                 // Tìm transaction với row lock
                 $transaction = Transaction::where('order_code', $orderCode)
@@ -144,7 +153,7 @@ class WebhookController extends Controller
                     Log::info("5. [{$requestId}] Creating new transaction", [
                         'orderCode' => $orderCode
                     ]);
-                    
+
                     $transaction = Transaction::create([
                         'user_id' => null,
                         'product_id' => null,
@@ -163,7 +172,7 @@ class WebhookController extends Controller
                         'transaction_datetime' => $transactionDateTime ? date('Y-m-d H:i:s', strtotime($transactionDateTime)) : null,
                         'currency' => $data['currency'] ?? 'VND',
                         'raw_payload' => $rawPayload,
-                        'response_data' => $data,  
+                        'response_data' => $data,
                     ]);
                 }
 
@@ -178,9 +187,9 @@ class WebhookController extends Controller
                         'processed_at' => $transaction->processed_at,
                         'signature_match' => true
                     ]);
-                    
+
                     DB::commit();
-                    
+
                     return response()->json([
                         'error' => 0,
                         'message' => 'duplicate_ignored',
@@ -224,6 +233,9 @@ class WebhookController extends Controller
                     'raw_payload' => $rawPayload,
                     'response_data' => $data, // Backup full data
                 ]);
+                if ($newStatus === 'success' && $oldStatus !== 'success') {
+                    $this->fulfillOrder($transaction);
+                }
 
                 // ===================================
                 // 🔟 MARK AS PROCESSED
@@ -256,16 +268,14 @@ class WebhookController extends Controller
                         'processing_time_ms' => $processingTime
                     ]
                 ], 200);
-
             } catch (Exception $e) {
                 DB::rollBack();
                 Cache::forget($cacheKey); // Giải phóng lock Cache
                 throw $e;
             }
-
         } catch (Exception $e) {
             $processingTime = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             Log::error("ERROR 5: [{$requestId}] Webhook processing error", [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -276,9 +286,9 @@ class WebhookController extends Controller
 
             // Nếu orderCode đã được trích xuất và có thể đã thiết lập lock, đảm bảo lock được giải phóng.
             if ($orderCode) {
-                 Cache::forget("webhook_processing:{$orderCode}");
+                Cache::forget("webhook_processing:{$orderCode}");
             }
-            
+
             // Luôn trả về 200 OK theo yêu cầu của cổng thanh toán.
             return response()->json(['error' => 0, 'message' => 'ok'], 200);
         }
@@ -291,7 +301,7 @@ class WebhookController extends Controller
     {
         // Ưu tiên status text
         if ($status) {
-            return match(strtoupper($status)) {
+            return match (strtoupper($status)) {
                 'PAID' => 'success',
                 'CANCELLED' => 'cancelled',
                 'PENDING' => 'pending',
@@ -300,7 +310,7 @@ class WebhookController extends Controller
         }
 
         // Fallback sang code
-        return match($code) {
+        return match ($code) {
             '00' => 'success',
             '01' => 'failed',
             '02' => 'pending',
@@ -336,7 +346,6 @@ class WebhookController extends Controller
 
             // So sánh an toàn
             return hash_equals($computedSignature, $receivedSignature);
-
         } catch (Exception $e) {
             Log::error('ERROR 6: Signature verification exception', [
                 'message' => $e->getMessage()
@@ -354,5 +363,77 @@ class WebhookController extends Controller
         // Loại bỏ ký tự không phải chữ, số, khoảng trắng, hoặc ký tự cơ bản (-,_,.,!,?)
         $description = preg_replace('/[^\p{L}\p{N}\s\-_.,!?]/u', '', $description);
         return substr($description, 0, 500);
+    }
+
+    /**
+     * ✅ Hàm thực hiện giao hàng dựa trên loại sản phẩm
+     */
+    private function fulfillOrder(Transaction $transaction)
+    {
+        try {
+            $user = $transaction->user;
+            $product = $transaction->product;
+
+            // Check metadata xem có phải mua custom key không
+            $meta = $transaction->response_data;
+            // Lưu ý: response_data trong DB đang cast là array (theo Model Transaction trang 15)
+
+            if (isset($meta['type']) && $meta['type'] === 'custom_key_purchase') {
+                $keyService = app(\App\Services\KeyManagementService::class);
+
+                $keyService->createCustomKey(
+                    user: $user,
+                    customKeyCode: $meta['key_code'],
+                    durationMinutes: $meta['duration_minutes'],
+                    baseProduct: null,
+                    assignedToEmail: $meta['assigned_email']
+                );
+
+                \Illuminate\Support\Facades\Log::info("Created Custom Key via Webhook: " . $meta['key_code']);
+                return;
+            }
+
+            // TH1: Nếu là gói nạp Coinkey -> Cộng tiền vào ví
+            if ($product->isCoinkeyPack()) {
+                $wallet = $user->getOrCreateWallet();
+
+                //  GỌI : deposit() với đủ tham số
+                $wallet->deposit(
+                    amount: $product->coinkey_amount,
+                    type: 'deposit',
+                    description: "Nạp {$product->coinkey_amount} Coinkey qua PayOS - Order #{$transaction->order_code}",
+                    referenceType: 'Transaction',
+                    referenceId: $transaction->id
+                );
+
+                Log::info("💰 Deposited {$product->coinkey_amount} Coinkey to user {$user->id}", [
+                    'transaction_id' => $transaction->id,
+                    'wallet_balance' => $wallet->fresh()->balance,
+                ]);
+            }
+            // TH2: Nếu là gói dịch vụ (Package) -> Tạo Key
+            elseif ($product->isServicePackage()) {
+
+                $keyService = app(KeyManagementService::class);
+                $key = $keyService->createKeyFromPackage($user, $product, $transaction);
+
+                Log::info("🔑 Created key for user {$user->id}", [
+                    'key_code' => $key->key_code,
+                    'key_id' => $key->id,
+                    'transaction_id' => $transaction->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("❌ Fulfillment Error for Order {$transaction->order_code}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'transaction_id' => $transaction->id,
+            ]);
+
+            // Cập nhật ghi chú lỗi vào transaction
+            $transaction->update([
+                'notes' => 'Fulfillment failed - requires manual processing: ' . $e->getMessage()
+            ]);
+        }
     }
 }

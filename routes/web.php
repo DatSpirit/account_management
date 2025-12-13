@@ -16,6 +16,13 @@ use App\Http\Controllers\MyTransactionController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\AccountExpirationController;
+
+
+
+use App\Http\Controllers\CoinkeyWalletController;
+use App\Http\Controllers\KeyManagementController;
+use App\Http\Controllers\Admin\AdminKeyManagementController;
+use App\Http\Controllers\DailyCheckinController;
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -41,11 +48,15 @@ Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
 // ===========================
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    //  XỬ LÝ MUA HÀNG TRUNG TÂM -  Purchase Processing
+    Route::post('/order/process', [OrderController::class, 'process'])
+        ->name('order.process');
+
     // Danh sách sản phẩm - Product List
     Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     // Thanh toán sản phẩm - Pay for Product
-    Route::get('/pay/{id}', [OrderController::class, 'pay'])->name('pay');
+    Route::get('/pay/{id}', [OrderController::class, 'payRoute'])->name('pay');
 });
 
 // ===========================
@@ -66,7 +77,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 // ===========================
 // 🔹 USER KHU VỰC NGƯỜI DÙNG 
 // ===========================
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.account'])->group(function () {
 
     // Dashboard của người dùng -- User Dashboard
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
@@ -137,7 +148,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // Quick extend từ dashboard -- Gia hạn nhanh từ dashboard
-        Route::post('/quick-extend/{userId}', [AdminDashboardController::class, 'quickExtend'])
+        Route::post('/quick-extend/{userId}', [AccountExpirationController::class, 'extendByDays'])
             ->name('admin.quick-extend');
 
         // Account Expiration Management-  Quản lý hết hạn tài khoản
@@ -182,7 +193,86 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.users.edit');
         Route::put('/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+
+// QUẢN LÝ KEY - ADMIN
+    Route::get('/keys', [AdminKeyManagementController::class, 'index'])->name('admin.keys.index');
+    Route::get('/keys/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('admin.keys.validation-stats');
+    Route::get('/keys/export', [AdminKeyManagementController::class, 'export'])->name('export');
+    
+    Route::get('/keys/{id}', [AdminKeyManagementController::class, 'show'])->name('admin.keys.show');
+    Route::post('/keys/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('admin.keys.suspend');
+    Route::post('/keys/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('admin.keys.activate');
+    Route::post('/keys/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('admin.keys.revoke');
+    Route::post('/keys/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('admin.keys.extend-admin');
+    Route::delete('/keys/{id}', [AdminKeyManagementController::class, 'destroy'])->name('admin.keys.destroy');
+    
+    Route::post('/keys/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('admin.keys.bulk-action');
     });
+
+
+    // ===========================
+// COINKEY WALLET - USER
+// ===========================
+Route::middleware(['auth', 'verified'])->prefix('wallet')->name('wallet.')->group(function () {
+    Route::get('/', [CoinkeyWalletController::class, 'index'])->name('index');
+    Route::get('/buy-package', [CoinkeyWalletController::class, 'buyPackage'])->name('buy-package');
+    Route::post('/purchase-package', [CoinkeyWalletController::class, 'purchasePackage'])->name('purchase-package');
+    Route::get('/transactions/export', [CoinkeyWalletController::class, 'exportTransactions'])->name('transactions.export');
+    
+    // AJAX endpoints
+    Route::get('/check-balance', [CoinkeyWalletController::class, 'checkBalance'])->name('check-balance');
+    Route::post('/calculate-price', [CoinkeyWalletController::class, 'calculatePrice'])->name('calculate-price');
+});
+
+// ===========================
+// DAILY CHECK-IN SYSTEM 
+// ===========================
+// Route::middleware(['auth', 'verified'])->prefix('checkin')->name('checkin.')->group(function () {
+//     Route::get('/', [DailyCheckinController::class, 'index'])->name('index');
+//     Route::post('/process', [DailyCheckinController::class, 'checkin'])->name('process');
+//     Route::get('/status', [DailyCheckinController::class, 'status'])->name('status');
+// });
+
+
+// ===========================
+// KEY MANAGEMENT - USER
+// ===========================
+Route::middleware(['auth', 'verified'])->prefix('keys')->name('keys.')->group(function () {
+    Route::get('/my-keys', [KeyManagementController::class, 'index'])->name('index');
+    Route::get('/create', [KeyManagementController::class, 'create'])->name('create');
+    Route::post('/buy-package', [KeyManagementController::class, 'buyPackage'])->name('buy-package');
+    Route::post('/create-custom', [KeyManagementController::class, 'createCustom'])->name('create-custom');
+    
+    Route::get('/my-keys/{id}', [KeyManagementController::class, 'show'])->name('keydetails');
+    Route::get('/{id}/extend', [KeyManagementController::class, 'extendForm'])->name('extend-form');
+    Route::post('/{id}/extend', [KeyManagementController::class, 'extend'])->name('extend');
+    Route::post('/{id}/suspend', [KeyManagementController::class, 'suspend'])->name('suspend');
+    Route::post('/{id}/activate', [KeyManagementController::class, 'activate'])->name('activate');
+    Route::post('/{id}/revoke', [KeyManagementController::class, 'revoke'])->name('revoke');
+    
+    Route::get('/{id}/validation-logs', [KeyManagementController::class, 'validationLogs'])->name('validation-logs');
+    
+    // AJAX
+    Route::post('/check-key-code', [KeyManagementController::class, 'checkKeyCode'])->name('check-key-code');
+});
+
+// // ===========================
+// // ADMIN - KEY MANAGEMENT
+// // ===========================
+// Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/keys')->name('admin.keys.')->group(function () {
+//     Route::get('/', [AdminKeyManagementController::class, 'index'])->name('index');
+//     Route::get('/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('validation-stats');
+//     Route::get('/export', [AdminKeyManagementController::class, 'export'])->name('export');
+    
+//     Route::get('/{id}', [AdminKeyManagementController::class, 'show'])->name('show');
+//     Route::post('/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('suspend');
+//     Route::post('/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('activate');
+//     Route::post('/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('revoke');
+//     Route::post('/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('extend-admin');
+//     Route::delete('/{id}', [AdminKeyManagementController::class, 'destroy'])->name('destroy');
+    
+//     Route::post('/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('bulk-action');
+// });
 
 // ===========================
 // 🔹 XÁC THỰC / ĐĂNG NHẬP
