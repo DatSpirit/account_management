@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User; 
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -19,21 +19,23 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Admin Tester',
             'email' => 'admin@test.com', // Email dùng để đăng nhập
+            'phone_number' => '0123456789',
             'password' => Hash::make('password'), // Mật khẩu là 'password'
             'is_admin' => true, // Đánh dấu là Admin
         ]);
 
-          // 1. TÀI KHOẢN ADMIN (Để kiểm thử)
+        // 1. TÀI KHOẢN ADMIN (Để kiểm thử)
         User::create([
             'name' => 'Thanh Dat',
             'email' => 'datpt@gmail.com', // Email dùng để đăng nhập
             'password' => Hash::make('12345678'), // Mật khẩu 
+            'phone_number' => '0844420444',
             'is_admin' => true, // Đánh dấu là Admin
         ]);
 
 
 
-         // Tạo user ngẫu nhiên : php artisan db:seed
-        User::factory()->count(100)->create();
+        // Tạo user ngẫu nhiên : php artisan db:seed
+        User::factory()->count(10)->create();
     }
 }

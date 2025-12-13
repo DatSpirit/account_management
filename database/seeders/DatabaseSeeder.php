@@ -13,18 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        //    User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test' . uniqid() . '@example.com',
-        //     ]);
-
         $this->call([
-            UserSeeder::class,// Tạo thêm user ngẫu nhiên
-            ProductSeeder::class, // Tạo thêm Product ngẫu nhiên
-            TransactionSeeder::class, // Tạo thêm Transaction ngẫu nhiên
-        ]);
+        //    UserSeeder::class,// Tạo thêm user ngẫu nhiên
+        //  ProductSeeder::class, // Tạo thêm Product ngẫu nhiên
+            //TransactionSeeder::class, // Tạo thêm Transaction ngẫu nhiên
+        //    VipPackageSeeder::class, // Tạo gói VIP cố định
+            OptimizeTransactionSeeder::class, 
+        ]);  //lệnh gọi seeder: php artisan db:seed
     }
 }
 
