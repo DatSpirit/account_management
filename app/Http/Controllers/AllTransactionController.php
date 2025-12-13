@@ -16,6 +16,8 @@ class AllTransactionController extends Controller
             abort(403, 'Access denied.');
         }
 
+        $type = $request->get('type', 'cash'); // Mặc định là cash
+
         // Lọc theo nhiều tiêu chí
         $status = $request->get('status');
         $search = $request->get('search');
@@ -24,55 +26,74 @@ class AllTransactionController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        $transactions = Transaction::query()
+        // ✅ BASE QUERY - Tách riêng theo type
+        $baseQuery = Transaction::query();
+
+        // ✅ FILTER THEO TYPE (Cash hoặc Coinkey)
+        if ($type === 'cash') {
+            $baseQuery->where(function ($q) {
+                $q->where('currency', 'VND')
+                    ->orWhereNull('currency');
+            });
+        } elseif ($type === 'coinkey') {
+            $baseQuery->where('currency', 'COINKEY');
+        }
+
+        // ✅ QUERY CHO DANH SÁCH (với filters)
+        $transactions = (clone $baseQuery)
+            ->with(['user', 'product'])
+
             // Lọc theo trạng thái
-            ->when($status && in_array($status, ['pending', 'success', 'failed', 'cancelled']), function($query) use ($status) {
+            ->when($status && in_array($status, ['pending', 'success', 'failed', 'cancelled']), function ($query) use ($status) {
                 $query->where('status', $status);
             })
+
             // Tìm kiếm theo order_code, description, user name
-            ->when($search, function($query) use ($search) {
-                $query->where(function($q) use ($search) {
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('order_code', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%")
-                      ->orWhereHas('user', function($userQuery) use ($search) {
-                          $userQuery->where('name', 'like', "%{$search}%")
-                                    ->orWhere('email', 'like', "%{$search}%");
-                      });
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
                 });
             })
+
             // Lọc theo ngày tạo
-            ->when($dateFrom, function($query) use ($dateFrom) {
+            ->when($dateFrom, function ($query) use ($dateFrom) {
                 $query->whereDate('created_at', '>=', $dateFrom);
             })
-            ->when($dateTo, function($query) use ($dateTo) {
+            ->when($dateTo, function ($query) use ($dateTo) {
                 $query->whereDate('created_at', '<=', $dateTo);
             })
-            // Eager load relationships
-            ->with(['user', 'product'])
+
             // Sắp xếp
             ->orderBy($sortBy, $sortOrder)
-            ->paginate(15);
+            ->paginate(15)
+            ->appends(request()->query()); // ✅ Giữ query params khi pagination
 
-        // Thống kê chi tiết
+        // ✅ THỐNG KÊ THEO TYPE (tách riêng)
         $stats = [
-            'total' => Transaction::count(),
-            'success' => Transaction::where('status', 'success')->count(),
-            'failed' => Transaction::where('status', 'failed')->count(),
-            'pending' => Transaction::where('status', 'pending')->count(),
-            'cancelled' => Transaction::where('status', 'cancelled')->count(),
-            
-            // Tổng tiền
-            'total_amount' => Transaction::where('status', 'success')->sum('amount'),
-            'pending_amount' => Transaction::where('status', 'pending')->sum('amount'),
-            
-            // Thống kê theo thời gian
-            'today' => Transaction::whereDate('created_at', today())->count(),
-            'this_week' => Transaction::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => Transaction::whereMonth('created_at', now()->month)->count(),
+            'total'          => (clone $baseQuery)->count(),
+            'success'        => (clone $baseQuery)->where('status', 'success')->count(),
+            'failed'         => (clone $baseQuery)->where('status', 'failed')->count(),
+            'pending'        => (clone $baseQuery)->where('status', 'pending')->count(),
+            'cancelled'      => (clone $baseQuery)->where('status', 'cancelled')->count(),
+
+            // Tổng tiền (chỉ success)
+            'total_amount'   => (clone $baseQuery)->where('status', 'success')->sum('amount'),
+            'pending_amount' => (clone $baseQuery)->where('status', 'pending')->sum('amount'),
+
+            // Thống kê theo thời gian (trong type hiện tại)
+            'today'          => (clone $baseQuery)->whereDate('created_at', today())->count(),
+            'this_week'      => (clone $baseQuery)->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month'     => (clone $baseQuery)->whereMonth('created_at', now()->month)->count(),
         ];
 
-        // Biểu đồ theo ngày (7 ngày gần nhất)
-        $chartData = Transaction::select(
+        // ✅ BIỂU ĐỒ THEO NGÀY (7 ngày gần nhất - theo type)
+        $chartData = (clone $baseQuery)
+            ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(CASE WHEN status = "success" THEN amount ELSE 0 END) as revenue')
@@ -84,19 +105,20 @@ class AllTransactionController extends Controller
 
         return view('admin.transactions.all-transactions', [
             'transactions' => $transactions,
-            'stats' => $stats,
-            'chartData' => $chartData,
-            
+            'stats'        => $stats,
+            'chartData'    => $chartData,
+            'type'         => $type, // ✅ Pass type vào view
+
             // Filters
-            'status' => $status,
-            'search' => $search,
+            'status'   => $status,
+            'search'   => $search,
             'dateFrom' => $dateFrom,
-            'dateTo' => $dateTo,
-            'sortBy' => $sortBy,
+            'dateTo'   => $dateTo,
+            'sortBy'   => $sortBy,
             'sortOrder' => $sortOrder,
         ]);
     }
-        /**
+    /**
      * Xem chi tiết transaction
      */
     public function show($id)
@@ -127,14 +149,14 @@ class AllTransactionController extends Controller
         ]);
 
         $transaction = Transaction::findOrFail($id);
-        
+
         $oldStatus = $transaction->status;
         $transaction->status = $request->status;
-        
+
         if ($request->note) {
             $transaction->description .= " | Admin note: " . $request->note;
         }
-        
+
         $transaction->save();
 
         return redirect()
@@ -150,32 +172,40 @@ class AllTransactionController extends Controller
         if (!Auth::check() || !Auth::user()->is_admin) {
             abort(403, 'Access denied.');
         }
+        $type = $request->get('type', 'cash');
 
         $transactions = Transaction::with(['user', 'product'])
-            ->when($request->status, function($query) use ($request) {
+            // ✅ THÊM FILTER TYPE
+            ->when($type === 'cash', function ($q) {
+                $q->where('currency', 'VND')->orWhereNull('currency');
+            })
+            ->when($type === 'coinkey', function ($q) {
+                $q->where('currency', 'COINKEY');
+            })
+            ->when($request->status, function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            ->when($request->date_from, function($query) use ($request) {
+            ->when($request->date_from, function ($query) use ($request) {
                 $query->whereDate('created_at', '>=', $request->date_from);
             })
-            ->when($request->date_to, function($query) use ($request) {
+            ->when($request->date_to, function ($query) use ($request) {
                 $query->whereDate('created_at', '<=', $request->date_to);
             })
             ->get();
 
         $filename = 'transactions_' . now()->format('Y-m-d_His') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($transactions) {
+        $callback = function () use ($transactions) {
             $file = fopen('php://output', 'w');
-            
+
             // UTF-8 BOM for Excel
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
             // Headers
             fputcsv($file, [
                 'Order Code',

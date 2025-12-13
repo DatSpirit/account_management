@@ -139,25 +139,41 @@
                             class="rounded-lg bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-700 overflow-auto">
 
                             @php
-                                // Lấy dữ liệu JSON từ raw_payload
                                 $rawJson = $transaction->raw_payload;
                                 $decoded = null;
+                                $isJsonValid = false;
 
                                 if (!empty($rawJson)) {
+                                    // Thử decode
                                     $decoded = json_decode($rawJson, true);
+
+                                    // Kiểm tra xem decode có thành công không
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                        $isJsonValid = true;
+                                    } else {
+                                        // Nếu DB lưu dạng Array/Object do Eloquent Cast (trường hợp hiếm), ta ép kiểu
+                                        if (is_array($rawJson) || is_object($rawJson)) {
+                                            $decoded = (array) $rawJson;
+                                            $isJsonValid = true;
+                                        }
+                                    }
                                 }
                             @endphp
 
-                            @if ($decoded)
-                                {{-- Vùng hiển thị JSON --}}
-                                <pre id="rawJsonContent" class="text-xs sm:text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-{!! json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) !!}
-            </pre>
-                            @else
-                                <p class="text-gray-500 dark:text-gray-400 italic">
-                                    Không có dữ liệu webhook hoặc JSON không hợp lệ.
-                                </p>
-                            @endif
+                            <div class="rounded-lg bg-gray-900 p-4 border border-gray-700 overflow-auto max-h-96">
+                                @if ($isJsonValid)
+                                    <pre id="rawJsonContent" class="text-xs sm:text-sm text-green-400 font-mono whitespace-pre-wrap">
+{{ json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+        </pre>
+                                @else
+                                    <div class="text-gray-400 italic">
+                                        <p>Không có dữ liệu thô hoặc định dạng không hợp lệ.</p>
+                                        {{-- Debug: Hiển thị cái đang có trong DB để kiểm tra --}}
+                                        <p class="text-xs mt-2 text-red-400">Raw Data in DB:
+                                            {{ Str::limit($transaction->raw_payload, 100) }}</p>
+                                    </div>
+                                @endif
+                            </div>
 
                         </div>
                     </div>
