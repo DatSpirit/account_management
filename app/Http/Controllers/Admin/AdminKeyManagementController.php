@@ -17,37 +17,76 @@ class AdminKeyManagementController extends Controller
         'admin',
     ];
 
-
     public function __construct(KeyManagementService $keyService)
     {
         $this->keyService = $keyService;
     }
 
     /**
-     * Danh sách tất cả key (Admin)
+     * Danh sách tất cả key (Admin) - Bao gồm cả key đã xóa
      */
     public function index(Request $request)
     {
-        $query = ProductKey::with(['user', 'product']);
+        // Sử dụng withTrashed() để lấy cả key đã xóa
+        $query = ProductKey::withTrashed()->with(['user', 'product']);
 
         // Filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status;
+
+            if ($status === 'expired') {
+                // Lọc Hết hạn: Bao gồm trạng thái 'expired' or ('active' nhưng đã quá ngày)
+                $query->where(function ($q) {
+                    $q->where('status', 'expired')
+                        ->orWhere(function ($sub) {
+                            $sub->where('status', 'active')
+                                ->whereNotNull('expires_at')
+                                ->where('expires_at', '<=', now());
+                        });
+                });
+            } elseif ($status === 'active') {
+                // Lọc Hoạt động: Phải là 'active' VÀ (chưa hết hạn hoặc vĩnh viễn)
+                $query->where('status', 'active')
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now());
+                    });
+            } else {
+                // Các trạng thái khác (suspended, revoked) lọc bình thường
+                $query->where('status', $status);
+            }
         }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('key_code', 'like', '%' . $request->search . '%')
-                    ->orWhere('assigned_to_email', 'like', '%' . $request->search . '%');
-            });
+        // Filter xem key đã xóa
+        if ($request->filled('show_deleted') && $request->show_deleted === 'only') {
+            $query->onlyTrashed();
+        } elseif ($request->filled('show_deleted') && $request->show_deleted === 'with') {
+            // withTrashed() đã được gọi ở trên
+        } else {
+            // Mặc định chỉ hiện key chưa xóa
+            $query->whereNull('deleted_at');
         }
 
-        if ($request->filled('key_type')) {
-            $query->where('key_type', $request->key_type);
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $search = $request->search;
+
+                if (is_numeric($search)) {
+                    $q->where('id', $search);
+                }
+
+                $q->orWhere('key_code', 'like', '%' . $search . '%')
+                    ->orWhere('assigned_to_email', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('email', 'like', '%' . $search . '%')
+                            ->orWhere('name', 'like', '%' . $search . '%')
+                            ->orWhere('id', $search);
+                    });
+            });
         }
 
         $keys = $query->orderBy('created_at', 'desc')->paginate(50);
@@ -58,6 +97,7 @@ class AdminKeyManagementController extends Controller
             'active' => ProductKey::active()->count(),
             'expired' => ProductKey::expired()->count(),
             'suspended' => ProductKey::where('status', 'suspended')->count(),
+            'deleted' => ProductKey::onlyTrashed()->count(),
             'expiring_soon' => ProductKey::expiringSoon(7)->count(),
             'total_validations' => ProductKey::sum('validation_count'),
             'total_spent' => ProductKey::sum('key_cost'),
@@ -67,12 +107,12 @@ class AdminKeyManagementController extends Controller
     }
 
     /**
-     * Chi tiết key (Admin view)
+     * Chi tiết key (Admin view) - Read Only
      */
     public function show($id)
     {
-
-        $key = ProductKey::with(['user', 'product'])->findOrFail($id);
+        // Lấy cả key đã xóa
+        $key = ProductKey::withTrashed()->with(['user', 'product'])->findOrFail($id);
 
         $recentValidations = $key->validationLogs()
             ->orderBy('validated_at', 'desc')
@@ -94,16 +134,81 @@ class AdminKeyManagementController extends Controller
     }
 
     /**
+     * Trang chỉnh sửa key (Admin) - Full Features
+     */
+    public function edit($id)
+    {
+        // Lấy cả key đã xóa
+        $key = ProductKey::withTrashed()->with(['user', 'product'])->findOrFail($id);
+
+        return view('admin.keys.edit', compact('key'));
+    }
+
+    /**
+     * Cập nhật key (Admin) - Chỉnh sửa toàn diện
+     */
+    public function update(Request $request, $id)
+    {
+        $key = ProductKey::withTrashed()->findOrFail($id);
+
+        $validated = $request->validate([
+            'key_code' => 'required|string|max:255|unique:product_keys,key_code,' . $key->id,
+            'status' => 'required|in:active,expired,suspended,revoked',
+            'expires_at' => 'nullable|date',
+            'duration_minutes' => 'required|integer|min:0',
+            'notes' => 'nullable|string',
+        ]);
+
+        // Lưu thông tin cũ để ghi log
+        $oldKeyCode = $key->key_code;
+        $oldStatus = $key->status;
+        $oldExpiresAt = $key->expires_at;
+
+        // Cập nhật
+        $key->update([
+            'key_code' => $validated['key_code'],
+            'status' => $validated['status'],
+            'expires_at' => $validated['expires_at'],
+            'duration_minutes' => $validated['duration_minutes'],
+            'notes' => $validated['notes'] ?? $key->notes,
+        ]);
+
+        // Ghi log thay đổi
+        $changes = [];
+        if ($oldKeyCode !== $key->key_code) {
+            $changes[] = "Key code: {$oldKeyCode} → {$key->key_code}";
+        }
+        if ($oldStatus !== $key->status) {
+            $changes[] = "Status: {$oldStatus} → {$key->status}";
+        }
+        if ($oldExpiresAt != $key->expires_at) {
+            $changes[] = "Expires: " . ($oldExpiresAt ? $oldExpiresAt->format('Y-m-d H:i') : 'N/A') .
+                " → " . ($key->expires_at ? $key->expires_at->format('Y-m-d H:i') : 'N/A');
+        }
+
+        if (!empty($changes)) {
+            \App\Models\KeyHistory::log(
+                $key->id,
+                'admin_update',
+                "Admin cập nhật: " . implode(', ', $changes),
+                ['admin_id' => auth()->id()]
+            );
+        }
+
+        return back()->with('success', '✅ Cập nhật key thành công!');
+    }
+
+    /**
      * Suspend key (Admin)
      */
     public function suspend(Request $request, $id)
     {
-        $request->validate([
-            'reason' => 'required|string|max:500',
-        ]);
+        $key = ProductKey::withTrashed()->findOrFail($id);
+        $reason = $request->input('reason', 'Admin suspended');
 
-        $key = ProductKey::findOrFail($id);
-        $key->suspend($request->reason);
+        $key->suspend($reason);
+
+        \App\Models\KeyHistory::log($key->id, 'suspend', "Admin suspend: {$reason}");
 
         return back()->with('success', 'Key suspended successfully');
     }
@@ -113,13 +218,15 @@ class AdminKeyManagementController extends Controller
      */
     public function activate($id)
     {
-        $key = ProductKey::findOrFail($id);
+        $key = ProductKey::withTrashed()->findOrFail($id);
 
         if ($key->isExpired()) {
             return back()->with('error', 'Cannot activate expired key. Please extend it first.');
         }
 
         $key->update(['status' => 'active']);
+
+        \App\Models\KeyHistory::log($key->id, 'activate', 'Admin activated key');
 
         return back()->with('success', 'Key activated successfully');
     }
@@ -129,12 +236,12 @@ class AdminKeyManagementController extends Controller
      */
     public function revoke(Request $request, $id)
     {
-        $request->validate([
-            'reason' => 'required|string|max:500',
-        ]);
+        $key = ProductKey::withTrashed()->findOrFail($id);
+        $reason = $request->input('reason', 'Admin revoked');
 
-        $key = ProductKey::findOrFail($id);
-        $key->revoke($request->reason);
+        $key->revoke($reason);
+
+        \App\Models\KeyHistory::log($key->id, 'revoke', "Admin revoke: {$reason}");
 
         return back()->with('success', 'Key revoked successfully');
     }
@@ -146,28 +253,83 @@ class AdminKeyManagementController extends Controller
     {
         $request->validate([
             'additional_minutes' => 'required|integer|min:1',
-            'reason' => 'required|string|max:500',
+            'reason' => 'nullable|string|max:500',
         ]);
 
-        $key = ProductKey::findOrFail($id);
+        $key = ProductKey::withTrashed()->findOrFail($id);
         $key->extend($request->additional_minutes);
-        $key->notes = ($key->notes ?? '') . "\nAdmin extended: {$request->reason}";
+
+        $reason = $request->reason ?? 'Admin extension';
+        $key->notes = ($key->notes ?? '') . "\nAdmin extended: {$reason}";
         $key->save();
+
+        \App\Models\KeyHistory::log(
+            $key->id,
+            'extend',
+            "Admin gia hạn +{$request->additional_minutes} phút: {$reason}",
+            ['admin_id' => auth()->id()]
+        );
 
         return back()->with('success', 'Key extended successfully');
     }
 
     /**
-     * Delete key (Admin)
+     * Xóa mềm key (Admin) - User không thấy, Admin vẫn thấy
      */
     public function destroy($id)
     {
-        $key = ProductKey::findOrFail($id);
+        $key = ProductKey::findOrFail($id); // Chỉ lấy key chưa xóa
+
+        // Soft delete
         $key->delete();
+
+        // Ghi log
+        \App\Models\KeyHistory::log(
+            $key->id,
+            'delete',
+            'Admin đã xóa key (soft delete)',
+            ['admin_id' => auth()->id()]
+        );
 
         return redirect()
             ->route('admin.keys.index')
-            ->with('success', 'Key deleted successfully');
+            ->with('success', '🗑️ Key đã được xóa (soft delete). User không còn thấy key này.');
+    }
+
+    /**
+     * Khôi phục key đã xóa
+     */
+    public function restore($id)
+    {
+        $key = ProductKey::onlyTrashed()->findOrFail($id);
+        $key->restore();
+
+        \App\Models\KeyHistory::log(
+            $key->id,
+            'restore',
+            'Admin khôi phục key',
+            ['admin_id' => auth()->id()]
+        );
+
+        return back()->with('success', '♻️ Key đã được khôi phục!');
+    }
+
+    /**
+     * Xóa vĩnh viễn key
+     */
+    public function forceDelete($id)
+    {
+        $key = ProductKey::onlyTrashed()->findOrFail($id);
+
+        // Lưu info trước khi xóa
+        $keyCode = $key->key_code;
+
+        // Xóa vĩnh viễn
+        $key->forceDelete();
+
+        return redirect()
+            ->route('admin.keys.index')
+            ->with('success', "⚠️ Key {$keyCode} đã bị xóa vĩnh viễn khỏi database!");
     }
 
     /**
@@ -182,7 +344,7 @@ class AdminKeyManagementController extends Controller
             'reason' => 'nullable|string|max:500',
         ]);
 
-        $keys = ProductKey::whereIn('id', $request->key_ids)->get();
+        $keys = ProductKey::withTrashed()->whereIn('id', $request->key_ids)->get();
 
         foreach ($keys as $key) {
             switch ($request->action) {
@@ -211,7 +373,7 @@ class AdminKeyManagementController extends Controller
      */
     public function export(Request $request)
     {
-        $query = ProductKey::with(['user', 'product']);
+        $query = ProductKey::withTrashed()->with(['user', 'product']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -241,11 +403,12 @@ class AdminKeyManagementController extends Controller
                 'Product',
                 'Status',
                 'Duration (Minutes)',
-                'Coinkey Cost',
+                'Key Cost',
                 'Activated At',
                 'Expires At',
                 'Validation Count',
                 'Created At',
+                'Deleted At',
             ]);
 
             foreach ($keys as $key) {
@@ -257,11 +420,12 @@ class AdminKeyManagementController extends Controller
                     $key->product->name ?? 'N/A',
                     ucfirst($key->status),
                     $key->duration_minutes,
-                    number_format($key->coinkey_cost, 2),
+                    number_format($key->key_cost, 2),
                     $key->activated_at?->format('Y-m-d H:i:s') ?? 'Not activated',
                     $key->expires_at?->format('Y-m-d H:i:s') ?? 'Never',
                     $key->validation_count,
                     $key->created_at->format('Y-m-d H:i:s'),
+                    $key->deleted_at?->format('Y-m-d H:i:s') ?? 'Not deleted',
                 ]);
             }
 

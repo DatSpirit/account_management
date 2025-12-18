@@ -16,13 +16,11 @@ use App\Http\Controllers\MyTransactionController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\AccountExpirationController;
-
-
-
 use App\Http\Controllers\CoinkeyWalletController;
 use App\Http\Controllers\KeyManagementController;
 use App\Http\Controllers\Admin\AdminKeyManagementController;
 use App\Http\Controllers\DailyCheckinController;
+
 // ===========================
 // 🔹 TRANG CHỦ
 // ===========================
@@ -48,7 +46,7 @@ Route::get('/thankyou', [OrderController::class, 'thankyou'])->name('thankyou');
 // ===========================
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    //  XỬ LÝ MUA HÀNG TRUNG TÂM -  Purchase Processing
+    // XỬ LÝ MUA HÀNG TRUNG TÂM - Purchase Processing
     Route::post('/order/process', [OrderController::class, 'process'])
         ->name('order.process');
 
@@ -64,25 +62,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ===========================
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
-    // Thêm sản phẩm mới 
+    // Thêm sản phẩm mới
     Route::get('/products/create', [ProductController::class, 'create'])->name('admin.products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('admin.products.store');
 
-    // Sửa & Xóa sản phẩm 
+    // Sửa & Xóa sản phẩm
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 });
 
 // ===========================
-// 🔹 USER KHU VỰC NGƯỜI DÙNG 
+// 🔹 USER KHU VỰC NGƯỜI DÙNG
 // ===========================
 Route::middleware(['auth', 'verified', 'check.account'])->group(function () {
 
     // Dashboard của người dùng -- User Dashboard
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
-    // My Transactions 
+    // My Transactions
     Route::get('/my-transactions', [MyTransactionController::class, 'index'])->name('transactions.index');
     // Transaction Detail - Chi tiết giao dịch
     Route::get('/my-transactions/{id}', [MyTransactionController::class, 'show'])->name('transactions.show');
@@ -98,7 +96,7 @@ Route::middleware(['auth', 'verified', 'check.account'])->group(function () {
 
     // Analytics
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
-    // Analytics Export 
+    // Analytics Export
     Route::get('/analytics/export', [AnalyticsController::class, 'export'])
         ->name('analytics.export');
 
@@ -151,7 +149,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::post('/quick-extend/{userId}', [AccountExpirationController::class, 'extendByDays'])
             ->name('admin.quick-extend');
 
-        // Account Expiration Management-  Quản lý hết hạn tài khoản
+        // Account Expiration Management- Quản lý hết hạn tài khoản
         Route::prefix('account-expiration')->name('account-expiration.')->group(function () {
 
             Route::get('/{userId}/check', [AccountExpirationController::class, 'checkExpiration'])
@@ -179,7 +177,6 @@ Route::middleware(['auth', 'verified', 'admin'])
                 ->name('expired');
         });
 
-
         // Quản lý giao dịch -- All Transactions Management
         Route::get('/transactions', [AllTransactionController::class, 'index'])->name('admin.transactions.all-transactions');
         Route::get('/transactions/{id}', [AllTransactionController::class, 'show'])->name('admin.transactions.show');
@@ -194,23 +191,56 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::put('/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
 
-// QUẢN LÝ KEY - ADMIN
-    Route::get('/keys', [AdminKeyManagementController::class, 'index'])->name('admin.keys.index');
-    Route::get('/keys/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('admin.keys.validation-stats');
-    Route::get('/keys/export', [AdminKeyManagementController::class, 'export'])->name('export');
-    
-    Route::get('/keys/{id}', [AdminKeyManagementController::class, 'show'])->name('admin.keys.show');
-    Route::post('/keys/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('admin.keys.suspend');
-    Route::post('/keys/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('admin.keys.activate');
-    Route::post('/keys/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('admin.keys.revoke');
-    Route::post('/keys/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('admin.keys.extend-admin');
-    Route::delete('/keys/{id}', [AdminKeyManagementController::class, 'destroy'])->name('admin.keys.destroy');
-    
-    Route::post('/keys/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('admin.keys.bulk-action');
+        // ===========================
+        // 🔹 QUẢN LÝ KEY - ADMIN (Cập nhật với Soft Delete & Edit)
+        // ===========================
+        Route::prefix('keys')->name('admin.keys.')->group(function () {
+            
+            // Danh sách key (bao gồm cả key đã xóa)
+            Route::get('/', [AdminKeyManagementController::class, 'index'])->name('index');
+            
+            // Validation statistics
+            Route::get('/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('validation-stats');
+            
+            // Export CSV
+            Route::get('/export', [AdminKeyManagementController::class, 'export'])->name('export');
+            
+            // Chi tiết key
+            Route::get('/{id}', [AdminKeyManagementController::class, 'show'])->name('show');
+            
+             // Trang chỉnh sửa key (Full Features)
+            Route::get('/{id}/edit', [AdminKeyManagementController::class, 'edit'])->name('edit');
+
+             // Cập nhật key (Chỉnh sửa toàn diện - Key Code, Status, Expires, Duration)
+            Route::put('/{id}', [AdminKeyManagementController::class, 'update'])->name('update');
+            
+            // Suspend key
+            Route::post('/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('suspend');
+            
+            // Activate key
+            Route::post('/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('activate');
+            
+            // Revoke key
+            Route::post('/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('revoke');
+            
+            // Gia hạn key (Admin - miễn phí)
+            Route::post('/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('extend-admin');
+            
+            // Xóa mềm key (Soft Delete - User không thấy, Admin vẫn thấy)
+            Route::delete('/{id}', [AdminKeyManagementController::class, 'destroy'])->name('destroy');
+            
+            // Khôi phục key đã xóa
+            Route::post('/{id}/restore', [AdminKeyManagementController::class, 'restore'])->name('restore');
+            
+            // Xóa vĩnh viễn key (Force Delete)
+            Route::delete('/{id}/force', [AdminKeyManagementController::class, 'forceDelete'])->name('force-delete');
+            
+            // Bulk actions
+            Route::post('/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('bulk-action');
+        });
     });
 
-
-    // ===========================
+// ===========================
 // COINKEY WALLET - USER
 // ===========================
 Route::middleware(['auth', 'verified'])->prefix('wallet')->name('wallet.')->group(function () {
@@ -218,21 +248,20 @@ Route::middleware(['auth', 'verified'])->prefix('wallet')->name('wallet.')->grou
     Route::get('/buy-package', [CoinkeyWalletController::class, 'buyPackage'])->name('buy-package');
     Route::post('/purchase-package', [CoinkeyWalletController::class, 'purchasePackage'])->name('purchase-package');
     Route::get('/transactions/export', [CoinkeyWalletController::class, 'exportTransactions'])->name('transactions.export');
-    
+
     // AJAX endpoints
     Route::get('/check-balance', [CoinkeyWalletController::class, 'checkBalance'])->name('check-balance');
     Route::post('/calculate-price', [CoinkeyWalletController::class, 'calculatePrice'])->name('calculate-price');
 });
 
 // ===========================
-// DAILY CHECK-IN SYSTEM 
+// DAILY CHECK-IN SYSTEM
 // ===========================
 // Route::middleware(['auth', 'verified'])->prefix('checkin')->name('checkin.')->group(function () {
 //     Route::get('/', [DailyCheckinController::class, 'index'])->name('index');
 //     Route::post('/process', [DailyCheckinController::class, 'checkin'])->name('process');
 //     Route::get('/status', [DailyCheckinController::class, 'status'])->name('status');
 // });
-
 
 // ===========================
 // KEY MANAGEMENT - USER
@@ -242,37 +271,23 @@ Route::middleware(['auth', 'verified'])->prefix('keys')->name('keys.')->group(fu
     Route::get('/create', [KeyManagementController::class, 'create'])->name('create');
     Route::post('/buy-package', [KeyManagementController::class, 'buyPackage'])->name('buy-package');
     Route::post('/create-custom', [KeyManagementController::class, 'createCustom'])->name('create-custom');
-    
+
     Route::get('/my-keys/{id}', [KeyManagementController::class, 'show'])->name('keydetails');
-    Route::get('/{id}/extend', [KeyManagementController::class, 'extendForm'])->name('extend-form');
-    Route::post('/{id}/extend', [KeyManagementController::class, 'extend'])->name('extend');
+    Route::get('/my-keys/{id}/history', [KeyManagementController::class, 'history'])->name('history');
+    
+    // Route cho chức năng gia hạn theo gói
+    Route::get('/{id}/extend-confirm', [KeyManagementController::class, 'extendConfirm'])->name('extend-confirm');
+    Route::post('/{id}/process-extension', [KeyManagementController::class, 'processExtension'])->name('process-extension');
+
     Route::post('/{id}/suspend', [KeyManagementController::class, 'suspend'])->name('suspend');
     Route::post('/{id}/activate', [KeyManagementController::class, 'activate'])->name('activate');
     Route::post('/{id}/revoke', [KeyManagementController::class, 'revoke'])->name('revoke');
-    
+
     Route::get('/{id}/validation-logs', [KeyManagementController::class, 'validationLogs'])->name('validation-logs');
-    
+
     // AJAX
     Route::post('/check-key-code', [KeyManagementController::class, 'checkKeyCode'])->name('check-key-code');
 });
-
-// // ===========================
-// // ADMIN - KEY MANAGEMENT
-// // ===========================
-// Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/keys')->name('admin.keys.')->group(function () {
-//     Route::get('/', [AdminKeyManagementController::class, 'index'])->name('index');
-//     Route::get('/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('validation-stats');
-//     Route::get('/export', [AdminKeyManagementController::class, 'export'])->name('export');
-    
-//     Route::get('/{id}', [AdminKeyManagementController::class, 'show'])->name('show');
-//     Route::post('/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('suspend');
-//     Route::post('/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('activate');
-//     Route::post('/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('revoke');
-//     Route::post('/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('extend-admin');
-//     Route::delete('/{id}', [AdminKeyManagementController::class, 'destroy'])->name('destroy');
-    
-//     Route::post('/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('bulk-action');
-// });
 
 // ===========================
 // 🔹 XÁC THỰC / ĐĂNG NHẬP
@@ -281,7 +296,6 @@ require __DIR__ . '/auth.php';
 
 // 🔹 CUSTOM CONFIRM PASSWORD (nếu cần giữ /confirm-password cũ)
 // ===========================
-
 Route::get('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'show'])
     ->name('password.confirm.custom');
 Route::post('confirm-password', [\App\Http\Controllers\Auth\ConfirmablePasswordController::class, 'store'])
