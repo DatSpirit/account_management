@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Event; // Import Event Facade
 use Illuminate\Auth\Events\Login;      // Import Event Login
-use App\Listeners\UpdateLastLogin;     
+use App\Listeners\UpdateLastLogin;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -30,20 +31,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Luôn dùng HTTPS khi chạy qua ngrok hoặc production
-        // if ($this->app->environment('local', 'production')) {
-        //     URL::forceScheme('https');
-        // }
-
-        // Lấy môi trường hiện tại
-        $environment = $this->app->environment();
-
-        if ($environment ==='production') { // Luôn dùng HTTPS trong production
-            URL::forceScheme('https');
-        }
-        elseif ($environment === 'local' && str_starts_with(env('APP_URL', 'http://localhost'), 'https://')) { // Nếu chạy local với APP_URL là HTTPS
-            URL::forceScheme('https');
-        }
 
         // ✅ Load API routes
         $this->loadApiRoutes();
@@ -95,6 +82,4 @@ class AppServiceProvider extends ServiceProvider
             ->prefix('api')
             ->group(base_path('routes/api.php'));
     }
-
-    
 }
