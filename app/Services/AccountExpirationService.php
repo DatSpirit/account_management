@@ -4,142 +4,158 @@ namespace App\Services;
 
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AccountExpirationService
 {
     /**
-     * Gia hạn tài khoản cho user
-     * 
-     * @param User $user
-     * @param int $days Số ngày muốn gia hạn
-     * @param string|null $note Ghi chú
-     * @return User
+     * Kiểm tra và cập nhật trạng thái tài khoản hết hạn
      */
-    public function extendAccount(User $user, int $days, ?string $note = null): User
+    public function checkAndUpdateExpiredAccounts(): int
     {
-        // Nếu tài khoản chưa có ngày hết hạn hoặc đã hết hạn
-        if (!$user->expires_at || Carbon::parse($user->expires_at)->isPast()) {
-            // Gia hạn từ hôm nay
-            $user->expires_at = Carbon::now()->addDays($days);
-        } else {
-            // Gia hạn từ ngày hết hạn hiện tại
-            $user->expires_at = Carbon::parse($user->expires_at)->addDays($days);
+        $expiredCount = 0;
+
+        $expiredUsers = User::where('account_status', 'active')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->get();
+
+        foreach ($expiredUsers as $user) {
+            $user->update([
+                'account_status' => 'expired',
+                'account_notes' => ($user->account_notes ?? '') . "\nExpired at: " . now()->toDateTimeString()
+            ]);
+            $expiredCount++;
         }
-        
-        $user->account_status = 'active';
-        
-        // Thêm ghi chú
-        if ($note) {
-            $existingNotes = $user->account_notes ?? '';
-            $newNote = Carbon::now()->format('Y-m-d H:i:s') . ": Gia hạn {$days} ngày. {$note}";
-            $user->account_notes = $existingNotes . "\n" . $newNote;
-        }
-        
-        $user->save();
-        
-        Log::info("Account extended for user {$user->id}", [
-            'days' => $days,
-            'new_expiry' => $user->expires_at
-        ]);
-        
-        return $user;
+
+        return $expiredCount;
     }
-    
+
     /**
-     * Đặt ngày hết hạn cụ thể
-     */
-    public function setExpirationDate(User $user, Carbon $expiryDate, ?string $note = null): User
-    {
-        $user->expires_at = $expiryDate;
-        $user->account_status = 'active';
-        
-        if ($note) {
-            $existingNotes = $user->account_notes ?? '';
-            $newNote = Carbon::now()->format('Y-m-d H:i:s') . ": Đặt hạn đến {$expiryDate->format('Y-m-d')}. {$note}";
-            $user->account_notes = $existingNotes . "\n" . $newNote;
-        }
-        
-        $user->save();
-        
-        return $user;
-    }
-    
-    /**
-     * Kiểm tra tài khoản có hết hạn không
-     */
-    public function isExpired(User $user): bool
-    {
-        if (!$user->expires_at) {
-            return false; // Không giới hạn thời gian
-        }
-        
-        return Carbon::parse($user->expires_at)->isPast();
-    }
-    
-    /**
-     * Lấy số ngày còn lại
+     * Lấy số ngày còn lại của tài khoản
      */
     public function getDaysRemaining(User $user): ?int
     {
         if (!$user->expires_at) {
-            return null; // Không giới hạn
+            return null; // Vô thời hạn
         }
-        
-        $days = Carbon::now()->diffInDays(Carbon::parse($user->expires_at), false);
-        return max(0, (int)$days);
+
+        $days = now()->diffInDays($user->expires_at, false);
+        return $days > 0 ? (int) $days : 0;
     }
-    
+
     /**
-     * Đánh dấu tài khoản hết hạn
+     * Gia hạn tài khoản
      */
-    public function markAsExpired(User $user): User
+    public function extendAccount(User $user, int $days, string $reason = null): User
     {
-        $user->account_status = 'expired';
-        $user->save();
-        
-        Log::info("User {$user->id} marked as expired");
-        
-        return $user;
+        DB::beginTransaction();
+        try {
+            if ($user->expires_at && $user->expires_at->isFuture()) {
+                // Nếu còn hạn, cộng thêm
+                $newExpiresAt = $user->expires_at->addDays($days);
+            } else {
+                // Nếu hết hạn hoặc chưa có, tính từ hôm nay
+                $newExpiresAt = now()->addDays($days);
+            }
+
+            $user->update([
+                'expires_at' => $newExpiresAt,
+                'account_status' => 'active',
+                'account_notes' => ($user->account_notes ?? '') . 
+                    "\nExtended {$days} days at " . now()->toDateTimeString() . 
+                    ($reason ? " - Reason: {$reason}" : '')
+            ]);
+
+            DB::commit();
+            return $user->fresh();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
-    
+
+    /**
+     * Đặt thời hạn cụ thể cho tài khoản
+     */
+    public function setExpiration(User $user, Carbon $expiresAt, string $reason = null): User
+    {
+        $user->update([
+            'expires_at' => $expiresAt,
+            'account_status' => $expiresAt->isFuture() ? 'active' : 'expired',
+            'account_notes' => ($user->account_notes ?? '') . 
+                "\nExpiration set to {$expiresAt->toDateTimeString()} at " . now()->toDateTimeString() .
+                ($reason ? " - Reason: {$reason}" : '')
+        ]);
+
+        return $user->fresh();
+    }
+
     /**
      * Tạm ngưng tài khoản
      */
-    public function suspendAccount(User $user, ?string $reason = null): User
+    public function suspendAccount(User $user, string $reason): User
     {
-        $user->account_status = 'suspended';
-        
-        if ($reason) {
-            $existingNotes = $user->account_notes ?? '';
-            $newNote = Carbon::now()->format('Y-m-d H:i:s') . ": Tạm ngưng. Lý do: {$reason}";
-            $user->account_notes = $existingNotes . "\n" . $newNote;
-        }
-        
-        $user->save();
-        
-        Log::warning("User {$user->id} suspended", ['reason' => $reason]);
-        
-        return $user;
+        $user->update([
+            'account_status' => 'suspended',
+            'account_notes' => ($user->account_notes ?? '') . 
+                "\nSuspended at " . now()->toDateTimeString() . " - Reason: {$reason}"
+        ]);
+
+        return $user->fresh();
     }
-    
+
     /**
      * Kích hoạt lại tài khoản
      */
-    public function activateAccount(User $user, ?string $note = null): User
+    public function activateAccount(User $user, string $reason = null): User
     {
-        $user->account_status = 'active';
-        
-        if ($note) {
-            $existingNotes = $user->account_notes ?? '';
-            $newNote = Carbon::now()->format('Y-m-d H:i:s') . ": Kích hoạt lại. {$note}";
-            $user->account_notes = $existingNotes . "\n" . $newNote;
+        // Kiểm tra xem đã hết hạn chưa
+        if ($user->expires_at && $user->expires_at->isPast()) {
+            throw new \Exception('Cannot activate expired account. Please extend expiration first.');
         }
-        
-        $user->save();
-        
-        Log::info("User {$user->id} activated");
-        
-        return $user;
+
+        $user->update([
+            'account_status' => 'active',
+            'account_notes' => ($user->account_notes ?? '') . 
+                "\nActivated at " . now()->toDateTimeString() .
+                ($reason ? " - Reason: {$reason}" : '')
+        ]);
+
+        return $user->fresh();
+    }
+
+    /**
+     * Lấy danh sách tài khoản sắp hết hạn
+     */
+    public function getExpiringAccounts(int $days = 7)
+    {
+        return User::where('account_status', 'active')
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [now(), now()->addDays($days)])
+            ->orderBy('expires_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * Thống kê tài khoản
+     */
+    public function getAccountStats(): array
+    {
+        return [
+            'total' => User::count(),
+            'active' => User::where('account_status', 'active')->count(),
+            'expired' => User::where('account_status', 'expired')->count(),
+            'suspended' => User::where('account_status', 'suspended')->count(),
+            'expiring_7_days' => User::where('account_status', 'active')
+                ->whereNotNull('expires_at')
+                ->whereBetween('expires_at', [now(), now()->addDays(7)])
+                ->count(),
+            'expiring_30_days' => User::where('account_status', 'active')
+                ->whereNotNull('expires_at')
+                ->whereBetween('expires_at', [now(), now()->addDays(30)])
+                ->count(),
+        ];
     }
 }

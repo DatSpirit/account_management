@@ -18,13 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ]);
 
     $middleware->appendToGroup('web', [
-        \App\Http\Middleware\CheckAccountExpiration::class,
+        \App\Http\Middleware\CheckAccountStatus::class,
     ]);
 
      // Đăng ký alias cho middleware tuỳ chỉnh
     $middleware->alias([
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'check.expiration' => \App\Http\Middleware\CheckAccountExpiration::class, // Thêm alias cho middleware kiểm tra expiration
+        'check.account' => \App\Http\Middleware\CheckAccountStatus::class, // Thêm alias cho middleware kiểm tra expiration
     ]);
 
     // Middleware mặc định của API
