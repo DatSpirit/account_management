@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('key_cost', 15, 2)->default(0);// Chi phí khóa sản phẩm
 
             // Trạng thái khóa sản phẩm và thời gian sử dụng
-            $table->enum('status', ['active','expired','sunpended','revoked'])->default('active');// Trạng thái khóa sản phẩm
+            $table->enum('status', ['active','expired','suspended','revoked'])->default('active');// Trạng thái khóa sản phẩm
             $table->timestamp('activated_at')->nullable();// Thời gian kích hoạt khóa sản phẩm
             $table->timestamp('expires_at')->nullable();// Thời gian hết hạn khóa sản phẩm
             $table->timestamp('last_validated_at')->nullable();// Thời gian xác thực cuối cùng

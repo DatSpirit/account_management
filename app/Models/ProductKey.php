@@ -79,14 +79,14 @@ class ProductKey extends Model
     // Instance Methods
     public function isActive(): bool
     {
-        return $this->status === 'active' && 
-               ($this->expires_at === null || $this->expires_at->isFuture());
+        return $this->status === 'active' &&
+            ($this->expires_at === null || $this->expires_at->isFuture());
     }
 
     public function isExpired(): bool
     {
-        return $this->status === 'expired' || 
-               ($this->expires_at && $this->expires_at->isPast());
+        return $this->status === 'expired' ||
+            ($this->expires_at && $this->expires_at->isPast());
     }
 
     public function isSuspended(): bool
@@ -98,12 +98,12 @@ class ProductKey extends Model
     {
         if (!$this->activated_at) {
             $this->activated_at = now();
-            
+
             if ($this->duration_minutes > 0) {
                 $this->expires_at = now()->addMinutes($this->duration_minutes);
             }
         }
-        
+
         $this->status = 'active';
         $this->save();
     }
@@ -128,29 +128,48 @@ class ProductKey extends Model
 
     public function extend(int $additionalMinutes): void
     {
-        if ($this->expires_at) {
-            $this->expires_at = $this->expires_at->addMinutes($additionalMinutes);
-        } else {
+        // Nếu chưa có ngày hết hạn HOẶC đã hết hạn trong quá khứ -> Tính từ NOW
+        if (!$this->expires_at || $this->expires_at->isPast()) {
             $this->expires_at = now()->addMinutes($additionalMinutes);
+        } else {
+            // Nếu còn hạn -> Cộng dồn vào thời gian hiện tại
+            $this->expires_at = $this->expires_at->addMinutes($additionalMinutes);
         }
-        
+
         $this->duration_minutes += $additionalMinutes;
+        $this->status = 'active'; // Luôn kích hoạt lại khi gia hạn
         $this->save();
+
+        // Ghi log lịch sử 
+        \App\Models\KeyHistory::log($this->id, 'extend', "Gia hạn thêm {$additionalMinutes} phút");
     }
 
-    public function getRemainingMinutes(): ?int
+    public function getRemainingSeconds(): ?int
     {
         if (!$this->expires_at) {
             return null; // Không giới hạn
         }
 
-        $remaining = now()->diffInMinutes($this->expires_at, false);
-        return $remaining > 0 ? (int) $remaining : 0;
+        $remaining = now()->diffInSeconds($this->expires_at, false);
+        return $remaining > 0 ? $remaining : 0;
     }
+
+    public function getRemainingMinutes(): ?int
+    {
+        $seconds = $this->getRemainingSeconds();
+
+        if ($seconds === null) {
+            return null;
+        }
+
+        return (int) floor($seconds / 60);
+    }
+
 
     public function getRemainingDays(): ?float
     {
         $minutes = $this->getRemainingMinutes();
+        
         return $minutes !== null ? round($minutes / 1440, 1) : null;
     }
 
@@ -158,25 +177,25 @@ class ProductKey extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                    ->where(function($q) {
-                        $q->whereNull('expires_at')
-                          ->orWhere('expires_at', '>', now());
-                    });
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     public function scopeExpired($query)
     {
         return $query->where('status', 'expired')
-                    ->orWhere(function($q) {
-                        $q->where('expires_at', '<=', now())
-                          ->whereNotNull('expires_at');
-                    });
+            ->orWhere(function ($q) {
+                $q->where('expires_at', '<=', now())
+                    ->whereNotNull('expires_at');
+            });
     }
 
     public function scopeExpiringSoon($query, int $days = 7)
     {
         return $query->where('status', 'active')
-                    ->whereNotNull('expires_at')
-                    ->whereBetween('expires_at', [now(), now()->addDays($days)]);
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [now(), now()->addDays($days)]);
     }
 }

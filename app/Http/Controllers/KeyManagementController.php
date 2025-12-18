@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Services\KeyManagementService;
 use App\Services\CoinkeyService;
 use App\Services\PayosService;
+use App\Models\KeyHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,14 +37,53 @@ class KeyManagementController extends Controller
         $query = $user->productKeys()->with('product')->orderBy('created_at', 'desc');
 
         // Filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
         if ($request->filled('search')) {
-            $query->where('key_code', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                // Tìm theo ID nếu là số
+                if (is_numeric($request->search)) {
+                    $q->where('id', $request->search);
+                }
+                $q->orWhere('key_code', 'like', '%' . $request->search . '%')
+                    ->orWhere('assigned_to_email', 'like', '%' . $request->search . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($request) {
+                        $userQuery->where('email', 'like', '%' . $request->search . '%')
+                            ->orWhere('name', 'like', '%' . $request->search . '%');
+                    });
+            });
         }
 
-        $keys = $query->paginate(20);
+        if ($request->filled('status')) {
+            $status = $request->status;
+
+            if ($status === 'expired') {
+                // Lọc Hết hạn: Bao gồm trạng thái 'expired' or ('active' nhưng đã quá ngày)
+                $query->where(function ($q) {
+                    $q->where('status', 'expired')
+                        ->orWhere(function ($sub) {
+                            $sub->where('status', 'active')
+                                ->whereNotNull('expires_at')
+                                ->where('expires_at', '<=', now());
+                        });
+                });
+            } elseif ($status === 'active') {
+                // Lọc Hoạt động: Phải là 'active' VÀ (chưa hết hạn hoặc vĩnh viễn)
+                $query->where('status', 'active')
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now());
+                    });
+            } else {
+                // Các trạng thái khác (suspended, revoked) lọc bình thường
+                $query->where('status', $status);
+            }
+        }
+
+        if ($request->filled('key_type')) {
+            $query->where('key_type', $request->key_type);
+        }
+
+        $keys = $query->orderBy('created_at', 'desc')->paginate(20);
+
 
         // Thống kê nhanh
         $stats = [
@@ -77,6 +117,22 @@ class KeyManagementController extends Controller
         ];
 
         return view('keys.keydetails', compact('key', 'recentValidations', 'validationStats'));
+    }
+
+    /**
+     * Trang xem lịch sử Key
+     */
+    public function history($id)
+    {
+        $user = Auth::user();
+        $key = $user->productKeys()->findOrFail($id); // Chỉ xem key của chính mình
+
+        // Lấy lịch sử, sắp xếp mới nhất lên đầu
+        $histories = \App\Models\KeyHistory::where('product_key_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('keys.history', compact('key', 'histories'));
     }
 
     /**
@@ -163,6 +219,10 @@ class KeyManagementController extends Controller
             $keyCode = strtoupper($validated['key_code']);
             $durationMinutes = $product->duration_minutes ?? 0; // Lấy thời gian từ gói sản phẩm
 
+            // Tạo Order Code và Description chuẩn 
+            $orderCode = (int)(now()->timestamp . rand(100, 999));
+            $description = $orderCode . "K";
+
             // --- TRƯỜNG HỢP 1: THANH TOÁN VÍ (COINKEY) ---
             if ($request->payment_method === 'wallet') {
                 $wallet = $user->getOrCreateWallet();
@@ -180,7 +240,7 @@ class KeyManagementController extends Controller
                 }
 
                 // Sử dụng DB::transaction tự động (tự commit nếu thành công, tự rollback nếu lỗi)
-                $transaction = DB::transaction(function () use ($user, $product, $wallet, $costCoinkey, $keyCode, $durationMinutes, &$transaction) {
+                $transaction = DB::transaction(function () use ($user, $product, $wallet, $costCoinkey, $keyCode, $durationMinutes, $description) {
                     // 1. Trừ tiền VÍ
                     $wallet->withdraw(
                         amount: $costCoinkey,
@@ -198,7 +258,7 @@ class KeyManagementController extends Controller
                         'amount'      => $costCoinkey,
                         'status'      => 'success',
                         'currency'    => 'COINKEY',
-                        'description' => "Custom Key: {$keyCode}",
+                        'description' => $description,
                         'is_processed' => true,
                         'processed_at' => now(),
                         // Thêm metadata để trang Thankyou hiển thị đúng loại giao dịch
@@ -224,6 +284,12 @@ class KeyManagementController extends Controller
                     // 4. Kích hoạt key
                     $key->activate();
 
+                    // Ghi lịch sử tạo Key
+                    \App\Models\KeyHistory::log($key->id, 'create', "Tạo Custom Key qua Ví", [
+                        'transaction_id' => $newTransaction->id,
+                        'cost' => $costCoinkey . ' Coin'
+                    ]);
+
                     return $newTransaction;
                 });
 
@@ -245,7 +311,7 @@ class KeyManagementController extends Controller
                     'amount'        => $amountVND,
                     'status'        => 'pending',
                     'currency'      => 'VND',
-                    'description'   => "Custom Key: " . substr($keyCode, 0, 20),
+                    'description'   => $description,
                     // Metadata quan trọng để Webhook/ThankYou biết mà tạo key custom
                     'response_data' => [
                         'type'             => 'custom_key_purchase',
@@ -261,7 +327,7 @@ class KeyManagementController extends Controller
                 $paymentLink = $payosService->createPaymentLink([
                     'orderCode'   => $orderCode,
                     'amount'      => (int) $amountVND,
-                    'description' => 'Key ' . substr($keyCode, 0, 20), // PayOS giới hạn độ dài description
+                    'description' => substr($description, 0, 25),
                     'returnUrl'   => route('thankyou', ['orderCode' => $orderCode]),
                     'cancelUrl'   => route('keys.index'), // Hoặc route products
                     'items'       => [[
@@ -278,6 +344,8 @@ class KeyManagementController extends Controller
             return back()->withInput()->with('error', '⛔ Lỗi hệ thống: ' . $e->getMessage());
         }
     }
+
+
     public function buyCustomKey(Request $request)
     {
         $request->validate([
@@ -309,6 +377,149 @@ class KeyManagementController extends Controller
         }
     }
 
+    /**
+     * Màn hình xác nhận gia hạn (Hiển thị thông tin gói và chọn thanh toán)
+     */
+    public function extendConfirm($id)
+    {
+        $user = Auth::user();
+        $key = ProductKey::with('product')->where('user_id', $user->id)->findOrFail($id);
+
+        if (!$key->product) {
+            return back()->with('error', 'Key này là Custom Key hoặc gói sản phẩm không còn tồn tại.');
+        }
+
+        // Lấy thông tin ví để check số dư
+        $wallet = $user->getOrCreateWallet();
+
+        return view('keys.extend-confirm', compact('key', 'wallet'));
+    }
+
+    /**
+     * Xử lý gia hạn (PayOS hoặc Wallet)
+     */
+    public function processExtension(Request $request, $id)
+    {
+        $request->validate([
+            'payment_method' => 'required|in:wallet,cash'
+        ]);
+
+        $user = Auth::user();
+        $key = ProductKey::with('product')->where('user_id', $user->id)->findOrFail($id);
+        $product = $key->product;
+
+        if (!$product) {
+            return back()->with('error', 'Không tìm thấy gói sản phẩm gốc.');
+        }
+
+        try {
+
+            // Tạo mã đơn hàng chung
+            $orderCode = (int)(now()->timestamp . rand(100, 999));
+
+            // Mô tả giao dịch có đuôi EX để phân biệt giao dịch gia hạn
+            $description = $orderCode . "EX";
+
+            // --- Phương thức 1: THANH TOÁN BẰNG VÍ ---
+            if ($request->payment_method === 'wallet') {
+                $costCoinkey = $product->coinkey_amount;
+                $wallet = $user->getOrCreateWallet();
+
+                if ($wallet->balance < $costCoinkey) {
+                    return back()->with('error', 'Số dư ví không đủ.');
+                }
+
+                DB::transaction(function () use ($user, $key, $product, $wallet, $costCoinkey, $orderCode, $description) {
+                    // 1. Trừ tiền
+                    $wallet->withdraw(
+                        amount: $costCoinkey,
+                        type: 'purchase',
+                        description: "Gia hạn Key: {$key->key_code} (+{$product->duration_minutes} phút)",
+                        referenceType: 'ProductKey',
+                        referenceId: $key->id
+                    );
+
+                    // 2. Tạo Transaction Log (để thống kê)
+                    Transaction::create([
+                        'user_id' => $user->id,
+                        'product_id' => $product->id,
+                        'order_code' => $orderCode,
+                        'amount' => $costCoinkey,
+                        'status' => 'success',
+                        'currency' => 'COINKEY',
+                        'description' => $description,
+                        'is_processed' => true,
+                        'processed_at' => now(),
+                        'response_data' => [
+                            'type' => 'key_extension', // Đánh dấu là gia hạn
+                            'key_id' => $key->id,
+                            'duration_minutes' => $product->duration_minutes
+                        ]
+                    ]);
+
+                    // 3. Thực hiện gia hạn (Cập nhật ngày hết hạn)
+                    $key->extend($product->duration_minutes);
+                    $key->key_cost += $costCoinkey; // Cập nhật tổng chi phí
+                    $key->status = 'active'; // Đảm bảo trạng thái active
+                    $key->save();
+
+                    //  Ghi lịch sử ngay khi thành công
+                    \App\Models\KeyHistory::log($key->id, 'extend', "Gia hạn qua Ví - Đơn #{$orderCode}", [
+                        'minutes_added' => $product->duration_minutes,
+                        'cost' => $costCoinkey . ' Coin',
+                        'new_expiry' => $key->expires_at->toDateTimeString()
+                    ]);
+                });
+                return redirect()->route('thankyou', ['orderCode' => $orderCode])
+                    ->with('success', "Gia hạn thành công! Key đã được cộng thêm thời gian.");
+            }
+
+            // --- Phương thức 2: THANH TOÁN PAYOS (TIỀN MẶT) ---
+            if ($request->payment_method === 'cash') {
+                $amountVND = $product->price;
+
+                // 1. Tạo Transaction Pending
+                $transaction = Transaction::create([
+                    'user_id'       => $user->id,
+                    'product_id'    => $product->id,
+                    'order_code'    => $orderCode,
+                    'amount'        => $amountVND,
+                    'status'        => 'pending',
+                    'currency'      => 'VND',
+                    'description'   => $description,
+                    // Metadata quan trọng để Webhook xử lý gia hạn
+                    'response_data' => [
+                        'type'             => 'key_extension',
+                        'key_id'           => $key->id,
+                        'key_code'         => $key->key_code,
+                        'duration_minutes' => $product->duration_minutes,
+                        'price_vnd'        => $amountVND // Lưu giá để cộng vào cost key
+                    ]
+                ]);
+
+                // 2. Tạo Link PayOS
+                $payosService = app(PayosService::class);
+                $paymentLink = $payosService->createPaymentLink([
+                    'orderCode'   => $orderCode,
+                    'amount'      => (int) $amountVND,
+                    'description' => substr($description, 0, 25),
+                    'returnUrl'   => route('thankyou', ['orderCode' => $orderCode]),
+                    'cancelUrl'   => route('payos.cancel-process'),
+                    'items'       => [[
+                        'name'     => "Extension: {$key->key_code}",
+                        'quantity' => 1,
+                        'price'    => (int) $amountVND
+                    ]]
+                ]);
+
+                return redirect($paymentLink);
+            }
+        } catch (\Exception $e) {
+            Log::error('Extension Error: ' . $e->getMessage());
+            return back()->with('error', 'Lỗi: ' . $e->getMessage());
+        }
+    }
+
     /* =========================================================================
      * SECTION 3: KEY MANAGEMENT ACTIONS (Gia hạn, Khóa, Mở khóa)
      * ========================================================================= */
@@ -332,6 +543,9 @@ class KeyManagementController extends Controller
     {
         $key = Auth::user()->productKeys()->findOrFail($id);
         $key->suspend($request->reason);
+        // Ghi log
+        \App\Models\KeyHistory::log($key->id, 'suspend', "Tạm dừng: " . $request->reason);
+
         return back()->with('success', 'Đã tạm dừng key.');
     }
 
@@ -340,17 +554,22 @@ class KeyManagementController extends Controller
         $key = Auth::user()->productKeys()->findOrFail($id);
 
         if ($key->isExpired()) {
-            return back()->with('error', 'Không thể kích hoạt key đã hết hạn.');
+            return back()->with('error', ' Key đã hết hạn.');
         }
 
         $key->update(['status' => 'active']);
-        return back()->with('success', 'Kích hoạt key thành công.');
+        // Ghi log
+        \App\Models\KeyHistory::log($key->id, 'activate', "Kích hoạt lại key");
+
+        return back()->with('success', 'Kích hoạt thành công.');
     }
 
     public function revoke(Request $request, $id)
     {
         $key = Auth::user()->productKeys()->findOrFail($id);
         $key->revoke($request->reason);
+
+        \App\Models\KeyHistory::log($key->id, 'revoke', "Thu hồi key: " . $request->reason);
         return back()->with('success', 'Đã hủy key.');
     }
 
