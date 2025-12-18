@@ -285,9 +285,10 @@ class KeyManagementController extends Controller
                     $key->activate();
 
                     // Ghi lịch sử tạo Key
-                    \App\Models\KeyHistory::log($key->id, 'create', "Tạo Custom Key qua Ví", [
-                        'transaction_id' => $newTransaction->id,
-                        'cost' => $costCoinkey . ' Coin'
+                    \App\Models\KeyHistory::log($key->id, 'create', "Tạo Custom Key qua Ví - Order Code: {$newTransaction->order_code}", [
+                        'Key_Code'=> $keyCode,
+                        'cost' => $costCoinkey . ' Coin',
+                        'duration_minutes' => $durationMinutes,
                     ]);
 
                     return $newTransaction;

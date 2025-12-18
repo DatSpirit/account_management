@@ -94,6 +94,11 @@ class ProductKey extends Model
         return $this->status === 'suspended';
     }
 
+    public function isRevoked(): bool
+    {
+        return $this->status === 'revoked';
+    }
+
     public function activate(): void
     {
         if (!$this->activated_at) {
@@ -169,7 +174,7 @@ class ProductKey extends Model
     public function getRemainingDays(): ?float
     {
         $minutes = $this->getRemainingMinutes();
-        
+
         return $minutes !== null ? round($minutes / 1440, 1) : null;
     }
 

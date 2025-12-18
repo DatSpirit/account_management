@@ -473,7 +473,7 @@
 
 
             //  1. OPEN PURCHASE MODAL 
-       
+
             window.openPurchaseModal = function(product) {
                 currentProduct = product;
                 isKeyValid = false;
@@ -572,7 +572,7 @@
                 }
             };
 
-           
+
             //  2. STANDARD PURCHASE LOGIC
 
             window.selectPayment = function(method) {
@@ -611,9 +611,9 @@
                 }
             };
 
-           
+
             //  3. CUSTOM KEY LOGIC
-          
+
             window.selectCustomPayment = function(method) {
                 document.getElementById('customPaymentMethod').value = method;
                 const form = document.getElementById('customKeyForm');
@@ -655,6 +655,10 @@
             // Key Input Logic
             const customKeyInput = document.getElementById('customKeyCode');
             if (customKeyInput) {
+
+                let debounceTimer;
+                // let isKeyValid = false;
+
                 customKeyInput.addEventListener('input', function() {
                     clearTimeout(debounceTimer);
                     const message = document.getElementById('keyCheckMessage');
@@ -683,19 +687,26 @@
 
                     debounceTimer = setTimeout(async () => {
                         try {
-                            const response = await fetch(routes.checkKey, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').getAttribute(
-                                        'content')
-                                },
-                                body: JSON.stringify({
-                                    key_code: keyCode
-                                })
-                            });
+                            const response = await fetch(
+                                '{{ route('keys.check-key-code') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]')?.getAttribute(
+                                            'content') || ''
+                                    },
+                                    body: JSON.stringify({
+                                        key_code: keyCode
+                                    }),
+                                    credentials: 'same-origin'
+                                });
+
+                            if (!response.ok) {
+                                throw new Error(
+                                    `HTTP ${response.status}: ${response.statusText}`);
+                            }
                             const data = await response.json();
                             loading.style.display = 'none';
 
@@ -711,9 +722,16 @@
                             validateCustomForm();
                         } catch (error) {
                             loading.style.display = 'none';
-                            console.error('Chi tiết lỗi:',
-                            error); 
-                            message.textContent = 'Lỗi: ' + error.message;
+                            console.error(' Key check error:', error);
+                            // Hiển thị lỗi chi tiết hơn
+                            if (error.message.includes('NetworkError') || error.message
+                                .includes('Failed to fetch')) {
+                                message.textContent = '⚠️ Lỗi kết nối. Vui lòng thử lại.';
+                            } else if (error.message.includes('CORS')) {
+                                message.textContent = '⚠️ Lỗi CORS. Liên hệ admin.';
+                            } else {
+                                message.textContent = '⚠️ ' + error.message;
+                            }
                             message.className = 'text-xs font-bold text-red-500';
                         }
                     }, 500);
@@ -739,15 +757,15 @@
                 }
             }
 
-           
+
             //  4. SEARCH & FILTER
-            
+
             const searchInput = document.getElementById('search-input');
             const categoryFilter = document.getElementById('category-filter');
             const priceSort = document.getElementById('price-sort');
 
             function filterProducts() {
-                
+
                 const searchTerm = searchInput.value.toLowerCase();
                 const category = categoryFilter.value;
                 const sort = priceSort.value;
@@ -789,7 +807,7 @@
             if (categoryFilter) categoryFilter.addEventListener('change', filterProducts);
             if (priceSort) priceSort.addEventListener('change', filterProducts);
 
-            
+
             //  5. VIEW DETAIL MODAL 
             window.openModal = function() {
                 const modal = document.getElementById('productModal');
