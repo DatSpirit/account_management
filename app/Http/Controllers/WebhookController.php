@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\KeyManagementService;
+use App\Models\KeyHistory;
 use Exception;
 
 class WebhookController extends Controller
@@ -366,34 +367,76 @@ class WebhookController extends Controller
     }
 
     /**
-     * ✅ Hàm thực hiện giao hàng dựa trên loại sản phẩm
+     *  Hàm thực hiện giao hàng dựa trên loại sản phẩm
      */
     private function fulfillOrder(Transaction $transaction)
     {
         try {
             $user = $transaction->user;
             $product = $transaction->product;
-
-            // Check metadata xem có phải mua custom key không
             $meta = $transaction->response_data;
-            // Lưu ý: response_data trong DB đang cast là array (theo Model Transaction trang 15)
 
+            // TH1: Gia hạn key 
+            if (isset($meta['type']) && $meta['type'] === 'key_extension') {
+                $keyId = $meta['key_id'];
+                $duration = $meta['duration_minutes'];
+
+                // Tìm Key
+                $key = \App\Models\ProductKey::find($keyId);
+
+                if ($key) {
+                    // 1. Cộng thời gian
+                    $key->extend($duration);
+                    // 2. Kích hoạt lại nếu đang hết hạn/tạm dừng
+                    $key->status = 'active';
+                    // 3. Cộng chi phí vào key để thống kê tổng tiền đã nạp cho key này
+                    $key->key_cost += ($transaction->amount / 1000);
+                    $key->save();
+
+                    //  Ghi lịch sử ngay khi thành công
+                    try {
+                        \App\Models\KeyHistory::log($key->id, 'extend', "Gia hạn qua PayOS - Đơn #{$transaction->order_code}", [
+                            'added_minutes' => $duration,
+                            'cost_vnd' => $transaction->amount,
+                            'new_expiry' => $key->expires_at->toDateTimeString()
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning("History Log Error: " . $ex->getMessage());
+                    }
+
+                    Log::info("✅ Extended Key {$key->key_code} via Webhook.");
+                } else {
+                   Log::error("❌ Webhook: Key not found for extension. Transaction ID: {$transaction->id}");
+                }
+                return; // Kết thúc xử lý ngay để ko tạo key
+            }
+
+            // TH2: Mua custom key
             if (isset($meta['type']) && $meta['type'] === 'custom_key_purchase') {
                 $keyService = app(\App\Services\KeyManagementService::class);
 
-                $keyService->createCustomKey(
+                $newKey = $keyService->createCustomKey(
                     user: $user,
                     customKeyCode: $meta['key_code'],
                     durationMinutes: $meta['duration_minutes'],
-                    baseProduct: null,
-                    assignedToEmail: $meta['assigned_email']
+                    baseProduct: $product,
+                    assignedToEmail: $meta['assigned_email'] ?? null
                 );
+                // Cập nhật transaction để link với key vừa tạo
+                $transaction->update(['key_id' => $newKey->id]);
 
-                \Illuminate\Support\Facades\Log::info("Created Custom Key via Webhook: " . $meta['key_code']);
+                // Ghi lịch sử TẠO MỚI (Custom)
+                if ($newKey) {
+                    \App\Models\KeyHistory::log($newKey->id, 'create', "Tạo Custom Key qua PayOS #{$transaction->order_code}", [
+                        'cost_vnd' => $transaction->amount
+                    ]);
+                }
+
+                Log::info("Created Custom Key {$meta['key_code']} via Webhook.");
                 return;
             }
 
-            // TH1: Nếu là gói nạp Coinkey -> Cộng tiền vào ví
+            // TH3: Nếu là gói nạp Coinkey -> Cộng tiền vào ví
             if ($product->isCoinkeyPack()) {
                 $wallet = $user->getOrCreateWallet();
 
@@ -411,11 +454,18 @@ class WebhookController extends Controller
                     'wallet_balance' => $wallet->fresh()->balance,
                 ]);
             }
-            // TH2: Nếu là gói dịch vụ (Package) -> Tạo Key
+            // TH4: Nếu là gói dịch vụ (Package) -> Tạo Key
             elseif ($product->isServicePackage()) {
 
-                $keyService = app(KeyManagementService::class);
+                $keyService = app(\App\Services\KeyManagementService::class);
                 $key = $keyService->createKeyFromPackage($user, $product, $transaction);
+
+                if ($key) {
+                    \App\Models\KeyHistory::log($key->id, 'create', "Mua gói {$product->name} qua PayOS", [
+                        'order_code' => $transaction->order_code,
+                        'cost_vnd' => $transaction->amount
+                    ]);
+                }
 
                 Log::info("🔑 Created key for user {$user->id}", [
                     'key_code' => $key->key_code,

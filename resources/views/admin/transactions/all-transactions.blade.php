@@ -16,7 +16,7 @@
                     Transaction Management
                 </h2>
             </div>
-
+            {{-- 
             <div
                 class="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                 <a href="{{ route('admin.transactions.all-transactions', array_merge(request()->all(), ['type' => 'cash'])) }}"
@@ -34,7 +34,7 @@
                     <span class="mr-2">🪙</span>
                     Coinkey
                 </a>
-            </div>
+            </div> --}}
         </div>
 
         {{--  Nút Export Excel  --}}
@@ -163,7 +163,7 @@
             <div
                 class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
                 <form method="GET" action="{{ route('admin.transactions.all-transactions') }}" class="space-y-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                         {{-- Currency Filter --}}
                         <div>
                             <label
@@ -172,9 +172,9 @@
                             </label>
                             <select name="type"
                                 class="w-full px-3 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 cursor-pointer">
-                                <option value="cash" {{ request('type', 'cash') === 'cash' ? 'selected' : '' }}>💵
-                                    Tiền mặt</option>
-                                <option value="coinkey" {{ request('type') === 'coinkey' ? 'selected' : '' }}>🪙
+                                <option value="cash" {{ request('type', 'cash') === 'cash' ? 'selected' : '' }}>
+                                    Cash</option>
+                                <option value="coinkey" {{ request('type') === 'coinkey' ? 'selected' : '' }}>
                                     Coinkey</option>
                             </select>
                         </div>
@@ -215,13 +215,33 @@
                                 class="w-full px-3 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200">
                         </div>
 
+
+
+                        <div>
+                            <label
+                                class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                Advanced filters
+                            </label>
+                            <select name="advanced"
+                                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 cursor-pointer">
+                                <option value="">All</option>
+                                <option value="order" {{ request('advanced') == 'order' ? 'selected' : '' }}>Order
+                                </option>
+                                <option value="user" {{ request('advanced') == 'user' ? 'selected' : '' }}>User
+                                </option>
+                                <option value="product" {{ request('advanced') == 'product' ? 'selected' : '' }}>
+                                    Product
+                                </option>
+                                <option value="key" {{ request('advanced') == 'key' ? 'selected' : '' }}>Key
+                                </option>
+                            </select>
+                        </div>
                         <div class="pt-6">
                             <a href="{{ route('admin.transactions.all-transactions') }}"
                                 class="w-full flex items-center justify-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-all duration-200 text-sm h-full">
                                 Reset
                             </a>
                         </div>
-
 
                         <div class="col-span-2 sm:col-span-3 lg:col-span-2">
                             <label
@@ -230,7 +250,7 @@
                             </label>
                             <div class="relative">
                                 <input type="text" name="search" value="{{ $search ?? '' }}"
-                                    placeholder="Order code, user, description..."
+                                    placeholder="Order , User, Key Code, Sản phẩm..."
                                     class="w-full pl-4 pr-12 py-2 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200">
                                 <button type="submit"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200">
@@ -240,6 +260,7 @@
                                     </svg>
                                 </button>
                             </div>
+
                         </div>
 
                     </div>
@@ -259,6 +280,10 @@
                                 <th
                                     class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     User
+                                </th>
+                                <th
+                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                    Description
                                 </th>
                                 <th
                                     class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
@@ -288,7 +313,7 @@
                                     <td class="px-3 sm:px-6 py-4">
                                         <div class="flex flex-col space-y-1">
                                             <span
-                                                class="text-sm font-bold text-indigo-600 dark:text-indigo-400">#{{ $transaction->order_code }}</span>
+                                                class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ $transaction->order_code }}</span>
                                             {{-- Hiển thị Time chỉ trên Mobile --}}
                                             <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
                                                 <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
@@ -346,17 +371,90 @@
                                         @endif
                                     </td>
 
-                                    <td class="px-3 sm:px-6 py-4 hidden md:table-cell">
+                                    <td class="px-3 sm:px-6 py-4 hidden lg:table-cell">
+                                        <div class="flex flex-col space-y-1">
+                                            @php
+                                                // 1. Xác định hậu tố (Suffix)
+                                                $meta = $transaction->response_data ?? []; // Lấy metadata từ JSON
+                                                $type = $meta['type'] ?? '';
+                                                $productType = $transaction->product->product_type ?? '';
+
+                                                $suffix = '';
+                                                if ($type === 'key_extension') {
+                                                    $suffix = 'EX';
+                                                } elseif ($productType === 'coinkey') {
+                                                    $suffix = 'C';
+                                                } elseif ($productType === 'package') {
+                                                    $suffix = 'K';
+                                                }
+
+                                                $finalOrderCode = $transaction->order_code . $suffix;
+                                            @endphp
+
+                                            {{-- Hiển thị Order Code với Hậu tố chuẩn --}}
+                                            <span class="text-sm font-bold text-gray-600 dark:text-gray-400">
+                                                {{ $finalOrderCode }}
+                                            </span>
+
+                                            <span class="text-xs text-gray-500 lg:hidden">
+                                                {{ $transaction->created_at->format('d/m H:i') }}
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 hidden md:table-cell">
                                         @if ($transaction->product)
                                             <div class="flex flex-col space-y-1">
-                                                <span
-                                                    class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ Str::limit($transaction->product->name, 25) }}</span>
-                                                <span
-                                                    class="text-xs text-gray-500 dark:text-gray-400">{{ Str::limit($transaction->description, 35) }}</span>
+                                                {{-- Tên sản phẩm gốc --}}
+                                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    {{ Str::limit($transaction->product->name, 30) }}
+                                                </span>
+
+                                                {{-- LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
+                                                @if ($suffix === 'EX')
+                                                    {{-- Trường hợp GIA HẠN --}}
+                                                    <div
+                                                        class="flex flex-col mt-1 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-800">
+                                                        <span
+                                                            class="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
+                                                            Gia hạn Key
+                                                        </span>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-300">
+                                                            ID Key: <strong>#{{ $meta['key_id'] ?? 'N/A' }}</strong>
+                                                        </span>
+                                                        <span class="text-xs text-gray-500">
+                                                            Ngày gia hạn:
+                                                            {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                        </span>
+                                                    </div>
+                                                @elseif ($suffix === 'K')
+                                                    {{-- Trường hợp MUA KEY MỚI --}}
+                                                    @if ($transaction->productKey)
+                                                        <div
+                                                            class="flex flex-col mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-100 dark:border-indigo-800">
+                                                            <span
+                                                                class="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase">
+                                                                Tạo Key mới
+                                                            </span>
+                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
+                                                                ID Key:
+                                                                <strong>#{{ $transaction->productKey->id }}</strong>
+                                                            </span>
+                                                            <span class="text-xs text-gray-500">
+                                                                Ngày tạo:
+                                                                {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                            </span>
+                                                        </div>
+                                                    @endif
+                                                @elseif ($suffix === 'C')
+                                                    {{-- Trường hợp NẠP COIN --}}
+                                                    <span class="text-xs text-yellow-600 dark:text-yellow-400">
+                                                        Nạp ví Coinkey
+                                                    </span>
+                                                @endif
                                             </div>
                                         @else
-                                            <span
-                                                class="text-sm text-gray-400 dark:text-gray-500 italic">{{ Str::limit($transaction->description ?? 'No product', 35) }}</span>
+                                            <span class="text-sm text-gray-400 italic">No Product Info</span>
                                         @endif
                                     </td>
 
@@ -366,7 +464,6 @@
                                                 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100">
                                                 {{ number_format($transaction->amount, 0, ',', '.') }}
                                             </span>
-                                            {{-- ✅ HIỂN THỊ CURRENCY ĐỘNG --}}
                                             @if ($transaction->currency === 'COINKEY')
                                                 <span
                                                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">

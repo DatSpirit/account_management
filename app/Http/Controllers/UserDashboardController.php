@@ -101,7 +101,6 @@ class UserDashboardController extends Controller
         // ====================================================
 
         // Lấy tham số range, mặc định là '7days'
-        // Đây là điểm then chốt để Dashboard hiển thị theo yêu cầu (ví dụ: /dashboard?range=month)
         $range = $request->get('range', '7days'); // 7days | month | year
 
         // Khởi tạo các mảng dữ liệu biểu đồ

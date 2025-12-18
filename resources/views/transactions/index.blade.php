@@ -3,16 +3,20 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-                    <svg class="w-8 h-8 mr-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    <svg class="w-8 h-8 mr-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     My Transactions
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý tất cả giao dịch của bạn</p>
             </div>
-            <button onclick="window.location.reload()" class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all">
+            <button onclick="window.location.reload()"
+                class="hidden sm:flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Refresh
             </button>
@@ -20,14 +24,15 @@
     </x-slot>
 
     <div class="space-y-6">
-        
+
         {{-- Quick Stats --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -40,7 +45,8 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -53,7 +59,8 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -66,7 +73,8 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -80,54 +88,71 @@
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <form method="GET" action="{{ route('transactions.index') }}" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                    
+
                     {{-- Status Filter --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label
+                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             Status
                         </label>
-                        <select name="status" class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
+                        <select name="status"
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
                             <option value="">All Status</option>
-                            <option value="success" {{ request('status') === 'success' ? 'selected' : '' }}>✅ Success</option>
-                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>⊘ Cancelled</option>
-                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed</option>
+                            <option value="success" {{ request('status') === 'success' ? 'selected' : '' }}>✅ Success
+                            </option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>⏳ Pending
+                            </option>
+                            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>⊘
+                                Cancelled</option>
+                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed
+                            </option>
                         </select>
                     </div>
 
                     {{-- Date From --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label
+                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             From Date
                         </label>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
+                        <input type="date" name="date_from" value="{{ request('date_from') }}"
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
                     </div>
 
                     {{-- Date To --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label
+                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             To Date
                         </label>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
+                        <input type="date" name="date_to" value="{{ request('date_to') }}"
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
                     </div>
 
                     {{-- Search --}}
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                        <label
+                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                             Search
                         </label>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Order code..." class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
+                        <input type="text" name="search" value="{{ request('search') }}"
+                            placeholder="Order code..."
+                            class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 transition-all">
                     </div>
 
                     {{-- Buttons --}}
                     <div class="flex items-end space-x-2">
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/50">
-                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        <button type="submit"
+                            class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/50">
+                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             Search
                         </button>
-                        <a href="{{ route('transactions.index') }}" class="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                        <a href="{{ route('transactions.index') }}"
+                            class="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
                             Reset
                         </a>
                     </div>
@@ -136,17 +161,33 @@
         </div>
 
         {{-- Transactions Table --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-gray-100 dark:bg-gray-700 border-b-2 border-gray-200 dark:border-gray-600">
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Order</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">Product</th>
-                            <th class="px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">Date</th>
-                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Action</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Order</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                Description</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                Product</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Amount </th>
+                            <th
+                                class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Status</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
+                                Date</th>
+                            <th
+                                class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -154,51 +195,140 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">#{{ $transaction->order_code }}</span>
+                                        <span
+                                            class="text-sm font-bold text-indigo-600 dark:text-indigo-400">#{{ $transaction->order_code }}</span>
                                         <span class="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
                                             {{ $transaction->created_at->format('d/m/Y H:i') }}
                                         </span>
                                     </div>
                                 </td>
+                                <td class="px-3 sm:px-6 py-4 hidden lg:table-cell">
+                                    <div class="flex flex-col space-y-1">
+                                        @php
+                                            // 1. Xác định hậu tố (Suffix)
+                                            $meta = $transaction->response_data ?? []; // Lấy metadata từ JSON
+                                            $type = $meta['type'] ?? '';
+                                            $productType = $transaction->product->product_type ?? '';
+
+                                            $suffix = '';
+                                            if ($type === 'key_extension') {
+                                                $suffix = 'EX';
+                                            } elseif ($productType === 'coinkey') {
+                                                $suffix = 'C';
+                                            } elseif ($productType === 'package') {
+                                                $suffix = 'K';
+                                            }
+
+                                            $finalOrderCode = $transaction->order_code . $suffix;
+                                        @endphp
+
+                                        {{-- Hiển thị Order Code với Hậu tố chuẩn --}}
+                                        <span class="text-sm font-bold text-gray-600 dark:text-gray-400">
+                                            {{ $finalOrderCode }}
+                                        </span>
+
+                                        <span class="text-xs text-gray-500 lg:hidden">
+                                            {{ $transaction->created_at->format('d/m H:i') }}
+                                        </span>
+                                    </div>
+                                </td>
 
                                 <td class="px-6 py-4 hidden md:table-cell">
-                                    @if($transaction->product)
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                                </svg>
-                                            </div>
-                                            <div class="min-w-0">
-                                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ Str::limit($transaction->product->name, 30) }}</p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Str::limit($transaction->description, 40) }}</p>
-                                            </div>
+                                    @if ($transaction->product)
+                                        <div class="flex flex-col space-y-1">
+                                            {{-- Tên sản phẩm gốc --}}
+                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                {{ Str::limit($transaction->product->name, 30) }}
+                                            </span>
+
+                                            {{-- LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
+                                            @if ($suffix === 'EX')
+                                                {{-- Trường hợp GIA HẠN --}}
+                                                <div
+                                                    class="flex flex-col mt-1 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-800">
+                                                    <span
+                                                        class="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
+                                                        Gia hạn Key
+                                                    </span>
+                                                    <span class="text-xs text-gray-600 dark:text-gray-300">
+                                                        ID Key: <strong>#{{ $meta['key_id'] ?? 'N/A' }}</strong>
+                                                    </span>
+                                                    <span class="text-xs text-gray-500">
+                                                        Ngày gia hạn:
+                                                        {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                    </span>
+                                                </div>
+                                            @elseif ($suffix === 'K')
+                                                {{-- Trường hợp MUA KEY MỚI --}}
+                                                @if ($transaction->productKey)
+                                                    <div
+                                                        class="flex flex-col mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-100 dark:border-indigo-800">
+                                                        <span
+                                                            class="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase">
+                                                            Tạo Key mới
+                                                        </span>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-300">
+                                                            ID Key:
+                                                            <strong>#{{ $transaction->productKey->id }}</strong>
+                                                        </span>
+                                                        <span class="text-xs text-gray-500">
+                                                            Ngày tạo:
+                                                            {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            @elseif ($suffix === 'C')
+                                                {{-- Trường hợp NẠP COIN --}}
+                                                <span class="text-xs text-yellow-600 dark:text-yellow-400">
+                                                    Nạp ví Coinkey
+                                                </span>
+                                            @endif
                                         </div>
                                     @else
-                                        <span class="text-sm text-gray-400 italic">No product</span>
+                                        <span class="text-sm text-gray-400 italic">No Product Info</span>
                                     @endif
                                 </td>
 
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex flex-col items-end">
-                                        <span class="text-base font-bold text-gray-900 dark:text-white">
-                                            {{ number_format($transaction->amount, 0, ',', '.') }}
+                                <td class="px-3 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    <div class="flex flex-col items-end space-y-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                            {{ number_format($transaction->amount, 0, ',', '.') }} VNĐ
                                         </span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">VND</span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 text-center">
                                     @php
                                         $statusConfig = [
-                                            'success' => ['bg' => 'bg-green-100 dark:bg-green-900/50', 'text' => 'text-green-800 dark:text-green-300', 'label' => 'Success', 'icon' => '✓'],
-                                            'pending' => ['bg' => 'bg-yellow-100 dark:bg-yellow-900/50', 'text' => 'text-yellow-800 dark:text-yellow-300', 'label' => 'Pending', 'icon' => '⏱'],
-                                            'failed' => ['bg' => 'bg-gray-100 dark:bg-gray-700', 'text' => 'text-gray-800 dark:text-gray-300', 'label' => 'Failed', 'icon' => '✗'],
-                                            'cancelled' => ['bg' => 'bg-red-100 dark:bg-red-900/50', 'text' => 'text-red-800 dark:text-red-300', 'label' => 'Cancelled', 'icon' => '⊘'],
+                                            'success' => [
+                                                'bg' => 'bg-green-100 dark:bg-green-900/50',
+                                                'text' => 'text-green-800 dark:text-green-300',
+                                                'label' => 'Success',
+                                                'icon' => '✓',
+                                            ],
+                                            'pending' => [
+                                                'bg' => 'bg-yellow-100 dark:bg-yellow-900/50',
+                                                'text' => 'text-yellow-800 dark:text-yellow-300',
+                                                'label' => 'Pending',
+                                                'icon' => '⏱',
+                                            ],
+                                            'failed' => [
+                                                'bg' => 'bg-gray-100 dark:bg-gray-700',
+                                                'text' => 'text-gray-800 dark:text-gray-300',
+                                                'label' => 'Failed',
+                                                'icon' => '✗',
+                                            ],
+                                            'cancelled' => [
+                                                'bg' => 'bg-red-100 dark:bg-red-900/50',
+                                                'text' => 'text-red-800 dark:text-red-300',
+                                                'label' => 'Cancelled',
+                                                'icon' => '⊘',
+                                            ],
                                         ];
                                         $config = $statusConfig[$transaction->status] ?? $statusConfig['pending'];
                                     @endphp
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $config['bg'] }} {{ $config['text'] }}">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $config['bg'] }} {{ $config['text'] }}">
                                         <span class="mr-1">{{ $config['icon'] }}</span>
                                         {{ $config['label'] }}
                                     </span>
@@ -206,19 +336,25 @@
 
                                 <td class="px-6 py-4 hidden lg:table-cell">
                                     <div class="flex flex-col text-sm">
-                                        <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->created_at->format('d/m/Y') }}</span>
-                                        <span class="text-gray-500 dark:text-gray-400 text-xs">{{ $transaction->created_at->format('H:i:s') }}</span>
-                                        <span class="text-gray-400 dark:text-gray-500 text-xs">{{ $transaction->created_at->diffForHumans() }}</span>
+                                        <span
+                                            class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->created_at->format('d/m/Y') }}</span>
+                                        <span
+                                            class="text-gray-500 dark:text-gray-400 text-xs">{{ $transaction->created_at->format('H:i:s') }}</span>
+                                        <span
+                                            class="text-gray-400 dark:text-gray-500 text-xs">{{ $transaction->created_at->diffForHumans() }}</span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('transactions.show', $transaction->id) }}" 
-                                       class="inline-flex p-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-all transform hover:scale-110 shadow-md hover:shadow-lg"
-                                       title="View Details">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    <a href="{{ route('transactions.show', $transaction->id) }}"
+                                        class="inline-flex p-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-all transform hover:scale-110 shadow-md hover:shadow-lg"
+                                        title="View Details">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
                                 </td>
@@ -227,16 +363,22 @@
                             <tr>
                                 <td colspan="6" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center space-y-4">
-                                        <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                            <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                        <div
+                                            class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                            <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No transactions found</h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">Start shopping to see your transactions here</p>
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No
+                                                transactions found</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Start shopping to see
+                                                your transactions here</p>
                                         </div>
-                                        <a href="{{ route('products') }}" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/30">
+                                        <a href="{{ route('products') }}"
+                                            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/30">
                                             Browse Products
                                         </a>
                                     </div>
@@ -248,7 +390,7 @@
             </div>
 
             {{-- Pagination --}}
-            @if($transactions->hasPages())
+            @if ($transactions->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                     {{ $transactions->appends(request()->query())->links('vendor.pagination.tailwind') }}
                 </div>
@@ -258,50 +400,48 @@
     </div>
 
     {{-- Success/Error Messages --}}
-    @if(session('success'))
-        <div x-data="{ show: true }" 
-             x-show="show" 
-             x-init="setTimeout(() => show = false, 5000)"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 transform translate-x-full"
-             x-transition:enter-end="opacity-100 transform translate-x-0"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="opacity-100 transform translate-x-0"
-             x-transition:leave-end="opacity-0 transform translate-x-full"
-             class="fixed top-4 right-4 z-50 max-w-md">
+    @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform translate-x-full"
+            x-transition:enter-end="opacity-100 transform translate-x-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-x-0"
+            x-transition:leave-end="opacity-0 transform translate-x-full" class="fixed top-4 right-4 z-50 max-w-md">
             <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span class="font-medium">{{ session('success') }}</span>
                 <button @click="show = false" class="ml-auto hover:bg-white/20 rounded-lg p-1 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
         </div>
     @endif
 
-    @if(session('error'))
-        <div x-data="{ show: true }" 
-             x-show="show" 
-             x-init="setTimeout(() => show = false, 5000)"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 transform translate-x-full"
-             x-transition:enter-end="opacity-100 transform translate-x-0"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="opacity-100 transform translate-x-0"
-             x-transition:leave-end="opacity-0 transform translate-x-full"
-             class="fixed top-4 right-4 z-50 max-w-md">
+    @if (session('error'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform translate-x-full"
+            x-transition:enter-end="opacity-100 transform translate-x-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-x-0"
+            x-transition:leave-end="opacity-0 transform translate-x-full" class="fixed top-4 right-4 z-50 max-w-md">
             <div class="bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span class="font-medium">{{ session('error') }}</span>
                 <button @click="show = false" class="ml-auto hover:bg-white/20 rounded-lg p-1 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -309,45 +449,45 @@
     @endif
 
     @push('scripts')
-    <script>
-        // Auto-refresh transactions every 30 seconds if there are pending transactions
-        @if($transactions->contains('status', 'pending'))
-            setInterval(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const hasPendingOnly = urlParams.get('status') === 'pending' || !urlParams.get('status');
-                
-                if (hasPendingOnly) {
-                    console.log('Auto-refreshing pending transactions...');
+        <script>
+            // Auto-refresh transactions every 30 seconds if there are pending transactions
+            @if ($transactions->contains('status', 'pending'))
+                setInterval(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const hasPendingOnly = urlParams.get('status') === 'pending' || !urlParams.get('status');
+
+                    if (hasPendingOnly) {
+                        console.log('Auto-refreshing pending transactions...');
+                        window.location.reload();
+                    }
+                }, 30000); // 30 seconds
+            @endif
+
+            // Print function for invoices (if needed)
+            function printInvoice(transactionId) {
+                window.open(`/my-transactions/${transactionId}/invoice`, '_blank');
+            }
+
+            // Quick status filter
+            function quickFilter(status) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('status', status);
+                window.location.href = url.toString();
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + R: Refresh
+                if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
                     window.location.reload();
                 }
-            }, 30000); // 30 seconds
-        @endif
 
-        // Print function for invoices (if needed)
-        function printInvoice(transactionId) {
-            window.open(`/my-transactions/${transactionId}/invoice`, '_blank');
-        }
-
-        // Quick status filter
-        function quickFilter(status) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('status', status);
-            window.location.href = url.toString();
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + R: Refresh
-            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-                e.preventDefault();
-                window.location.reload();
-            }
-            
-            // Escape: Clear filters
-            if (e.key === 'Escape') {
-                window.location.href = '{{ route("transactions.index") }}';
-            }
-        });
-    </script>
+                // Escape: Clear filters
+                if (e.key === 'Escape') {
+                    window.location.href = '{{ route('transactions.index') }}';
+                }
+            });
+        </script>
     @endpush
 </x-app-layout>

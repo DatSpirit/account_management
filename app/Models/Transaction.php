@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory; 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    use HasFactory; 
+    use HasFactory;
 
     protected $fillable = [
         // Basic
@@ -18,14 +18,14 @@ class Transaction extends Model
         'amount',
         'status',
         'description',
-        
+
         // Webhook security
         'is_processed',
         'processed_at',
         'webhook_signature',
         'webhook_payload',
         'raw_payload',
-        
+
         // Payment details
         'payment_reference',
         'payment_link_id',
@@ -36,7 +36,7 @@ class Transaction extends Model
         'counter_account_bank_name',
         'transaction_datetime',
         'currency',
-        
+
         // Legacy
         'response_data',
     ];
@@ -47,7 +47,7 @@ class Transaction extends Model
         'transaction_datetime' => 'datetime',
         'amount' => 'decimal:2',
         'response_data' => 'array', // Tự động chuyển JSON DB -> Array PHP
-         'raw_payload' => 'string', 
+        'raw_payload' => 'string',
     ];
 
     // ==========================================
@@ -62,6 +62,11 @@ class Transaction extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function productKey()
+    {
+        return $this->hasOne(ProductKey::class, 'transaction_id');
     }
 
     // ==========================================

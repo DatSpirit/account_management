@@ -18,60 +18,93 @@ class AllTransactionController extends Controller
 
         $type = $request->get('type', 'cash'); // Mặc định là cash
 
-        // Lọc theo nhiều tiêu chí
+        // Lấy các tham số lọc
         $status = $request->get('status');
         $search = $request->get('search');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
+        $advanced = $request->get('advanced');
+
+
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        // ✅ BASE QUERY - Tách riêng theo type
-        $baseQuery = Transaction::query();
+        // 1. KHỞI TẠO QUERY
+        $query = Transaction::query();
 
-        // ✅ FILTER THEO TYPE (Cash hoặc Coinkey)
+        // 2. LỌC THEO LOẠI (Cash / Coinkey)
         if ($type === 'cash') {
-            $baseQuery->where(function ($q) {
+            $query->where(function ($q) {
                 $q->where('currency', 'VND')
                     ->orWhereNull('currency');
             });
         } elseif ($type === 'coinkey') {
-            $baseQuery->where('currency', 'COINKEY');
+            $query->where('currency', 'COINKEY');
         }
 
-        // ✅ QUERY CHO DANH SÁCH (với filters)
-        $transactions = (clone $baseQuery)
-            ->with(['user', 'product'])
+        // 3. LỌC THEO TRẠNG THÁI
+        if ($status && in_array($status, ['pending', 'success', 'failed', 'cancelled'])) {
+            $query->where('status', $status);
+        }
 
-            // Lọc theo trạng thái
-            ->when($status && in_array($status, ['pending', 'success', 'failed', 'cancelled']), function ($query) use ($status) {
-                $query->where('status', $status);
-            })
+        // 4. LỌC THEO NGÀY
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
 
-            // Tìm kiếm theo order_code, description, user name
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('order_code', 'like', "%{$search}%")
+        // 5. TÌM KIẾM NÂNG CAO (Search Logic) - Đặt ở đây mới đúng
+        if ($search) {
+            $query->where(function ($q) use ($search, $advanced) {
+
+                // Logic: Nếu không chọn Advanced (All) thì tìm hết. 
+                // Nếu chọn cụ thể (ví dụ 'user'), chỉ tìm theo User.
+
+                // A. Tìm theo ORDER (Mã đơn, Mô tả, Số tiền)
+                // Áp dụng khi chọn 'All' hoặc 'order'
+                if (!$advanced || $advanced === 'order') {
+                    $q->orWhere('order_code', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhereHas('user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                        });
-                });
-            })
+                        ->orWhere('amount', 'like', "%{$search}%");
+                }
 
-            // Lọc theo ngày tạo
-            ->when($dateFrom, function ($query) use ($dateFrom) {
-                $query->whereDate('created_at', '>=', $dateFrom);
-            })
-            ->when($dateTo, function ($query) use ($dateTo) {
-                $query->whereDate('created_at', '<=', $dateTo);
-            })
+                // B. Tìm theo USER (Tên, Email)
+                // Áp dụng khi chọn 'All' hoặc 'user'
+                if (!$advanced || $advanced === 'user') {
+                    $q->orWhereHas('user', function ($subQ) use ($search) {
+                        $subQ->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+                }
 
-            // Sắp xếp
+                // C. Tìm theo PRODUCT (Tên sản phẩm)
+                // Áp dụng khi chọn 'All' hoặc 'product'
+                if (!$advanced || $advanced === 'product') {
+                    $q->orWhereHas('product', function ($subQ) use ($search) {
+                        $subQ->where('name', 'like', "%{$search}%");
+                    });
+                }
+
+                // D. Tìm theo KEY (Mã Key, Key ID trong dữ liệu JSON)
+                // Áp dụng khi chọn 'All' hoặc 'key'
+                if (!$advanced || $advanced === 'key') {
+                    $q->orWhere('response_data->key_code', 'like', "%{$search}%")
+                        ->orWhere('response_data->key_id', 'like', "%{$search}%");
+                }
+            });
+        }
+
+        // 6. SẮP XẾP VÀ PHÂN TRANG (Thực hiện cuối cùng)
+        $transactions = $query
+            ->with(['user', 'product', 'productKey']) // Load quan hệ để tránh N+1 query
             ->orderBy($sortBy, $sortOrder)
             ->paginate(15)
-            ->appends(request()->query()); // ✅ Giữ query params khi pagination
+            ->appends($request->query()); // Giữ lại tham số trên URL khi chuyển trang
+
+        //  BASE QUERY - Tách riêng theo type
+        $baseQuery = Transaction::query();
 
         // ✅ THỐNG KÊ THEO TYPE (tách riêng)
         $stats = [
@@ -116,6 +149,7 @@ class AllTransactionController extends Controller
             'dateTo'   => $dateTo,
             'sortBy'   => $sortBy,
             'sortOrder' => $sortOrder,
+            'advanced' => $advanced,
         ]);
     }
     /**

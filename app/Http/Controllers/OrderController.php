@@ -165,12 +165,16 @@ class OrderController extends Controller
 
             // PayOS yêu cầu tối thiểu 2000 VND
             $amount = (int)max(2000, $product->price);
+            // 2.Xác định suffix cho description dựa vào product_type
+            $productType = $product->product_type ?? '';
+            $suffix = $productType === 'package' ? '_K' : ($productType === 'coinkey' ? '_C' : '');
+            $description = $orderCode . $suffix;
 
-            // 2. Chuẩn bị data 
+            // 3. Chuẩn bị data 
             $data = [
                 'orderCode' => $orderCode,
                 'amount'    => $amount,
-                'description' => substr($product->name ?? 'Thanh toán sản phẩm', 0, 25),
+                'description' => $description,
 
                 // return + cancel 
                 'returnUrl' => route('thankyou', ['orderCode' => $orderCode], true),
@@ -352,16 +356,20 @@ class OrderController extends Controller
             return redirect()->route('products')->with('error', '❌ Giao dịch không tồn tại');
         }
 
+        // Kiểm tra loại giao dịch từ metadata
+        $meta = $transaction->response_data ?? [];
+        $isExtension = isset($meta['type']) && $meta['type'] === 'key_extension';// Đơn hàng gia hạn key
+
         // 2.  Check PayOS status nếu vẫn đang pending
         if ($transaction->status === 'pending') {
             try {
                 // Gọi sang PayOS check trạng thái thực tế
                 $paymentInfo = $this->payOS->getPaymentLinkInformation($orderCode);
 
-                if ($paymentInfo && $paymentInfo['status'] === 'PAID') {
+                if ($paymentInfo && $paymentInfo['status'] === 'PAID') {// Thanh toán thành công
 
                     // DB Transaction để đảm bảo an toàn
-                    DB::transaction(function () use ($transaction) {
+                    DB::transaction(function () use ($transaction, $isExtension, $meta) {
                         // Cập nhật trạng thái giao dịch
                         $transaction->update([
                             'status' => 'success',
@@ -370,10 +378,23 @@ class OrderController extends Controller
                             'transaction_datetime' => $paymentInfo['transactions'][0]['transactionDateTime'] ?? now(),
                         ]);
 
+                        // Nếu là đơn hàng gia hạn key, xử lý logic gia hạn
+
+                        if ($isExtension) {
+                            $key = \App\Models\ProductKey::find($meta['key_id']);
+                            if ($key) {
+                                $key->extend($meta['duration_minutes']);
+                               // $key->key_cost += $costCoinkey;
+                                $key->save();
+                                Log::info("✅ Key {$key->key_code} extended via ThankYou Page Check.");
+                            }
+                        }
+
                         $product = $transaction->product;
                         $user = $transaction->user;
+                        $key = null;
 
-                        // XỬ LÝ LOGIC NẠP TIỀN 
+                        // XỬ LÝ LOGIC NẠP COIN
                         if ($product->product_type === 'coinkey') {
                             $wallet = $user->getOrCreateWallet();
 
@@ -403,8 +424,8 @@ class OrderController extends Controller
         $user = $transaction->user;
         $key = null;
 
-        // 3. Xử lý Key (Nếu đã thành công nhưng chưa có key, tạo ngay tại đây)
-        if ($transaction->status === 'success' && $product && $product->product_type === 'package') {
+        // 3. CHỈ TẠO KEY MỚI NẾU KHÔNG PHẢI LÀ GIA HẠN 
+        if (!$isExtension && $transaction->status === 'success' && $product && $product->product_type === 'package') {
 
             // Tìm key đã tạo (tránh tạo trùng)
             $key = \App\Models\ProductKey::where('user_id', $user->id)
@@ -413,7 +434,7 @@ class OrderController extends Controller
                 ->latest()
                 ->first();
 
-            // Nếu chưa có Key (do Webhook chậm hoặc chưa chạy), tạo ngay lập tức
+            // Nếu chưa có Key, tạo mới (Fallback)
             if (!$key) {
                 try {
                     // Gọi service tạo key
@@ -423,6 +444,10 @@ class OrderController extends Controller
                     Log::error("Failed to create key on ThankYou page: " . $e->getMessage());
                 }
             }
+        }
+        // Nếu là gia hạn, lấy key cũ để hiển thị
+        if ($isExtension) {
+            $key = \App\Models\ProductKey::find($meta['key_id']);
         }
 
         return view('thankyou', compact('transaction', 'product', 'key'));
