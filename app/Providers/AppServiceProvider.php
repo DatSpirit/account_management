@@ -32,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
+       // Force HTTPS nếu ứng dụng chạy trên môi trường production
+        URL::forceScheme('https'); // comment this line if not using HTTPS
+
         // ✅ Load API routes
         $this->loadApiRoutes();
 
