@@ -22,24 +22,24 @@
         <div class="max-w-7xl mx-auto space-y-6">
 
             <!-- Header Section with Stats -->
-            <div
-                class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
+            <div class="bg-gradient-to-r from-blue-500 dark:from-blue-700 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="space-y-2">
-                        <h3 class="text-xl sm:text-2xl font-bold text-white">Overview</h3>
-                        <p class="text-indigo-100 dark:text-indigo-200 text-sm sm:text-base">Quản lý tất cả người dùng
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">Overview</h3>
+                        <p class="text-blue-800 dark:text-white text-sm sm:text-base">Quản lý tất cả người dùng
                             trong hệ thống</p>
                     </div>
                     <div class="flex items-center space-x-6">
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-white">{{ $users->total() }}</div>
-                            <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide">Tổng Users
+                            <div class="text-3xl font-bold text-gray-800 dark:text-white">{{ $users->total() }}</div>
+                            <div class="text-xs text-blue-800 dark:text-white uppercase tracking-wide">Tổng Users
                             </div>
                         </div>
                         <div class="h-12 w-px bg-white/30"></div>
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-white">{{ $users->currentPage() }}</div>
-                            <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide">Trang Hiện
+                            <div class="text-3xl font-bold text-gray-800 dark:text-white">{{ $users->currentPage() }}
+                            </div>
+                            <div class="text-xs text-blue-800 dark:text-white uppercase tracking-wide">Trang Hiện
                                 Tại</div>
                         </div>
                     </div>
@@ -155,7 +155,7 @@
                                         class="w-4 h-4 text-indigo-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
                                 </th>
                                 <th
-                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider
+                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell
                                     {{ $filter === 'id' ? 'bg-indigo-100 dark:bg-indigo-900/30' : '' }}">
                                     <div class="flex items-center space-x-2">
                                         <span>ID</span>
@@ -200,11 +200,11 @@
                                     </div>
                                 </th>
                                 <th
-                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     Số Điện Thoại
                                 </th>
                                 <th
-                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     Vai Trò
                                 </th>
                                 <th
@@ -217,13 +217,13 @@
                             @forelse ($users as $user)
                                 <tr
                                     class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 group">
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap ">
                                         <input type="checkbox"
                                             class="user-checkbox w-4 h-4 text-indigo-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500"
                                             data-user-id="{{ $user->id }}">
                                     </td>
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100
+                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 hidden lg:table-cell
                                         {{ $filter === 'id' ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : '' }}">
                                         <span
                                             class="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-mono text-xs">
@@ -233,9 +233,31 @@
                                     <td
                                         class="px-6 py-4 whitespace-nowrap
                                         {{ $filter === 'name' ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : '' }}">
+                                        <span class="lg:hidden text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                            ID: #{{ $user->id }}
+                                        </span>
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                             {{ $user->name }}
                                         </div>
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 lg:hidden">
+                                            @if ($user->is_admin)
+                                                <span
+                                                    class="lg:hidden inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 shadow-sm">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                    Admin
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="lg:hidden inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                                    User
+                                                </span>
+                                            @endif
+                                        </span>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300
@@ -248,8 +270,17 @@
                                             </svg>
                                             <span class="font-medium">{{ $user->email }}</span>
                                         </div>
+                                        <div class="lg:hidden flex items-center space-x-2">
+                                            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <span>Phone: {{ $user->phone_number }}</span>
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300 hidden lg:table-cell">
                                         <div class="flex items-center space-x-2">
                                             <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +290,7 @@
                                             <span>{{ $user->phone_number }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                                         @if ($user->is_admin)
                                             <span
                                                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 shadow-sm">

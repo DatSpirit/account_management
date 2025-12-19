@@ -26,17 +26,17 @@
 
             <!-- Header Section -->
             <div
-                class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+                class="bg-gradient-to-r from-blue-200 to-blue-600 dark:from-blue-200 dark:to-blue-600 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 transition-colors duration-300">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="space-y-2">
-                        <h3 class="text-xl sm:text-2xl font-bold text-white">Cửa Hàng Sản Phẩm</h3>
-                        <p class="text-white text-opacity-90 text-sm sm:text-base">Khám phá các sản phẩm chất lượng cao
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Cửa Hàng Sản Phẩm</h3>
+                        <p class="text-gray-900 dark:text-white text-opacity-90 text-sm sm:text-base">Khám phá các sản phẩm chất lượng cao
                         </p>
                     </div>
                     <div class="flex items-center space-x-4">
                         @if ($isAdmin)
                             <a href="{{ route('admin.products.create') }}"
-                                class="px-3 py-2 sm:px-4 sm:py-2 bg-white hover:bg-gray-100 text-indigo-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2 text-sm sm:text-base">
+                                class="px-3 py-2 sm:px-4 sm:py-2 bg-white hover:bg-white-400 text-indigo-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2 text-sm sm:text-base">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -107,12 +107,12 @@
 
                         <!-- Product Image -->
                         <div
-                            class="relative bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 h-48 flex items-center justify-center p-4 sm:p-6">
+                            class="relative bg-gradient-to-br from-blue-100 to-blue-600 dark:from-blue-100 dark:to-blue-600 h-48 flex items-center justify-center p-4 sm:p-6">
                             @if (isset($product['image']))
                                 <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}"
                                     class="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal">
                             @else
-                                <svg class="w-24 h-24 text-indigo-400 dark:text-indigo-500" fill="none"
+                                <svg class="w-24 h-24 text-red-100 dark:text-red-400" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -138,7 +138,7 @@
                             <div class="flex flex-col pt-2">
                                 <div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Giá tiền mặt</p>
-                                    <p class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                                    <p class="text-xl font-bold text-blue-600 dark:text-blue-400">
                                         {{ number_format($product['price']) }}₫</p>
                                 </div>
                                 @if (isset($product['product_type']) && $product['product_type'] == 'package' && $product['coinkey_amount'] > 0)
@@ -157,7 +157,7 @@
                             <!-- Action Buttons -->
                             <div class="flex gap-2 pt-3 flex-wrap">
                                 <button onclick="openPurchaseModal({{ json_encode($product) }})"
-                                    class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-center text-sm">
+                                    class="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 dark:from-green-500 dark:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-center text-sm">
                                     <span class="flex items-center justify-center space-x-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">

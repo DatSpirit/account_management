@@ -26,8 +26,8 @@
     <div class="space-y-6">
 
         {{-- Quick Stats --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="bg-gradient-to-br from-green-300 to-emerald-600 rounded-2xl shadow-lg p-6 text-gray-600 dark:text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,10 +38,10 @@
                 </div>
                 <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Success</p>
                 <p class="text-3xl font-bold">{{ $stats['success'] ?? 0 }}</p>
-                <p class="text-xs opacity-75 mt-2">{{ number_format($stats['success_amount'] ?? 0) }} VND</p>
+                <p class="text-xm opacity-75 mt-2">{{ number_format($stats['success_amount'] ?? 0) }} VND</p>
             </div>
 
-            <div class="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="bg-gradient-to-br from-yellow-300 to-orange-600 rounded-2xl shadow-lg p-6 text-gray-600 dark:text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,10 +52,10 @@
                 </div>
                 <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Pending</p>
                 <p class="text-3xl font-bold">{{ $stats['pending'] ?? 0 }}</p>
-                <p class="text-xs opacity-75 mt-2">{{ number_format($stats['pending_amount'] ?? 0) }} VND</p>
+                <p class="text-xm opacity-75 mt-2">{{ number_format($stats['pending_amount'] ?? 0) }} VND</p>
             </div>
 
-            <div class="bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="bg-gradient-to-br from-red-300 to-pink-600 rounded-2xl shadow-lg p-6 text-gray-600 dark:text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,10 +66,10 @@
                 </div>
                 <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Cancelled</p>
                 <p class="text-3xl font-bold">{{ $stats['failed'] ?? 0 }}</p>
-                <p class="text-xs opacity-75 mt-2">Cancelled & Failed</p>
+                <p class="text-xm opacity-75 mt-2">Cancelled & Failed</p>
             </div>
 
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="bg-gradient-to-br from-indigo-300 to-purple-600 rounded-2xl shadow-lg p-6 text-gray-600 dark:text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,8 +79,8 @@
                     </div>
                 </div>
                 <p class="text-sm opacity-90 uppercase tracking-wider mb-2">Total Spent</p>
-                <p class="text-3xl font-bold">{{ number_format($stats['total_amount'] ?? 0) }}</p>
-                <p class="text-xs opacity-75 mt-2">VND</p>
+                <p class="text-2xl font-bold">{{ number_format($stats['total_amount'] ?? 0) }}</p>
+                <p class="text-xm opacity-75 mt-2">VND</p>
             </div>
         </div>
 
@@ -174,10 +174,10 @@
                                 class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
                                 Description</th>
                             <th
-                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                 Product</th>
                             <th
-                                class="px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
                                 Amount </th>
                             <th
                                 class="px-6 py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -233,7 +233,7 @@
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 hidden md:table-cell">
+                                <td class="px-3 sm:px-6 py-4 text-left whitespace-nowrap">
                                     @if ($transaction->product)
                                         <div class="flex flex-col space-y-1">
                                             {{-- Tên sản phẩm gốc --}}
@@ -283,17 +283,31 @@
                                                     Nạp ví Coinkey
                                                 </span>
                                             @endif
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                                                Desc: {{ $transaction->order_code }}
+                                            </span>
                                         </div>
                                     @else
                                         <span class="text-sm text-gray-400 italic">No Product Info</span>
                                     @endif
                                 </td>
 
-                                <td class="px-3 sm:px-6 py-4 text-right whitespace-nowrap">
+                                <td class="px-6 py-4 hidden md:table-cell">
                                     <div class="flex flex-col items-end space-y-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                                            {{ number_format($transaction->amount, 0, ',', '.') }} VNĐ
-                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 ">
+                                                {{ number_format($transaction->amount, 0, ',', '.') }}
+                                                @if ($transaction->currency === 'COINKEY')
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+                                                        Coinkey
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                                        VND
+                                                    </span>
+                                                @endif
+                                            </span>
                                     </div>
                                 </td>
 
@@ -331,6 +345,20 @@
                                         class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $config['bg'] }} {{ $config['text'] }}">
                                         <span class="mr-1">{{ $config['icon'] }}</span>
                                         {{ $config['label'] }}
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                                        {{ number_format($transaction->amount, 0, ',', '.') }}
+                                        @if ($transaction->currency === 'COINKEY')
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+                                                Coinkey
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                                VND
+                                            </span>
+                                        @endif
                                     </span>
                                 </td>
 

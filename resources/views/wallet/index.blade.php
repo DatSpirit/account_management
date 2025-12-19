@@ -31,7 +31,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <!-- Main Balance Card -->
                 <div
-                    class="lg:col-span-2 relative overflow-hidden bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl shadow-xl p-8 text-white">
+                    class="lg:col-span-2 relative overflow-hidden bg-gradient-to-r from-blue-400 to-blue-200 rounded-2xl shadow-xl p-8 text-white">
                     <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl">
                     </div>
                     <div
@@ -40,25 +40,25 @@
 
                     <div class="relative z-10 flex flex-col justify-between h-full">
                         <div>
-                            <p class="text-indigo-100 font-medium text-sm uppercase tracking-wider mb-2">Số dư hiện tại
+                            <p class="text-gray-900 dark:text-blue-200 font-medium text-sm uppercase tracking-wider mb-2">Số dư hiện tại
                             </p>
                             <div class="flex items-baseline gap-2">
                                 <span
-                                    class="text-5xl font-extrabold tracking-tight">{{ number_format($wallet->balance) }}</span>
-                                <span class="text-xl font-semibold text-indigo-200">Coinkey</span>
+                                    class="text-5xl text-gray-900 dark:text-gray-100 font-extrabold tracking-tight">{{ number_format($wallet->balance) }}</span>
+                                <span class="text-xl font-semibold text-blue-800">Coinkey</span>
                             </div>
                         </div>
 
                         <div class="mt-8 grid grid-cols-2 gap-8 border-t border-white/20 pt-6">
                             <div>
-                                <p class="text-indigo-200 text-xs uppercase mb-1">Tổng nạp tích lũy</p>
-                                <p class="text-xl font-bold">{{ number_format($wallet->total_deposited) }} <span
-                                        class="text-xs font-normal opacity-70">VND</span></p>
+                                <p class="text-gray-900 dark:text-gray-100 text-xs uppercase mb-1">Tổng nạp tích lũy</p>
+                                <p class="text-xl text-blue-600 dark:text-blue-800 font-bold">{{ number_format($wallet->total_deposited) }} <span
+                                        class="text-xs text-black dark:text-blue-800 font-normal opacity-70">VND</span></p>
                             </div>
                             <div>
-                                <p class="text-indigo-200 text-xs uppercase mb-1">Tổng đã chi tiêu</p>
-                                <p class="text-xl font-bold">{{ number_format($wallet->total_spent) }} <span
-                                        class="text-xs font-normal opacity-70">Coinkey</span></p>
+                                <p class="text-gray-900 dark:text-gray-100 text-xs uppercase mb-1">Tổng đã chi tiêu</p>
+                                <p class="text-xl text-blue-600 dark:text-blue-800 font-bold">{{ number_format($wallet->total_spent) }} <span
+                                        class="text-xs text-black dark:text-blue-800 font-normal opacity-70">Coinkey</span></p>
                             </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@
                         Dịch vụ nổi bật
                     </h3>
                     <div class="space-y-3">
-                        <a href="{{ route('keys.create-custom') }}"
+                        <a href="{{ route('products') }}"
                             class="block p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition group">
                             <div class="flex justify-between items-center">
                                 <div>

@@ -53,25 +53,25 @@
         <div class="max-w-7xl mx-auto space-y-6">
 
             <div
-                class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
+                class="bg-gradient-to-r from-blue-500 dark:from-blue-700 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="space-y-2">
-                        <h3 class="text-xl sm:text-2xl font-bold text-white">Transaction Overview</h3>
-                        <p class="text-indigo-100 dark:text-indigo-200 text-sm sm:text-base">Quản lý tất cả giao dịch
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">Transaction Overview</h3>
+                        <p class="text-blue-800 dark:text-white text-sm sm:text-base">Quản lý tất cả giao dịch
                             thanh toán</p>
                     </div>
                     <div class="flex items-center space-x-6">
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-white">{{ $transactions->total() }}</div>
-                            <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide">Tổng GD
+                            <div class="text-3xl font-bold text-gray-800 dark:text-white">{{ $transactions->total() }}</div>
+                            <div class="text-xs text-blue-800 dark:text-white uppercase tracking-wide">Tổng GD
                             </div>
                         </div>
                         <div class="h-12 w-px bg-white/30"></div>
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-white">
+                            <div class="text-3xl font-bold text-gray-800 dark:text-white">
                                 {{ number_format($stats['total_amount'] / 1000) }}K
                             </div>
-                            <div class="text-xs text-indigo-100 dark:text-indigo-200 uppercase tracking-wide">Tổng Thu
+                            <div class="text-xs text-blue-800 dark:text-white uppercase tracking-wide">Tổng Thu
                             </div>
                         </div>
                     </div>
@@ -80,7 +80,7 @@
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div
-                    class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                    class="bg-gradient-to-br from-blue-200 to-blue-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Total</p>
@@ -100,7 +100,7 @@
                 </div>
 
                 <div
-                    class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                    class="bg-gradient-to-br from-green-200 to-green-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Success</p>
@@ -120,7 +120,7 @@
                 </div>
 
                 <div
-                    class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                    class="bg-gradient-to-br from-yellow-200 to-yellow-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Pending</p>
@@ -140,7 +140,7 @@
                 </div>
 
                 <div
-                    class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+                    class="bg-gradient-to-br from-red-200 to-red-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Failed</p>
@@ -282,15 +282,15 @@
                                     User
                                 </th>
                                 <th
-                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     Description
                                 </th>
                                 <th
-                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider ">
                                     Product
                                 </th>
                                 <th
-                                    class="px-3 sm:px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-3 sm:px-6 py-4 text-right text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     Amount
                                 </th>
                                 <th
@@ -298,7 +298,7 @@
                                     Status
                                 </th>
                                 <th
-                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                                    class="px-3 sm:px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                                     Time
                                 </th>
                                 <th
@@ -315,7 +315,7 @@
                                             <span
                                                 class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ $transaction->order_code }}</span>
                                             {{-- Hiển thị Time chỉ trên Mobile --}}
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
                                                 <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -402,7 +402,7 @@
                                         </div>
                                     </td>
 
-                                    <td class="px-6 py-4 hidden md:table-cell">
+                                    <td class="px-3 sm:px-6 py-4 text-left whitespace-nowrap">
                                         @if ($transaction->product)
                                             <div class="flex flex-col space-y-1">
                                                 {{-- Tên sản phẩm gốc --}}
@@ -452,13 +452,16 @@
                                                         Nạp ví Coinkey
                                                     </span>
                                                 @endif
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                                                    Desc: {{ $transaction->order_code }}
+                                                </span>
                                             </div>
                                         @else
                                             <span class="text-sm text-gray-400 italic">No Product Info</span>
                                         @endif
                                     </td>
 
-                                    <td class="px-3 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    <td class="px-6 py-4 hidden md:table-cell">
                                         <div class="flex flex-col items-end space-y-1">
                                             <span
                                                 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100">
@@ -479,40 +482,57 @@
                                     </td>
 
                                     <td class="px-3 sm:px-6 py-4 text-center whitespace-nowrap">
-                                        @php
-                                            $statusConfig = [
-                                                'success' => [
-                                                    'bg' => 'bg-green-100 dark:bg-green-900/50',
-                                                    'text' => 'text-green-800 dark:text-green-300',
-                                                    'label' => 'Success',
-                                                    'icon' => '✓',
-                                                ],
-                                                'pending' => [
-                                                    'bg' => 'bg-yellow-100 dark:bg-yellow-900/50',
-                                                    'text' => 'text-yellow-800 dark:text-yellow-300',
-                                                    'label' => 'Pending',
-                                                    'icon' => '⏱',
-                                                ],
-                                                'failed' => [
-                                                    'bg' => 'bg-gray-100 dark:bg-gray-700',
-                                                    'text' => 'text-gray-800 dark:text-gray-300',
-                                                    'label' => 'Failed',
-                                                    'icon' => '✗',
-                                                ],
-                                                'cancelled' => [
-                                                    'bg' => 'bg-red-100 dark:bg-red-900/50',
-                                                    'text' => 'text-red-800 dark:text-red-300',
-                                                    'label' => 'Cancelled',
-                                                    'icon' => '⊘',
-                                                ],
-                                            ];
-                                            $config = $statusConfig[$transaction->status] ?? $statusConfig['pending'];
-                                        @endphp
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold shadow-sm {{ $config['bg'] }} {{ $config['text'] }}">
-                                            <span class="mr-1">{{ $config['icon'] }}</span>
-                                            {{ $config['label'] }}
-                                        </span>
+                                        <div class="flex flex-col items-end space-y-1">
+                                            @php
+                                                $statusConfig = [
+                                                    'success' => [
+                                                        'bg' => 'bg-green-100 dark:bg-green-900/50',
+                                                        'text' => 'text-green-800 dark:text-green-300',
+                                                        'label' => 'Success',
+                                                        'icon' => '✓',
+                                                    ],
+                                                    'pending' => [
+                                                        'bg' => 'bg-yellow-100 dark:bg-yellow-900/50',
+                                                        'text' => 'text-yellow-800 dark:text-yellow-300',
+                                                        'label' => 'Pending',
+                                                        'icon' => '⏱',
+                                                    ],
+                                                    'failed' => [
+                                                        'bg' => 'bg-gray-100 dark:bg-gray-700',
+                                                        'text' => 'text-gray-800 dark:text-gray-300',
+                                                        'label' => 'Failed',
+                                                        'icon' => '✗',
+                                                    ],
+                                                    'cancelled' => [
+                                                        'bg' => 'bg-red-100 dark:bg-red-900/50',
+                                                        'text' => 'text-red-800 dark:text-red-300',
+                                                        'label' => 'Cancelled',
+                                                        'icon' => '⊘',
+                                                    ],
+                                                ];
+                                                $config =
+                                                    $statusConfig[$transaction->status] ?? $statusConfig['pending'];
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold shadow-sm {{ $config['bg'] }} {{ $config['text'] }}">
+                                                <span class="mr-1">{{ $config['icon'] }}</span>
+                                                {{ $config['label'] }}
+                                            </span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                                                {{ number_format($transaction->amount, 0, ',', '.') }}
+                                                @if ($transaction->currency === 'COINKEY')
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+                                                        Coinkey
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                                        VND
+                                                    </span>
+                                                @endif
+                                            </span>
+                                        </div>
                                     </td>
 
 

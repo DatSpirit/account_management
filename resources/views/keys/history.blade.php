@@ -13,7 +13,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+    <div class="py-6 px-2 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <div class="relative wrap overflow-hidden h-full">
             <div class="border-2-2 absolute border-opacity-20 border-gray-700 h-full border left-[2rem] md:left-1/2"></div>
 
@@ -37,7 +37,7 @@
                     }
                 @endphp
 
-                <div class="mb-8 flex justify-between items-center w-full {{ $isLeft ? 'flex-row-reverse' : '' }} md:flex-row">
+                <div class="mb-6 flex justify-between items-center w-full {{ $isLeft ? 'flex-row-reverse' : '' }} md:flex-row">
                     
                     <div class="order-1 w-5/12 hidden md:block"></div>
                     
@@ -49,8 +49,7 @@
                         <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-{{ $color }}-500 hover:shadow-lg transition-shadow">
                             <h3 class="font-bold text-gray-800 dark:text-gray-100 text-lg">{{ $title }}</h3>
                             <p class="text-xs text-gray-400 mb-2">
-                                {{ $history->created_at->format('H:i - d/m/Y') }} 
-                                <span class="text-gray-500">({{ $history->created_at->diffForHumans() }})</span>
+                                {{ $history->created_at->format('H:i - d/m/Y') }}
                             </p>
                             
                             <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">

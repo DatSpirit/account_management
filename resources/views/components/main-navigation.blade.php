@@ -82,7 +82,7 @@ if (class_exists('\App\Models\Transaction')) {
 
     {{-- Top Navigation Bar --}}
     <nav
-        class="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        class="fixed top-0 left-0 right-0 z-30 bg-gray-600 dark:bg-white border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
@@ -101,12 +101,12 @@ if (class_exists('\App\Models\Transaction')) {
                     {{-- Logo --}}
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
                         <div
-                            class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span class="text-white font-bold text-xl">SP</span>
+                            class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-200 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-gray-800 dark:text-white font-bold text-xl">SP</span>
                             {{-- <img src="/logo.png" alt="Logo" class="w-8 h-8"> cần chèn logo --}}
                         </div>
                         <span
-                            class="hidden sm:block text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            class="hidden sm:block text-xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
                             StellaPay
                         </span>
                     </a>
@@ -123,7 +123,7 @@ if (class_exists('\App\Models\Transaction')) {
                         <div class="flex flex-col items-end leading-none mr-3">
                             <div class="flex items-center gap-1">
                                 <span
-                                    class="text-sm font-bold text-indigo-600 dark:text-indigo-400 font-mono group-hover:text-indigo-500">
+                                    class="text-sm font-bold text-indigo-600 dark:text-indigo-200 font-mono group-hover:text-red-500">
                                     {{ number_format($user->getOrCreateWallet()->balance ?? 0) }}
                                 </span>
                                 <span class="text-xs text-yellow-500">🪙</span>
@@ -290,8 +290,8 @@ if (class_exists('\App\Models\Transaction')) {
             <div class="flex items-center space-x-4">
                 <div class="relative">
                     <div
-                        class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-indigo-100 dark:ring-indigo-900">
-                        <span class="text-white font-bold text-xl">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
+                        class="w-14 h-14 bg-gradient-to-br from-blue-200 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-indigo-100 dark:ring-indigo-900">
+                        <span class="text-gray-800 dark:text-white font-bold text-xl">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
                     </div>
                     <span
                         class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></span>
@@ -321,11 +321,11 @@ if (class_exists('\App\Models\Transaction')) {
 
             {{-- Main Menu Section --}}
             <div class="space-y-1">
-                <p class="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+                <p class="px-3 text-xs font-semibold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-3">
                     Main Menu</p>
 
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-blue-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -335,7 +335,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('products') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('products')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -346,7 +346,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('wallet.index') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('wallet.index')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -359,7 +359,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('transactions.index') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('transactions.index')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -370,7 +370,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('keys.index') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('keys.index')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -382,7 +382,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('analytics.index') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('analytics.index')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -393,7 +393,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                 <a href="{{ route('settings.index') }}"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('settings.index')
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                        ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -413,7 +413,7 @@ if (class_exists('\App\Models\Transaction')) {
                         Administration</p>
 
                     <a href="{{ route('admin.dashboard') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                             <rect x="3" y="3" width="8" height="8" rx="1" stroke-width="1.5" />
@@ -425,7 +425,7 @@ if (class_exists('\App\Models\Transaction')) {
                     </a>
 
                     <a href="{{ route('admin.users') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.users') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.users') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -434,7 +434,7 @@ if (class_exists('\App\Models\Transaction')) {
                     </a>
 
                     <a href="{{ route('admin.transactions.all-transactions') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.transactions.all-transactions') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.transactions.all-transactions') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -444,7 +444,7 @@ if (class_exists('\App\Models\Transaction')) {
 
                     <a href="{{ route('admin.keys.index') }}"
                         class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.keys.index')
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
+                            ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50'
                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -464,7 +464,7 @@ if (class_exists('\App\Models\Transaction')) {
                     Support</p>
 
                 <a href="{{ route('support.help_center') }}"
-                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('support.help_center') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('support.help_center') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -473,7 +473,7 @@ if (class_exists('\App\Models\Transaction')) {
                 </a>
 
                 <a href="{{ route('support.contact') }}"
-                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('support.contact') ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                    class="flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('support.contact') ? 'bg-gradient-to-r from-blue-200 to-blue-600 text-gray-800 dark:text-white shadow-lg shadow-indigo-500/50' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -488,7 +488,7 @@ if (class_exists('\App\Models\Transaction')) {
             <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>© 2025 StellaPay</span>
                 <span
-                    class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-semibold">v1.0.0</span>
+                    class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-semibold">v2.0.0</span>
             </div>
         </div>
     </aside>

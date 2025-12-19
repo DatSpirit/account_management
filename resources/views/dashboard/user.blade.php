@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back! 👋</h2>
+                <h2 class="text-3xl font-bold text-gray-100 dark:text-white">Welcome Back!</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your account today
                 </p>
             </div>
@@ -18,13 +18,13 @@
     <div class="space-y-6">
         {{-- Welcome Banner --}}
         <div
-            class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 rounded-2xl shadow-xl p-8 text-white">
+            class="bg-gradient-to-r from-blue-600 to-blue-200 dark:from-blue-600 dark:to-blue-200 rounded-2xl shadow-xl p-8 text-white">
             <div class="flex flex-col md:flex-row items-center justify-between">
                 <div class="mb-4 md:mb-0">
-                    <h3 class="text-3xl font-bold mb-2">
-                        Chào mừng, <span class="text-yellow-300">{{ $user->name }}</span>!
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        Chào mừng, <span class="text-yellow-300">{{ $user->name }}</span> !!!
                     </h3>
-                    <p class="text-indigo-100 text-lg">
+                    <p class="text-gray-900 dark:text-white text-lg">
                         Số lần đăng nhập: <span class="font-bold">{{ number_format($user->login_count ?? 0) }}</span> •
                         Tài khoản được tạo {{ $user->created_at->diffForHumans() }}
                     </p>
@@ -38,7 +38,7 @@
                             </p>
                         </div>
                     @endif
-                    <p class="text-sm text-indigo-200 mt-2">
+                    <p class="text-sm text-gray-900 dark:text-white mt-2">
                         Vui lòng kiểm tra thời hạn sử dụng ở trên. Hãy kiểm tra tổng quan giao dịch bên dưới.
                     </p>
                 </div>
@@ -54,23 +54,23 @@
 
             {{-- Total Spend Card --}}
             <div
-                class="bg-gradient-to-br from-indigo-600 to-purple-700 dark:from-indigo-700 dark:to-purple-800 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300">
+                class="bg-gradient-to-br from-blue-600 to-blue-200 dark:from-blue-200 dark:to-blue-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <div class="p-3 bg-white/20 dark:bg-white backdrop-blur-sm rounded-xl">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm opacity-90 mb-2 uppercase tracking-wider">Tổng Chi Tiêu</p>
-                <p class="text-3xl font-bold">{{ number_format($stats['total_spend']) }}</p>
-                <p class="text-xs opacity-75 mt-2">VND (Đã xác nhận)</p>
+                <p class="text-sm text-gray-900 dark:text-white opacity-90 mb-2 uppercase tracking-wider">Tổng Chi Tiêu</p>
+                <p class="text-3xl text-gray-900 dark:text-white font-bold">{{ number_format($stats['total_spend']) }}</p>
+                <p class="text-xs text-gray-900 dark:text-white opacity-75 mt-2">VND (Đã xác nhận)</p>
             </div>
 
             {{-- Success Transactions --}}
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
+                class="bg-gradient-to-br from-green-200 to-green-600 dark:from-green-200 dark:to-green-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div
                         class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl group-hover:scale-110 transition-transform">
@@ -92,7 +92,7 @@
 
             {{-- Pending Transactions --}}
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
+                class="bg-gradient-to-br from-yellow-600 to-yellow-200 dark:from-yellow-200 dark:to-yellow-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div
                         class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl group-hover:scale-110 transition-transform">
@@ -114,7 +114,7 @@
 
             {{-- Failed/Cancelled --}}
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
+                class="bg-gradient-to-br from-red-200 to-red-600 dark:from-red-200 dark:to-red-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div
                         class="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl group-hover:scale-110 transition-transform">
