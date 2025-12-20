@@ -388,7 +388,7 @@ class WebhookController extends Controller
                 $duration = $meta['duration_minutes'] ?? 0;
 
                 if (!$keyId || !$duration) {
-                    Log::error("❌ Webhook: Missing key_id or duration for extension", [
+                    Log::error("⌚  Webhook: Missing key_id or duration for extension", [
                         'transaction_id' => $transaction->id,
                         'meta' => $meta
                     ]);
@@ -399,7 +399,7 @@ class WebhookController extends Controller
                 $key = \App\Models\ProductKey::find($keyId);
 
                 if (!$key) {
-                    Log::error("❌ Webhook: Key not found for extension", [
+                    Log::error("⌚ Webhook: Key not found for extension", [
                         'transaction_id' => $transaction->id,
                         'key_id' => $keyId
                     ]);
@@ -407,6 +407,7 @@ class WebhookController extends Controller
                 }
 
                 //  THỰC HIỆN GIA HẠN
+                $oldExpiry = $key->expires_at ? $key->expires_at->toDateTimeString() : 'N/A'; // LƯU TRỮ NGÀY HẾT HẠN CŨ
                 $key->extend($duration);
                 $key->status = 'active';
 
@@ -421,6 +422,7 @@ class WebhookController extends Controller
                 \App\Models\KeyHistory::log($key->id, 'extend', "Gia hạn qua PayOS - Đơn #{$transaction->order_code}", [
                     'added_minutes' => $duration,
                     'cost_vnd' => $transaction->amount,
+                    'old_expiry' => $oldExpiry, // NGÀY HẾT HẠN CŨ
                     'new_expiry' => $key->expires_at->toDateTimeString()
                 ]);
 
@@ -433,7 +435,7 @@ class WebhookController extends Controller
                 return; // DỪNG LẠI, KHÔNG TẠO KEY MỚI
             }
 
-            // KIỂM TRA MUA CUSTOM KEY
+            // KIỂM TRA MUA CUSTOM KEY (PayOS)
             if (isset($meta['type']) && $meta['type'] === 'custom_key_purchase') {
                 $keyService = app(\App\Services\KeyManagementService::class);
 
@@ -444,20 +446,26 @@ class WebhookController extends Controller
                     baseProduct: $product,
                     assignedToEmail: $meta['assigned_email'] ?? null
                 );
+                // CẬP NHẬT key_id vào transaction
+                $transaction->update([
+                    'response_data' => array_merge($meta, [
+                        'key_id' => $newKey->id,
+                    ])
+                ]);
 
-                $transaction->update(['key_id' => $newKey->id]);
-
+                // GHI LỊCH TẠO KEY
                 \App\Models\KeyHistory::log($newKey->id, 'create', "Tạo Custom Key qua PayOS - Order code:{$transaction->order_code}", [
                     'Key_code' => $newKey->key_code,
                     'cost_vnd' => $transaction->amount,
-                    'duration_minutes'=> $meta['duration_minutes']
+                    'duration_minutes' => $meta['duration_minutes'],
+                    'product_name' => $product->name ?? 'N/A',
                 ]);
 
                 Log::info("✅ Created Custom Key {$meta['key_code']} via Webhook");
                 return;
             }
 
-            //  XỬ LÝ NẠP COINKEY
+            //  3. XỬ LÝ NẠP COINKEY
             if ($product->isCoinkeyPack()) {
                 $wallet = $user->getOrCreateWallet();
 
@@ -473,15 +481,29 @@ class WebhookController extends Controller
                 return;
             }
 
-            // TẠO KEY MỚI CHO GÓI SERVICE (chỉ khi KHÔNG PHẢI gia hạn)
+            // 4. TẠO KEY MỚI CHO GÓI SERVICE (mua key thường qua PayOS)
             if ($product->isServicePackage()) {
                 $keyService = app(\App\Services\KeyManagementService::class);
                 $key = $keyService->createKeyFromPackage($user, $product, $transaction);
 
                 if ($key) {
+
+
+                    // CẬP NHẬT metadata với key_id và key_code
+                    $transaction->update([
+                        'response_data' => array_merge($meta, [
+                            'type' => 'package_purchase', // Đánh dấu mua gói key
+                            'key_id' => $key->id,
+                            'key_code' => $key->key_code,
+                            'duration_minutes' => $product->duration_minutes,
+                        ])
+                    ]);
+
+                    // GHI LỊCH TẠO KEY
                     \App\Models\KeyHistory::log($key->id, 'create', "Mua gói {$product->name} qua PayOS", [
                         'order_code' => $transaction->order_code,
-                        'cost_vnd' => $transaction->amount
+                        'cost_vnd' => $transaction->amount,
+                        'key_code' => $key->key_code,
                     ]);
 
                     Log::info("🔑 Created new key for user {$user->id}", [

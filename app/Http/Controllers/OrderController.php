@@ -83,17 +83,17 @@ class OrderController extends Controller
     {
         // Rule 1: Không cho mua Coinkey bằng Coinkey
         if ($product->isCoinkeyPack()) {
-            return back()->with('error', '❌ Gói nạp Coinkey chỉ có thể thanh toán bằng chuyển khoản/QR.');
+            return back()->with('error', '⌚  Gói nạp Coinkey chỉ có thể thanh toán bằng chuyển khoản/QR.');
         }
 
         // Rule 2: Sản phẩm phải hỗ trợ giá Coinkey
         if (!$product->allowWalletPayment()) {
-            return back()->with('error', '❌ Sản phẩm này không hỗ trợ thanh toán bằng Ví.');
+            return back()->with('error', '⌚  Sản phẩm này không hỗ trợ thanh toán bằng Ví.');
         }
 
         // Rule 3: Giá sản phẩm phải hợp lệ
         if (!is_numeric($product->coinkey_amount) || $product->coinkey_amount <= 0) {
-            return back()->with('error', '❌ Giá sản phẩm không hợp lệ.');
+            return back()->with('error', '⌚  Giá sản phẩm không hợp lệ.');
         }
 
 
@@ -104,19 +104,19 @@ class OrderController extends Controller
             $discountPercent = $wallet->discount_percent; // Lấy từ Model Attribute
             $originalPrice = $product->coinkey_amount; // Giá gốc
             $discountAmount = ($originalPrice * $discountPercent) / 100; // Tiền giảm giá
-            $finalPrice = $originalPrice - $discountAmount; // Giá sau giảm
+            $finalPrice = $originalPrice - $discountAmount; // Giá sau giảm giá
 
             // 2. Check số dư với giá mới
             if ($wallet->balance < $finalPrice) {
-                return back()->with('error', "❌ Số dư không đủ. Giá sau giảm: " . number_format($finalPrice));
+                return back()->with('error', "⌚ Số dư không đủ. Giá sau giảm: " . number_format($finalPrice));
             }
 
             // Sử dụng transaction để đảm bảo toàn vẹn dữ liệu
             //sử dụng $trasaction thay $key
-            $transaction = DB::transaction(function () use ($user, $product, $wallet, $finalPrice, $discountPercent) {
+            $transaction = DB::transaction(function () use ($user, $product, $wallet, $finalPrice, $discountPercent, $originalPrice) {
 
-
-                // ✅ 1. Trừ tiền VÍ (tự động ghi log vào coinkey_transactions)
+                $orderCode = (int)(now()->timestamp . rand(100, 999)); // Tạo mã đơn hàng ngẫu nhiên
+                // 1. Trừ tiền VÍ (tự động ghi log vào coinkey_transactions)
                 $wallet->withdraw(
                     amount: $finalPrice,
                     type: 'purchase',
@@ -125,22 +125,46 @@ class OrderController extends Controller
                     referenceId: $product->id
                 );
 
-                // 2. Tạo Transaction record (Lưu lịch sử đã mua bằng Coin)
+                // 2. Tạo Transaction record với METADATA ĐẦY ĐỦ
                 $newTransaction = Transaction::create([
                     'user_id' => $user->id,
                     'product_id' => $product->id,
-                    'order_code' => (int)(now()->timestamp . rand(100, 999)), // Tạo mã đơn hàng ngẫu nhiên
+                    'order_code' => $orderCode, 
                     'amount' => $finalPrice,
                     'status' => 'success',
-                    'description' => "Mua {$product->name} (Giảm {$discountPercent}%)",
+                    'description' => $orderCode . "K",// Ký hiệu K = mua Key/package
                     'currency' => 'COINKEY',
                     'is_processed' => true,
                     'processed_at' => now(),
+                    // METADATA CHI TIẾT VỀ GIAO DỊCH
+                    'response_data' => [
+                        'type' => 'package_purchase', // Đánh dấu mua gói key
+                        'payment_method' => 'wallet',
+                        'original_price' => $originalPrice,
+                        'discount_percent' => $discountPercent,
+                        'final_price' => $finalPrice,
+                        'duration_minutes' => $product->duration_minutes,
+                    ]
                 ]);
 
                 // 3. Tạo Key
-                $this->keyService->createKeyFromPackage($user, $product, $newTransaction);
-                // Trả về transaction mới tạo
+                $key = $this->keyService->createKeyFromPackage($user, $product, $newTransaction);
+                // 4. CẬP NHẬT key_id vào transaction
+                $newTransaction->update([
+                    'response_data' => array_merge($newTransaction->response_data ?? [], [
+                        'key_id' => $key->id,
+                        'key_code' => $key->key_code,
+                    ])
+                ]);
+
+                // 5. GHI LOG LỊCH SỬ KEY 
+                \App\Models\KeyHistory::log($key->id, 'create', "Tạo Key qua Ví - Order Code: {$newTransaction->order_code}", [
+                    'Key_Code' => $key->key_code,
+                    'cost' => $finalPrice . ' Coin',
+                    'duration_minutes' => $product->duration_minutes,
+                    'discount_applied' => $discountPercent . '%'
+                ]);
+
                 return $newTransaction;
             });
 
@@ -165,9 +189,10 @@ class OrderController extends Controller
 
             // PayOS yêu cầu tối thiểu 2000 VND
             $amount = (int)max(2000, $product->price);
+
             // 2.Xác định suffix cho description dựa vào product_type
             $productType = $product->product_type ?? '';
-            $suffix = $productType === 'package' ? '_K' : ($productType === 'coinkey' ? '_C' : '');
+            $suffix = $productType === 'package' ? 'K' : ($productType === 'coinkey' ? 'C' : '');
             $description = $orderCode . $suffix;
 
             // 3. Chuẩn bị data 
@@ -196,7 +221,7 @@ class OrderController extends Controller
                 'order_code' => $orderCode,
                 'amount' => $amount,
                 'status' => 'pending',
-                'description' => "Chờ thanh toán PayOS: {$product->name}",
+                'description' => $orderCode . "K",// Ký hiệu K = mua Key/package
                 'currency' => 'VND',
                 'is_processed' => false,
             ]);
@@ -358,7 +383,7 @@ class OrderController extends Controller
 
         // Kiểm tra loại giao dịch từ metadata
         $meta = $transaction->response_data ?? [];
-        $isExtension = isset($meta['type']) && $meta['type'] === 'key_extension';// Đơn hàng gia hạn key
+        $isExtension = isset($meta['type']) && $meta['type'] === 'key_extension'; // Đơn hàng gia hạn key
 
         // 2.  Check PayOS status nếu vẫn đang pending
         if ($transaction->status === 'pending') {
@@ -366,7 +391,7 @@ class OrderController extends Controller
                 // Gọi sang PayOS check trạng thái thực tế
                 $paymentInfo = $this->payOS->getPaymentLinkInformation($orderCode);
 
-                if ($paymentInfo && $paymentInfo['status'] === 'PAID') {// Thanh toán thành công
+                if ($paymentInfo && $paymentInfo['status'] === 'PAID') { // Thanh toán thành công
 
                     // DB Transaction để đảm bảo an toàn
                     DB::transaction(function () use ($transaction, $isExtension, $meta) {
@@ -384,7 +409,7 @@ class OrderController extends Controller
                             $key = \App\Models\ProductKey::find($meta['key_id']);
                             if ($key) {
                                 $key->extend($meta['duration_minutes']);
-                               // $key->key_cost += $costCoinkey;
+                                // $key->key_cost += $costCoinkey;
                                 $key->save();
                                 Log::info("✅ Key {$key->key_code} extended via ThankYou Page Check.");
                             }

@@ -221,7 +221,7 @@ class KeyManagementController extends Controller
 
             // Tạo Order Code và Description chuẩn 
             $orderCode = (int)(now()->timestamp . rand(100, 999));
-            $description = $orderCode . "K";
+            $description = $orderCode . "K"; // Ký hiệu K = mua Key/backage 
 
             // --- TRƯỜNG HỢP 1: THANH TOÁN VÍ (COINKEY) ---
             if ($request->payment_method === 'wallet') {
@@ -261,10 +261,14 @@ class KeyManagementController extends Controller
                         'description' => $description,
                         'is_processed' => true,
                         'processed_at' => now(),
-                        // Thêm metadata để trang Thankyou hiển thị đúng loại giao dịch
+                        // Thêm metadata để trang Thankyou hiển thị đúng loại giao dịch (đồng bộ với Webhook)
                         'response_data' => [
                             'type' => 'custom_key_purchase',
-                            'key_code' => $keyCode
+                            'payment_method' => 'wallet', // Phương thức thanh toán
+                            'key_code' => $keyCode,
+                            'duration_minutes' => $durationMinutes, // Thời gian sử dụng key
+                            'cost_coinkey' => $costCoinkey, // Chi phí
+                            'product_name' => $product->name, // Tên gói sản phẩm
                         ]
                     ]);
 
@@ -274,7 +278,7 @@ class KeyManagementController extends Controller
                         'product_id'        => $product->id, //  Gắn ID sản phẩm
                         'transaction_id'    => $newTransaction->id,
                         'key_code'          => $keyCode,
-                        'key_type'          => 'custom', // Vẫn đánh dấu là custom để biết user tự đặt tên
+                        'key_type'          => 'custom', // đánh dấu là custom để biết user tự đặt tên
                         'duration_minutes'  => $durationMinutes,
                         'key_cost'          => $costCoinkey,
                         'status'            => 'active',
@@ -284,11 +288,19 @@ class KeyManagementController extends Controller
                     // 4. Kích hoạt key
                     $key->activate();
 
-                    // Ghi lịch sử tạo Key
+                    // 5. CẬP NHẬT key_id vào transaction
+                    $newTransaction->update([
+                        'response_data' => array_merge($newTransaction->response_data, [
+                            'key_id' => $key->id,
+                        ])
+                    ]);
+
+                    // 6. Ghi lịch sử tạo Key
                     \App\Models\KeyHistory::log($key->id, 'create', "Tạo Custom Key qua Ví - Order Code: {$newTransaction->order_code}", [
-                        'Key_Code'=> $keyCode,
+                        'Key_Code' => $keyCode,
                         'cost' => $costCoinkey . ' Coin',
                         'duration_minutes' => $durationMinutes,
+                        'product_name' => $product->name,
                     ]);
 
                     return $newTransaction;
@@ -313,12 +325,15 @@ class KeyManagementController extends Controller
                     'status'        => 'pending',
                     'currency'      => 'VND',
                     'description'   => $description,
-                    // Metadata quan trọng để Webhook/ThankYou biết mà tạo key custom
+                    // METADATA CHI TIẾT (webhook sẽ dùng để tạo key)
                     'response_data' => [
                         'type'             => 'custom_key_purchase',
+                        'payment_method' => 'cash', // Thanh toán PayOS
                         'key_code'         => $keyCode,
                         'duration_minutes' => $durationMinutes,
                         'product_id'       => $product->id,
+                        'product_name' => $product->name, // Thêm tên sản phẩm
+                        'price_vnd' => $amountVND,
 
                     ]
                 ]);
@@ -329,8 +344,8 @@ class KeyManagementController extends Controller
                     'orderCode'   => $orderCode,
                     'amount'      => (int) $amountVND,
                     'description' => substr($description, 0, 25),
-                    'returnUrl'   => route('thankyou', ['orderCode' => $orderCode]),
-                    'cancelUrl'   => route('keys.index'), // Hoặc route products
+                    'returnUrl'   => route('thankyou', ['orderCode' => $orderCode]), // URL thành công
+                    'cancelUrl'   => route('payos.cancel-process'), // URL hủy thanh toán
                     'items'       => [[
                         'name'     => "Custom Key: {$keyCode}",
                         'quantity' => 1,
@@ -453,21 +468,26 @@ class KeyManagementController extends Controller
                         'processed_at' => now(),
                         'response_data' => [
                             'type' => 'key_extension', // Đánh dấu là gia hạn
+                            'payment_method' => 'wallet',
                             'key_id' => $key->id,
-                            'duration_minutes' => $product->duration_minutes
+                            'key_code' => $key->key_code,
+                            'duration_minutes' => $product->duration_minutes,
+                            'cost_coinkey' => $costCoinkey,
                         ]
                     ]);
 
                     // 3. Thực hiện gia hạn (Cập nhật ngày hết hạn)
+                    $oldExpiry = $key->expires_at ? $key->expires_at->toDateTimeString() : 'N/A';
                     $key->extend($product->duration_minutes);
                     $key->key_cost += $costCoinkey; // Cập nhật tổng chi phí
                     $key->status = 'active'; // Đảm bảo trạng thái active
                     $key->save();
 
-                    //  Ghi lịch sử ngay khi thành công
+                    // 4. Ghi lịch sử CHI TIẾT
                     \App\Models\KeyHistory::log($key->id, 'extend', "Gia hạn qua Ví - Đơn #{$orderCode}", [
                         'minutes_added' => $product->duration_minutes,
                         'cost' => $costCoinkey . ' Coin',
+                        'old_expiry' => $oldExpiry,
                         'new_expiry' => $key->expires_at->toDateTimeString()
                     ]);
                 });
