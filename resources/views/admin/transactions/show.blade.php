@@ -146,7 +146,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-xl font-bold text-gray-900 dark:text-white leading-tight">
-                                        {{ $transaction->product->name ?? 'Sản phẩm đã bị xóa' }}
+                                        {{ $transaction->product->name ?? 'Sản phẩm tùy chỉnh' }}
                                     </h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
                                         {{ $transaction->description }}
@@ -180,8 +180,7 @@
                                             @if (isset($meta['currency']))
                                                 <div>
                                                     <span class="text-gray-600">Phương thức:</span>
-                                                    <span
-                                                        class="font-bold text-green-600">
+                                                    <span class="font-bold text-green-600">
                                                         {{ $meta['currency'] === 'wallet' ? '💳 Ví ' : '💵 Chuyển khoản' }}
                                                     </span>
                                                 </div>
@@ -189,189 +188,206 @@
                                         </div>
                                     </div>
 
-                                        {{-- 2️⃣ MUA KEY MỚI (Hệ thống tự tạo Key Code) --}}
-                                    @elseif (in_array($suffix, ['K']) && $type == 'package_purchase')
-                                        @if ($transaction->productKey)
-                                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                                <div class="flex items-center gap-2 mb-3">
-                                                    <span class="text-2xl">🔑</span>
-                                                    <h3 class="font-bold text-blue-700">Tạo Key mới</h3>
-                                                </div>
-                                                <div class="grid grid-cols-2 gap-3 text-sm">
-                                                    <div>
-                                                        <span class="text-gray-600">ID Key:</span>
-                                                        <a href="{{ route('admin.keys.show', $transaction->productKey->id) }}"
-                                                            class="font-bold text-blue-600 hover:underline">
-                                                            #{{ $transaction->productKey->id }}
-                                                        </a>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-gray-600">Key Code:</span>
-                                                        <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
-                                                            {{ $transaction->productKey->key_code }}
-                                                        </code>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-gray-600">Thời hạn:</span>
-                                                        <span class="font-semibold text-purple-600">
-                                                            {{ number_format($meta['duration_minutes'] ?? $transaction->productKey->duration_minutes) }}
-                                                            phút
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-gray-600">Hết hạn:</span>
-                                                        <span class="font-semibold text-red-600">
-                                                            {{ $transaction->productKey->expires_at ? $transaction->productKey->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') : 'Vĩnh viễn' }}
-                                                        </span>
-                                                    </div>
-                                                    @if (isset($meta['payment_method']))
-                                                        <div>
-                                                            <span class="text-gray-600">Phương thức:</span>
-                                                            <span
-                                                                class="font-bold text-purple-600">
-                                                                {{ $meta['payment_method'] === 'wallet' ? '💳 Ví Coinkey' : '💵 Chuyển khoản' }}
-                                                            </span>
-                                                        </div>
-                                                    @endif
-                                                    @if (isset($meta['currency']))
-                                                        <div>
-                                                            <span class="text-gray-600">Phương thức:</span>
-                                                            <span
-                                                                class="font-bold text-green-600">
-                                                                {{ $meta['currency'] === 'VND' ? '💵 Chuyển khoản' : '💳 Ví Coinkey' }}
-                                                            </span>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                                <p class="text-yellow-700 text-sm">⚠️ Key chưa được tạo hoặc đã bị xóa
-                                                </p>
-                                            </div>
-                                        @endif
-
-                                        {{-- 3️⃣ TẠO CUSTOM KEY (Người dùng tự đặt Key Code) --}}
-                                    @elseif ($type === 'custom_key_purchase')
-                                        @php
-                                            $keyId = $meta['key_id'] ?? null;
-                                            $key = $keyId ? \App\Models\ProductKey::find($keyId) : null;
-                                        @endphp
-
-                                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                    {{-- 2️⃣ MUA KEY MỚI (Hệ thống tự tạo Key Code) --}}
+                                @elseif (in_array($suffix, ['K']) && $type == 'package_purchase')
+                                    @if ($transaction->productKey)
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                             <div class="flex items-center gap-2 mb-3">
-                                                <span class="text-2xl">🎨</span>
-                                                <h3 class="font-bold text-purple-700">Tạo Custom Key</h3>
+                                                <span class="text-2xl">🔑</span>
+                                                <h3 class="font-bold text-blue-700">Tạo Key mới</h3>
                                             </div>
                                             <div class="grid grid-cols-2 gap-3 text-sm">
-                                                @if ($key)
-                                                    <div>
-                                                        <span class="text-gray-600">ID Key:</span>
-                                                        <a href="{{ route('admin.keys.show', $key->id) }}"
-                                                            class="font-bold text-purple-600 hover:underline">
-                                                            #{{ $key->id }}
-                                                        </a>
-                                                    </div>
-                                                @endif
                                                 <div>
-                                                    <span class="text-gray-600">Key Code (Custom):</span>
-                                                    <code
-                                                        class="bg-purple-100 px-2 py-1 rounded font-mono text-xs font-bold">
-                                                        {{ $meta['key_code'] ?? 'N/A' }}
+                                                    <span class="text-gray-600">ID Key:</span>
+                                                    <a href="{{ route('admin.keys.show', $transaction->productKey->id) }}"
+                                                        class="font-bold text-blue-600 hover:underline">
+                                                        #{{ $transaction->productKey->id }}
+                                                    </a>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-600">Key Code:</span>
+                                                    <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+                                                        {{ $transaction->productKey->key_code }}
                                                     </code>
                                                 </div>
                                                 <div>
                                                     <span class="text-gray-600">Thời hạn:</span>
                                                     <span class="font-semibold text-purple-600">
-                                                        {{ number_format($meta['duration_minutes'] ?? 0) }} phút
+                                                        {{ number_format($meta['duration_minutes'] ?? $transaction->productKey->duration_minutes) }}
+                                                        phút
                                                     </span>
                                                 </div>
-                                                @if (isset($meta['product_name']))
-                                                    <div>
-                                                        <span class="text-gray-600">Gói sản phẩm:</span>
-                                                        <span class="font-semibold">{{ $meta['product_name'] }}</span>
-                                                    </div>
-                                                @endif
+                                                <div>
+                                                    <span class="text-gray-600">Hết hạn:</span>
+                                                    <span class="font-semibold text-red-600">
+                                                        {{ $transaction->productKey->expires_at ? $transaction->productKey->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') : 'Vĩnh viễn' }}
+                                                    </span>
+                                                </div>
                                                 @if (isset($meta['payment_method']))
                                                     <div>
                                                         <span class="text-gray-600">Phương thức:</span>
-                                                        <span
-                                                            class="font-bold {{ $meta['payment_method'] === 'wallet' ? 'text-purple-600' : 'text-green-600' }}">
+                                                        <span class="font-bold text-purple-600">
                                                             {{ $meta['payment_method'] === 'wallet' ? '💳 Ví Coinkey' : '💵 Chuyển khoản' }}
                                                         </span>
                                                     </div>
                                                 @endif
-                                                @if (isset($meta['cost_coinkey']))
+                                                @if (isset($meta['currency']))
                                                     <div>
-                                                        <span class="text-gray-600">Chi phí:</span>
-                                                        <span class="font-bold text-purple-600">
-                                                            {{ number_format($meta['cost_coinkey']) }} Coin
+                                                        <span class="text-gray-600">Phương thức:</span>
+                                                        <span class="font-bold text-green-600">
+                                                            {{ $meta['currency'] === 'VND' ? '💵 Chuyển khoản' : '💳 Ví Coinkey' }}
                                                         </span>
                                                     </div>
                                                 @endif
                                             </div>
                                         </div>
+                                    @else
+                                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                            <p class="text-yellow-700 text-sm">⚠️ Key chưa được tạo hoặc đã bị xóa
+                                            </p>
+                                        </div>
+                                    @endif
 
-                                        {{-- 4️⃣ GIA HẠN KEY --}}
-                                    @elseif ($suffix === 'X' || $type === 'key_extension')
-                                        @php
-                                            $keyId = $meta['key_id'] ?? null;
-                                            $key = $keyId ? \App\Models\ProductKey::find($keyId) : null;
-                                        @endphp
+                                    {{-- 3️⃣ TẠO CUSTOM KEY (Người dùng tự đặt Key Code) --}}
+                                @elseif ($type === 'custom_key_purchase')
+                                    @php
+                                        $keyId = $meta['key_id'] ?? null;
+                                        $key = $keyId ? \App\Models\ProductKey::find($keyId) : null;
+                                    @endphp
 
-                                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                                            <div class="flex items-center gap-2 mb-3">
-                                                <span class="text-2xl">⏱️</span>
-                                                <h3 class="font-bold text-orange-700">Gia hạn Key</h3>
+                                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="text-2xl">🎨</span>
+                                            <h3 class="font-bold text-purple-700">Tạo Custom Key</h3>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3 text-sm">
+                                            @if ($key)
+                                                <div>
+                                                    <span class="text-gray-600">ID Key:</span>
+                                                    <a href="{{ route('admin.keys.show', $key->id) }}"
+                                                        class="font-bold text-purple-600 hover:underline">
+                                                        #{{ $key->id }}
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <span class="text-gray-600">Key Code (Custom):</span>
+                                                <code
+                                                    class="bg-purple-100 px-2 py-1 rounded font-mono text-xs font-bold">
+                                                    {{ $meta['key_code'] ?? 'N/A' }}
+                                                </code>
                                             </div>
-                                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                                @if ($key)
-                                                    <div>
-                                                        <span class="text-gray-600">ID Key:</span>
-                                                        <a href="{{ route('admin.keys.show', $key->id) }}"
-                                                            class="font-bold text-orange-600 hover:underline">
-                                                            #{{ $key->id }}
-                                                        </a>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-gray-600">Key Code:</span>
-                                                        <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
-                                                            {{ $key->key_code }}
-                                                        </code>
-                                                    </div>
-                                                @elseif (isset($meta['key_code']))
-                                                    <div>
-                                                        <span class="text-gray-600">Key Code:</span>
-                                                        <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
-                                                            {{ $meta['key_code'] }}
-                                                        </code>
-                                                    </div>
-                                                @endif
+                                            <div>
+                                                <span class="text-gray-600">Thời hạn:</span>
+                                                <span class="font-semibold text-purple-600">
+                                                    {{ number_format($meta['duration_minutes'] ?? 0) }} phút
+                                                </span>
+                                            </div>
+                                            @if (isset($meta['product_name']))
+                                                <div>
+                                                    <span class="text-gray-600">Gói sản phẩm:</span>
+                                                    <span class="font-semibold">{{ $meta['product_name'] }}</span>
+                                                </div>
+                                            @endif
+                                            @if (isset($meta['payment_method']))
+                                                <div>
+                                                    <span class="text-gray-600">Phương thức:</span>
+                                                    <span
+                                                        class="font-bold {{ $meta['payment_method'] === 'wallet' ? 'text-purple-600' : 'text-green-600' }}">
+                                                        {{ $meta['payment_method'] === 'wallet' ? '💳 Ví Coinkey' : '💵 Chuyển khoản' }}
+                                                    </span>
+                                                </div>
+                                            @endif
+                                            @if (isset($meta['cost_coinkey']))
+                                                <div>
+                                                    <span class="text-gray-600">Chi phí:</span>
+                                                    <span class="font-bold text-purple-600">
+                                                        {{ number_format($meta['cost_coinkey']) }} Coin
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- 4️⃣ GIA HẠN KEY --}}
+                                @elseif ($suffix === 'X' || $type === 'key_extension' || $type === 'custom_key_extension')
+                                    @php
+                                        $keyId = $meta['key_id'] ?? null;
+                                        $key = $keyId ? \App\Models\ProductKey::find($keyId) : null;
+                                        $isCustomExtension = $type === 'custom_key_extension';
+                                    @endphp
+
+                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="text-2xl">{{ $isCustomExtension ? '🎯' : '⏱️' }}</span>
+                                            <h3 class="font-bold text-orange-700">
+                                                {{ $isCustomExtension ? 'Gia hạn tùy chỉnh' : 'Gia hạn Key' }}
+                                            </h3>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3 text-sm">
+                                            @if ($key)
+                                                <div>
+                                                    <span class="text-gray-600">ID Key:</span>
+                                                    <a href="{{ route('admin.keys.show', $key->id) }}"
+                                                        class="font-bold text-orange-600 hover:underline">
+                                                        #{{ $key->id }}
+                                                    </a>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-600">Key Code:</span>
+                                                    <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+                                                        {{ $key->key_code }}
+                                                    </code>
+                                                </div>
+                                            @elseif (isset($meta['key_code']))
+                                                <div>
+                                                    <span class="text-gray-600">Key Code:</span>
+                                                    <code class="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+                                                        {{ $meta['key_code'] }}
+                                                    </code>
+                                                </div>
+                                            @endif
+
+                                            @if ($isCustomExtension && isset($meta['package_name']))
+                                                <div>
+                                                    <span class="text-gray-600">Gói gia hạn:</span>
+                                                    <span
+                                                        class="font-semibold text-indigo-600">{{ $meta['package_name'] }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-600">Thời gian cộng:</span>
+                                                    <span
+                                                        class="font-bold text-green-600">+{{ $meta['days_added'] ?? 0 }}
+                                                        ngày</span>
+                                                </div>
+                                            @else
                                                 <div>
                                                     <span class="text-gray-600">Thời gian cộng:</span>
                                                     <span class="font-bold text-green-600">
                                                         +{{ number_format($meta['duration_minutes'] ?? 0) }} phút
                                                     </span>
                                                 </div>
-                                                @if (isset($meta['payment_method']))
-                                                    <div>
-                                                        <span class="text-gray-600">Phương thức:</span>
-                                                        <span
-                                                            class="font-bold {{ $meta['payment_method'] === 'wallet' ? 'text-purple-600' : 'text-green-600' }}">
-                                                            {{ $meta['payment_method'] === 'wallet' ? '💳 Ví Coinkey' : '💵 Chuyển khoản' }}
-                                                        </span>
-                                                    </div>
-                                                @endif
-                                                @if (isset($meta['cost_coinkey']))
-                                                    <div>
-                                                        <span class="text-gray-600">Chi phí:</span>
-                                                        <span class="font-bold text-orange-600">
-                                                            {{ number_format($meta['cost_coinkey']) }} Coin
-                                                        </span>
-                                                    </div>
-                                                @endif
-                                            </div>
+                                            @endif
+
+                                            @if (isset($meta['payment_method']))
+                                                <div>
+                                                    <span class="text-gray-600">Phương thức:</span>
+                                                    <span
+                                                        class="font-bold {{ $meta['payment_method'] === 'wallet' ? 'text-purple-600' : 'text-green-600' }}">
+                                                        {{ $meta['payment_method'] === 'wallet' ? '💳 Ví Coinkey' : '💵 Chuyển khoản' }}
+                                                    </span>
+                                                </div>
+                                            @endif
+                                            @if (isset($meta['cost_coinkey']))
+                                                <div>
+                                                    <span class="text-gray-600">Chi phí:</span>
+                                                    <span class="font-bold text-orange-600">
+                                                        {{ number_format($meta['cost_coinkey']) }} Coin
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
+                                    </div>
                                 @endif
                             </div>
                         </div>

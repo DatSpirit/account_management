@@ -129,10 +129,10 @@ class OrderController extends Controller
                 $newTransaction = Transaction::create([
                     'user_id' => $user->id,
                     'product_id' => $product->id,
-                    'order_code' => $orderCode, 
+                    'order_code' => $orderCode,
                     'amount' => $finalPrice,
                     'status' => 'success',
-                    'description' => $orderCode . "K",// Ký hiệu K = mua Key/package
+                    'description' => $orderCode . "K", // Ký hiệu K = mua Key/package
                     'currency' => 'COINKEY',
                     'is_processed' => true,
                     'processed_at' => now(),
@@ -221,7 +221,7 @@ class OrderController extends Controller
                 'order_code' => $orderCode,
                 'amount' => $amount,
                 'status' => 'pending',
-                'description' => $orderCode . "K",// Ký hiệu K = mua Key/package
+                'description' => $orderCode . "K", // Ký hiệu K = mua Key/package
                 'currency' => 'VND',
                 'is_processed' => false,
             ]);
@@ -362,80 +362,42 @@ class OrderController extends Controller
     }
 
     /**
-     * ✅ B5: Trang Thank You - Tự động kiểm tra trạng thái thanh toán
+     *  B5: Trang Thank You - Tự động kiểm tra trạng thái thanh toán
      */
     public function thankyou(Request $request)
     {
         $orderCode = $request->query('orderCode');
 
         if (!$orderCode) {
-            return redirect()->route('products')->with('error', '❌ Không tìm thấy mã đơn hàng');
+            return redirect()->route('products')->with('error', '⌚ Không tìm thấy mã đơn hàng');
         }
 
-        // 1. Lấy giao dịch từ DB
-        $transaction = Transaction::with(['product', 'user'])
+        // 1. LOAD TRANSACTION với FULL RELATIONS
+        $transaction = Transaction::with(['product', 'user', 'productKey'])
             ->where('order_code', $orderCode)
             ->first();
 
         if (!$transaction) {
-            return redirect()->route('products')->with('error', '❌ Giao dịch không tồn tại');
+            return redirect()->route('products')->with('error', '⌚ Giao dịch không tồn tại');
         }
 
-        // Kiểm tra loại giao dịch từ metadata
-        $meta = $transaction->response_data ?? [];
-        $isExtension = isset($meta['type']) && $meta['type'] === 'key_extension'; // Đơn hàng gia hạn key
-
-        // 2.  Check PayOS status nếu vẫn đang pending
+        // 2. CHECK PayOS STATUS nếu còn PENDING
         if ($transaction->status === 'pending') {
             try {
-                // Gọi sang PayOS check trạng thái thực tế
                 $paymentInfo = $this->payOS->getPaymentLinkInformation($orderCode);
 
-                if ($paymentInfo && $paymentInfo['status'] === 'PAID') { // Thanh toán thành công
-
-                    // DB Transaction để đảm bảo an toàn
-                    DB::transaction(function () use ($transaction, $isExtension, $meta) {
-                        // Cập nhật trạng thái giao dịch
+                if ($paymentInfo && $paymentInfo['status'] === 'PAID') {
+                    DB::transaction(function () use ($transaction, $paymentInfo) {
                         $transaction->update([
                             'status' => 'success',
                             'processed_at' => now(),
-                            // Cập nhật thêm thông tin thực tế 
                             'transaction_datetime' => $paymentInfo['transactions'][0]['transactionDateTime'] ?? now(),
                         ]);
 
-                        // Nếu là đơn hàng gia hạn key, xử lý logic gia hạn
-
-                        if ($isExtension) {
-                            $key = \App\Models\ProductKey::find($meta['key_id']);
-                            if ($key) {
-                                $key->extend($meta['duration_minutes']);
-                                // $key->key_cost += $costCoinkey;
-                                $key->save();
-                                Log::info("✅ Key {$key->key_code} extended via ThankYou Page Check.");
-                            }
-                        }
-
-                        $product = $transaction->product;
-                        $user = $transaction->user;
-                        $key = null;
-
-                        // XỬ LÝ LOGIC NẠP COIN
-                        if ($product->product_type === 'coinkey') {
-                            $wallet = $user->getOrCreateWallet();
-
-                            $wallet->deposit(
-                                amount: $product->coinkey_amount,
-                                type: 'deposit',
-                                description: "Nạp {$product->coinkey_amount} Coinkey (Đơn #{$transaction->order_code})",
-                                referenceType: 'Transaction',
-                                referenceId: $transaction->id
-                            );
-
-                            $wallet->increment('total_deposited', $transaction->amount); // Cộng tổng nạp (để tính VIP)
-
-                            Log::info("💰 Added {$product->coinkey_amount} coins to User {$user->id}");
-                        }
+                        // XỬ LÝ FULFILLMENT
+                        $this->fulfillOrder($transaction);
                     });
+
                     Log::info("✅ Order {$orderCode} updated to SUCCESS via ThankYou page check.");
                 } elseif ($paymentInfo['status'] === 'CANCELLED') {
                     $transaction->update(['status' => 'cancelled']);
@@ -445,37 +407,56 @@ class OrderController extends Controller
             }
         }
 
-        $product = $transaction->product;
-        $user = $transaction->user;
-        $key = null;
+        // 3. REFRESH TRANSACTION để lấy data mới nhất
+        $transaction->refresh();
 
-        // 3. CHỈ TẠO KEY MỚI NẾU KHÔNG PHẢI LÀ GIA HẠN 
-        if (!$isExtension && $transaction->status === 'success' && $product && $product->product_type === 'package') {
+        // 4. EXTRACT METADATA (core data source)
+        $meta = $transaction->response_data ?? [];
+        $type = $meta['type'] ?? null;
 
-            // Tìm key đã tạo (tránh tạo trùng)
-            $key = \App\Models\ProductKey::where('user_id', $user->id)
-                // Check key tạo sau khi transaction được khởi tạo
+        // 5. BUILD VIEW DATA từ METADATA (không phụ thuộc product relation)
+        $viewData = [
+            'transaction' => $transaction,
+            'meta' => $meta,
+            'type' => $type,
+
+            // Virtual Relations từ metadata
+            'key' => null,
+            'product' => $transaction->product, // Có thể null với custom extension
+            'user' => $transaction->user,
+
+            // Extension-specific data từ metadata
+            'package_name' => $meta['package_name'] ?? null,
+            'days_added' => $meta['days_added'] ?? null,
+            'key_code' => $meta['key_code'] ?? null,
+            'key_id' => $meta['key_id'] ?? null,
+            'duration_minutes' => $meta['duration_minutes'] ?? null,
+
+            // Display flags
+            'is_custom_extension' => $type === 'custom_key_extension',
+            'is_key_extension' => in_array($type, ['key_extension', 'custom_key_extension']),
+            'is_custom_key_purchase' => $type === 'custom_key_purchase',
+            'is_package_purchase' => $type === 'package_purchase',
+            'is_coinkey_deposit' => $transaction->product?->isCoinkeyPack() ?? false,
+        ];
+
+        // 6. LOAD KEY nếu có key_id trong metadata hoặc relation
+        if (!empty($meta['key_id'])) {
+            $viewData['key'] = \App\Models\ProductKey::with(['product', 'user'])
+                ->find($meta['key_id']);
+        } elseif ($transaction->productKey) {
+            $viewData['key'] = $transaction->productKey;
+        }
+
+        // 7. FALLBACK: Tìm key mới tạo gần đây (cho package purchase)
+        if (!$viewData['key'] && $viewData['is_package_purchase'] && $transaction->status === 'success') {
+            $viewData['key'] = \App\Models\ProductKey::where('user_id', $transaction->user_id)
                 ->where('created_at', '>=', $transaction->created_at)
                 ->latest()
                 ->first();
-
-            // Nếu chưa có Key, tạo mới (Fallback)
-            if (!$key) {
-                try {
-                    // Gọi service tạo key
-                    $key = $this->keyService->createKeyFromPackage($user, $product, $transaction);
-                    Log::info("🔑 Key created via ThankYou page fallback for Order {$orderCode}");
-                } catch (\Exception $e) {
-                    Log::error("Failed to create key on ThankYou page: " . $e->getMessage());
-                }
-            }
-        }
-        // Nếu là gia hạn, lấy key cũ để hiển thị
-        if ($isExtension) {
-            $key = \App\Models\ProductKey::find($meta['key_id']);
         }
 
-        return view('thankyou', compact('transaction', 'product', 'key'));
+        return view('thankyou', $viewData);
     }
     /**
      * ⚙️ Xử lý lỗi chung

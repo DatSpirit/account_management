@@ -9,6 +9,7 @@ use App\Services\KeyManagementService;
 use App\Services\CoinkeyService;
 use App\Services\PayosService;
 use App\Models\KeyHistory;
+use App\Models\CustomExtensionPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -128,7 +129,7 @@ class KeyManagementController extends Controller
         $key = $user->productKeys()->findOrFail($id); // Chỉ xem key của chính mình
 
         // Lấy lịch sử, sắp xếp mới nhất lên đầu
-        $histories = \App\Models\KeyHistory::where('product_key_id', $id)
+        $histories = KeyHistory::where('product_key_id', $id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -541,9 +542,246 @@ class KeyManagementController extends Controller
         }
     }
 
-    /* =========================================================================
-     * SECTION 3: KEY MANAGEMENT ACTIONS (Gia hạn, Khóa, Mở khóa)
-     * ========================================================================= */
+    /**
+     * Trang chọn gói gia hạn tùy chỉnh (bằng Key Code)
+     */
+    public function customExtendPage()
+    {
+        $user = Auth::user();
+
+        // Lấy danh sách gói gia hạn
+        $packages = \App\Models\CustomExtensionPackage::active()->get();
+
+        // Lấy ví để hiển thị số dư
+        $wallet = $user->getOrCreateWallet();
+
+        return view('keys.custom-extend', compact('packages', 'wallet'));
+    }
+
+    /**
+     *  Xác nhận gia hạn tùy chỉnh - LOAD & VALIDATE SỚM
+     */
+    public function customExtendConfirm(Request $request)
+    {
+        $request->validate([
+            'key_code' => 'required|string|min:3|max:50',
+            'package_id' => 'required|exists:custom_extension_packages,id',
+        ]);
+
+        $user = Auth::user();
+        $keyCode = strtoupper(trim($request->key_code));
+
+        //  1. FETCH KEY với FULL RELATIONS (product, transaction)
+        $key = ProductKey::where('key_code', $keyCode)
+            ->where('user_id', $user->id)
+            ->with(['product', 'transaction', 'user'])
+            ->first();
+
+        if (!$key) {
+            return back()->withInput()->with('error', '❌ Key không tồn tại hoặc không thuộc về bạn.');
+        }
+
+        //  2. VALIDATE KEY STATUS
+        if ($key->isRevoked()) {
+            return back()->withInput()->with('error', '❌ Key đã bị thu hồi, không thể gia hạn.');
+        }
+
+        if ($key->status === 'suspended') {
+            return back()->withInput()->with('error', '❌ Key đang bị tạm ngưng.');
+        }
+
+        //  3. LOAD PACKAGE với FULL DATA
+        $package = \App\Models\CustomExtensionPackage::findOrFail($request->package_id);
+
+        //  4. LOAD WALLET
+        $wallet = $user->getOrCreateWallet();
+
+        //  5. CALCULATE NEW EXPIRY (để preview)
+        $currentExpiry = $key->expires_at;
+        $newExpiry = $currentExpiry
+            ? $currentExpiry->copy()->addDays($package->days)
+            : now()->addDays($package->days);
+
+        //  6. BUILD PREVIEW DATA
+        $previewData = [
+            'key' => $key,
+            'package' => $package,
+            'wallet' => $wallet,
+            'current_expiry' => $currentExpiry,
+            'new_expiry' => $newExpiry,
+            'has_sufficient_balance' => $wallet->balance >= $package->price_coinkey,
+        ];
+
+        return view('keys.custom-extend-confirm', $previewData);
+    }
+
+    /**
+     *  Xử lý gia hạn tùy chỉnh - LƯU METADATA ĐẦY ĐỦ
+     */
+    public function processCustomExtension(Request $request)
+    {
+        $request->validate([
+            'key_id' => 'required|exists:product_keys,id',
+            'package_id' => 'required|exists:custom_extension_packages,id',
+            'payment_method' => 'required|in:wallet,cash',
+        ]);
+
+        $user = Auth::user();
+
+        //  1. LOAD KEY với FULL RELATIONS
+        $key = ProductKey::with(['product', 'user'])
+            ->where('id', $request->key_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        //  2. LOAD PACKAGE
+        $package = \App\Models\CustomExtensionPackage::findOrFail($request->package_id);
+
+        //  3. BUILD FULL METADATA (sử dụng cho cả 2 payment methods)
+        $baseMetadata = [
+            'type' => 'custom_key_extension',
+            // Key Details
+            'key_id' => $key->id,
+            'key_code' => $key->key_code,
+            'key_type' => $key->key_type,
+            // Package Details
+            'package_id' => $package->id,
+            'package_name' => $package->name,
+            'days_added' => $package->days,
+            'duration_minutes' => $package->duration_minutes,
+            // User Details
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            // Product Details 
+            'product_id' => $key->product_id,
+            'product_name' => $key->product?->name,
+            // Expiry Tracking
+            'old_expiry' => $key->expires_at?->toIso8601String(),
+            'calculated_new_expiry' => $key->expires_at
+                ? $key->expires_at->copy()->addDays($package->days)->toIso8601String()
+                : now()->addDays($package->days)->toIso8601String(),
+        ];
+
+        try {
+            $orderCode = (int)(now()->timestamp . rand(100, 999));
+            $description = $orderCode . "CEX"; // Custom Extension suffix
+
+            // --- PHƯƠNG THỨC 1: THANH TOÁN BẰNG VÍ ---
+            if ($request->payment_method === 'wallet') {
+                $costCoinkey = $package->price_coinkey;
+                $wallet = $user->getOrCreateWallet();
+
+                if ($wallet->balance < $costCoinkey) {
+                    return back()->with('error', '❌ Số dư ví không đủ. Cần: ' . number_format($costCoinkey) . ' Coin.');
+                }
+
+                // DB Transaction
+                DB::transaction(function () use ($user, $key, $package, $wallet, $costCoinkey, $orderCode, $description, $baseMetadata) {
+
+                    // 1. Trừ tiền
+                    $wallet->withdraw(
+                        amount: $costCoinkey,
+                        type: 'purchase',
+                        description: "Gia hạn tùy chỉnh Key: {$key->key_code} (+{$package->days} ngày)",
+                        referenceType: 'ProductKey',
+                        referenceId: $key->id
+                    );
+
+                    // 2. Tạo Transaction với FULL METADATA
+                    $newTransaction = Transaction::create([
+                        'user_id' => $user->id,
+                        'product_id' => null, // Custom extension không link product
+                        'order_code' => $orderCode,
+                        'amount' => $costCoinkey,
+                        'status' => 'success',
+                        'currency' => 'COINKEY',
+                        'description' => $description,
+                        'is_processed' => true,
+                        'processed_at' => now(),
+                        // FULL METADATA
+                        'response_data' => array_merge($baseMetadata, [
+                            'payment_method' => 'wallet',
+                            'cost_coinkey' => $costCoinkey,
+                            'price_vnd' => null,
+                        ])
+                    ]);
+
+                    // 3. Gia hạn key
+                    $oldExpiry = $key->expires_at?->toDateTimeString() ?? 'N/A';
+                    $key->extend($package->duration_minutes);
+                    $key->key_cost += $costCoinkey;
+                    $key->status = 'active';
+                    $key->save();
+
+                    //  4. Cập nhật metadata
+                    $newTransaction->update([
+                        'response_data' => array_merge($newTransaction->response_data, [
+                            'actual_new_expiry' => $key->expires_at->toIso8601String(),
+                        ])
+                    ]);
+
+                    // 5. Ghi lịch sử
+                    \App\Models\KeyHistory::log($key->id, 'custom_extend', "Gia hạn tùy chỉnh qua Ví - Đơn #{$orderCode}", [
+                        'package_name' => $package->name,
+                        'days_added' => $package->days,
+                        'minutes_added' => $package->duration_minutes,
+                        'cost' => $costCoinkey . ' Coin',
+                        'old_expiry' => $oldExpiry,
+                        'new_expiry' => $key->expires_at->toDateTimeString(),
+                    ]);
+                });
+
+                return redirect()->route('thankyou', ['orderCode' => $orderCode])
+                    ->with('success', "✅ Gia hạn thành công +{$package->days} ngày!");
+            }
+
+            // --- PHƯƠNG THỨC 2: THANH TOÁN PAYOS ---
+            if ($request->payment_method === 'cash') {
+                $amountVND = $package->price_vnd;
+
+                // Tạo Transaction Pending với FULL METADATA
+                $transaction = Transaction::create([
+                    'user_id' => $user->id,
+                    'product_id' => null,
+                    'order_code' => $orderCode,
+                    'amount' => $amountVND,
+                    'status' => 'pending',
+                    'currency' => 'VND',
+                    'description' => $description,
+                    //  FULL METADATA
+                    'response_data' => array_merge($baseMetadata, [
+                        'payment_method' => 'cash',
+                        'cost_coinkey' => null,
+                        'price_vnd' => $amountVND,
+                    ])
+                ]);
+
+                // Tạo Link PayOS
+                $payosService = app(\App\Services\PayosService::class);
+                $paymentLink = $payosService->createPaymentLink([
+                    'orderCode' => $orderCode,
+                    'amount' => (int) $amountVND,
+                    'description' => substr($description, 0, 25),
+                    'returnUrl' => route('thankyou', ['orderCode' => $orderCode]),
+                    'cancelUrl' => route('payos.cancel-process'),
+                    'items' => [[
+                        'name' => "Gia hạn: {$key->key_code} (+{$package->days}d)",
+                        'quantity' => 1,
+                        'price' => (int) $amountVND
+                    ]]
+                ]);
+
+                return redirect($paymentLink);
+            }
+        } catch (\Exception $e) {
+            Log::error('Custom Extension Error: ' . $e->getMessage());
+            return back()->with('error', '❌ Lỗi: ' . $e->getMessage());
+        }
+    }
+    /* 
+     *  KEY MANAGEMENT ACTIONS (Gia hạn, Khóa, Mở khóa)
+     */
 
     public function extend(Request $request, $id)
     {

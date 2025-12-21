@@ -9,6 +9,9 @@
                 Your Keys
             </h2>
             <div class="flex gap-3">
+                <a href="{{ route('keys.custom-extend') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition flex items-center gap-2">
+                    <span>+</span> Gia Hạn Key Tùy Chỉnh
+                </a>
                 <a href="{{ route('products') }}"
                     class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg transition flex items-center gap-2">
                     🛒 Mua Gói Có Sẵn

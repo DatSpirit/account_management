@@ -195,46 +195,46 @@ Route::middleware(['auth', 'verified', 'admin'])
         // 🔹 QUẢN LÝ KEY - ADMIN (Cập nhật với Soft Delete & Edit)
         // ===========================
         Route::prefix('keys')->name('admin.keys.')->group(function () {
-            
+
             // Danh sách key (bao gồm cả key đã xóa)
             Route::get('/', [AdminKeyManagementController::class, 'index'])->name('index');
-            
+
             // Validation statistics
             Route::get('/validation-stats', [AdminKeyManagementController::class, 'validationStats'])->name('validation-stats');
-            
+
             // Export CSV
             Route::get('/export', [AdminKeyManagementController::class, 'export'])->name('export');
-            
+
             // Chi tiết key
             Route::get('/{id}', [AdminKeyManagementController::class, 'show'])->name('show');
-            
-             // Trang chỉnh sửa key (Full Features)
+
+            // Trang chỉnh sửa key (Full Features)
             Route::get('/{id}/edit', [AdminKeyManagementController::class, 'edit'])->name('edit');
 
-             // Cập nhật key (Chỉnh sửa toàn diện - Key Code, Status, Expires, Duration)
+            // Cập nhật key (Chỉnh sửa toàn diện - Key Code, Status, Expires, Duration)
             Route::put('/{id}', [AdminKeyManagementController::class, 'update'])->name('update');
-            
+
             // Suspend key
             Route::post('/{id}/suspend', [AdminKeyManagementController::class, 'suspend'])->name('suspend');
-            
+
             // Activate key
             Route::post('/{id}/activate', [AdminKeyManagementController::class, 'activate'])->name('activate');
-            
+
             // Revoke key
             Route::post('/{id}/revoke', [AdminKeyManagementController::class, 'revoke'])->name('revoke');
-            
+
             // Gia hạn key (Admin - miễn phí)
             Route::post('/{id}/extend-admin', [AdminKeyManagementController::class, 'extendAdmin'])->name('extend-admin');
-            
+
             // Xóa mềm key (Soft Delete - User không thấy, Admin vẫn thấy)
             Route::delete('/{id}', [AdminKeyManagementController::class, 'destroy'])->name('destroy');
-            
+
             // Khôi phục key đã xóa
             Route::post('/{id}/restore', [AdminKeyManagementController::class, 'restore'])->name('restore');
-            
+
             // Xóa vĩnh viễn key (Force Delete)
             Route::delete('/{id}/force', [AdminKeyManagementController::class, 'forceDelete'])->name('force-delete');
-            
+
             // Bulk actions
             Route::post('/bulk-action', [AdminKeyManagementController::class, 'bulkAction'])->name('bulk-action');
         });
@@ -274,10 +274,20 @@ Route::middleware(['auth', 'verified'])->prefix('keys')->name('keys.')->group(fu
 
     Route::get('/my-keys/{id}', [KeyManagementController::class, 'show'])->name('keydetails');
     Route::get('/my-keys/{id}/history', [KeyManagementController::class, 'history'])->name('history');
-    
+
     // Route cho chức năng gia hạn theo gói
     Route::get('/{id}/extend-confirm', [KeyManagementController::class, 'extendConfirm'])->name('extend-confirm');
     Route::post('/{id}/process-extension', [KeyManagementController::class, 'processExtension'])->name('process-extension');
+
+    // GIA HẠN TÙY CHỈNH (CUSTOM EXTENSION)
+    Route::get('/custom-extend', [KeyManagementController::class, 'customExtendPage'])
+        ->name('custom-extend');
+
+    Route::post('/custom-extend/confirm', [KeyManagementController::class, 'customExtendConfirm'])
+        ->name('custom-extend-confirm');
+
+    Route::post('/custom-extend/process', [KeyManagementController::class, 'processCustomExtension'])
+        ->name('process-custom-extension');
 
     Route::post('/{id}/suspend', [KeyManagementController::class, 'suspend'])->name('suspend');
     Route::post('/{id}/activate', [KeyManagementController::class, 'activate'])->name('activate');

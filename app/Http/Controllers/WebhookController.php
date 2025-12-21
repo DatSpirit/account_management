@@ -382,7 +382,68 @@ class WebhookController extends Controller
             $product = $transaction->product;
             $meta = $transaction->response_data ?? [];
 
-            //  KIỂM TRA GIA HẠN KEY TRƯỚC
+            //  0. KIỂM TRA GIA HẠN TÙY CHỈNH (Custom Extension)
+            if (isset($meta['type']) && $meta['type'] === 'custom_key_extension') {
+                $keyId = $meta['key_id'] ?? null;
+                $duration = $meta['duration_minutes'] ?? 0;
+
+                if (!$keyId || !$duration) {
+                    Log::error("⌚ Webhook: Missing key_id or duration for custom extension", [
+                        'transaction_id' => $transaction->id,
+                        'meta' => $meta
+                    ]);
+                    return;
+                }
+
+                // LOAD KEY với RELATIONS
+                $key = \App\Models\ProductKey::with(['product', 'user'])->find($keyId);
+                if (!$key) {
+                    Log::error("⌚ Webhook: Key not found for custom extension", [
+                        'transaction_id' => $transaction->id,
+                        'key_id' => $keyId
+                    ]);
+                    return;
+                }
+
+                // Thực hiện gia hạn
+                $oldExpiry = $key->expires_at ? $key->expires_at->toDateTimeString() : 'N/A';
+                $key->extend($duration);
+                $key->status = 'active';
+
+                if ($transaction->currency === 'VND') {
+                    $key->key_cost += ($transaction->amount / 1000);
+                }
+                $key->save();
+
+                // CẬP NHẬT METADATA với actual_new_expiry
+                $transaction->update([
+                    'response_data' => array_merge($meta, [
+                        'actual_new_expiry' => $key->expires_at->toIso8601String(),
+                        'webhook_processed_at' => now()->toIso8601String(),
+                    ])
+                ]);
+
+                // Ghi lịch sử
+                \App\Models\KeyHistory::log($key->id, 'custom_extend', "Gia hạn tùy chỉnh qua PayOS - Đơn #{$transaction->order_code}", [
+                    'package_name' => $meta['package_name'] ?? 'N/A',
+                    'days_added' => $meta['days_added'] ?? 0,
+                    'minutes_added' => $duration,
+                    'cost_vnd' => $transaction->amount,
+                    'old_expiry' => $oldExpiry,
+                    'new_expiry' => $key->expires_at->toDateTimeString()
+                ]);
+
+                Log::info("✅ Custom Extended Key {$key->key_code} via Webhook", [
+                    'key_id' => $key->id,
+                    'days_added' => $meta['days_added'] ?? 0,
+                    'new_expiry' => $key->expires_at
+                ]);
+
+                return; // DỪNG LẠI
+            }
+
+
+            // 1.  KIỂM TRA GIA HẠN KEY TRƯỚC
             if (isset($meta['type']) && $meta['type'] === 'key_extension') {
                 $keyId = $meta['key_id'] ?? null;
                 $duration = $meta['duration_minutes'] ?? 0;
@@ -435,7 +496,7 @@ class WebhookController extends Controller
                 return; // DỪNG LẠI, KHÔNG TẠO KEY MỚI
             }
 
-            // KIỂM TRA MUA CUSTOM KEY (PayOS)
+            // 2. KIỂM TRA MUA CUSTOM KEY (PayOS)
             if (isset($meta['type']) && $meta['type'] === 'custom_key_purchase') {
                 $keyService = app(\App\Services\KeyManagementService::class);
 
@@ -452,6 +513,10 @@ class WebhookController extends Controller
                         'key_id' => $newKey->id,
                     ])
                 ]);
+
+                // Cập nhật transaction_id cho ProductKey
+                $newKey->update(['transaction_id' => $transaction->id]);
+
 
                 // GHI LỊCH TẠO KEY
                 \App\Models\KeyHistory::log($newKey->id, 'create', "Tạo Custom Key qua PayOS - Order code:{$transaction->order_code}", [
@@ -499,7 +564,7 @@ class WebhookController extends Controller
                         ])
                     ]);
 
-                    // GHI LỊCH TẠO KEY
+                    // GHI LỊCH SỬ
                     \App\Models\KeyHistory::log($key->id, 'create', "Mua gói {$product->name} qua PayOS", [
                         'order_code' => $transaction->order_code,
                         'cost_vnd' => $transaction->amount,
