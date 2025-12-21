@@ -413,7 +413,7 @@ class KeyManagementController extends Controller
     }
 
     /**
-     * Xử lý gia hạn (PayOS hoặc Wallet)
+     * Xử lý gia hạn trực tiếp(PayOS hoặc Wallet)
      */
     public function processExtension(Request $request, $id)
     {
@@ -427,6 +427,14 @@ class KeyManagementController extends Controller
 
         if (!$product) {
             return back()->with('error', 'Không tìm thấy gói sản phẩm gốc.');
+        }
+        //  2. VALIDATE KEY STATUS
+        if ($key->isRevoked()) {
+            return back()->withInput()->with('error', '❌ Key đã bị thu hồi, không thể gia hạn.');
+        }
+
+        if ($key->status === 'suspended') {
+            return back()->withInput()->with('error', '❌ Key đang bị tạm ngưng.');
         }
 
         try {
