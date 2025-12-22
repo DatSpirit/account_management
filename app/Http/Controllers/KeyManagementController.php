@@ -430,11 +430,11 @@ class KeyManagementController extends Controller
         }
         //  2. VALIDATE KEY STATUS
         if ($key->isRevoked()) {
-            return back()->withInput()->with('error', '❌ Key đã bị thu hồi, không thể gia hạn.');
+            return back()->withInput()->with('error', 'Key đã bị thu hồi, không thể gia hạn.');
         }
 
         if ($key->status === 'suspended') {
-            return back()->withInput()->with('error', '❌ Key đang bị tạm ngưng.');
+            return back()->withInput()->with('error', 'Key đang bị tạm ngưng.');
         }
 
         try {
@@ -586,16 +586,16 @@ class KeyManagementController extends Controller
             ->first();
 
         if (!$key) {
-            return back()->withInput()->with('error', '❌ Key không tồn tại hoặc không thuộc về bạn.');
+            return back()->withInput()->with('error', ' Key không tồn tại hoặc không thuộc về bạn.');
         }
 
         //  2. VALIDATE KEY STATUS
         if ($key->isRevoked()) {
-            return back()->withInput()->with('error', '❌ Key đã bị thu hồi, không thể gia hạn.');
+            return back()->withInput()->with('error', ' Key đã bị thu hồi, không thể gia hạn.');
         }
 
         if ($key->status === 'suspended') {
-            return back()->withInput()->with('error', '❌ Key đang bị tạm ngưng.');
+            return back()->withInput()->with('error', ' Key đang bị tạm ngưng.');
         }
 
         //  3. LOAD PACKAGE với FULL DATA

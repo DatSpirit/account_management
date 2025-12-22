@@ -47,7 +47,6 @@
             </a> --}}
         {{-- </div> --}}
     </x-slot>
-    <!-- Thêm vào trên cùng, dưới header -->
 
     <div class="py-8 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto space-y-6">
@@ -373,77 +372,113 @@
                                     </td>
 
                                     <td class="px-3 sm:px-6 py-4 text-left whitespace-nowrap">
-                                        @if ($transaction->product)
-                                            <div class="flex flex-col space-y-1">
+                                        @if ($transaction->product || isset($meta['type']))
+                                            <div class="flex flex-col space-y-2">
                                                 {{-- Tên sản phẩm gốc --}}
-                                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ Str::limit($transaction->product->name, 30) }}
-                                                </span>
+                                                @if ($transaction->product)
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {{ Str::limit($transaction->product->name, 30) }}
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
+                                                        Custom Extension
+                                                    </span>
+                                                @endif
 
-                                                {{-- LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
+                                                {{--  LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
                                                 @php
                                                     $meta = $transaction->response_data ?? [];
                                                     $type = $meta['type'] ?? '';
-                                                    $suffix = '';
 
-                                                    // Xác định suffix
-                                                    if ($type === 'key_extension') {
-                                                        $suffix = 'EX';
-                                                    } elseif ($transaction->product->product_type === 'coinkey') {
-                                                        $suffix = 'C';
-                                                    } elseif ($transaction->product->product_type === 'package') {
-                                                        $suffix = 'K';
-                                                    }
+                                                    // Check suffix cuối chuỗi description để xác định loại
+                                                    $description = $transaction->description ?? '';
+                                                    $suffix = substr($description, -3); // Lấy 3 ký tự cuối (CEX, EX, K, C)
+                                                    $lastChar = substr($description, -1); // Lấy 1 ký tự cuối để fallback
                                                 @endphp
 
-                                                {{-- 1️⃣ GIA HẠN KEY --}}
-                                                @if ($suffix === 'EX')
+                                                {{-- 1️ GIA HẠN TÙY CHỈNH (CEX) --}}
+                                                @if ($suffix === 'CEX' || $type === 'custom_key_extension')
                                                     <div
-                                                        class="flex flex-col mt-1 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-800">
-                                                        <span
-                                                            class="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
-                                                            Extend Key
-                                                        </span>
-                                                        <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                            ID Key: <strong>#{{ $meta['key_id'] ?? 'N/A' }}</strong>
-                                                        </span>
-                                                        @if (isset($meta['key_code']))
-                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                                <code
-                                                                    class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">{{ $meta['key_code'] }}</code>
-                                                            </span>
-                                                        @endif
-                                                        <span class="text-xs text-gray-500">
-                                                            Ngày gia hạn:
-                                                            {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
-                                                        </span>
-                                                    </div>
-
-                                                    {{-- 2️⃣ MUA KEY MỚI (Standard Package) --}}
-                                                @elseif ($suffix === 'K' && $type !== 'custom_key_purchase')
-                                                    @if ($transaction->productKey)
-                                                        <div
-                                                            class="flex flex-col mt-1 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded border border-indigo-100 dark:border-indigo-800">
+                                                        class="flex flex-col mt-1 p-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 shadow-sm">
+                                                        <div class="flex items-center gap-2 mb-2">
                                                             <span
-                                                                class="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase">
-                                                                Traditional Key
-                                                            </span>
-                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                                ID Key:
-                                                                <strong>#{{ $transaction->productKey->id }}</strong>
-                                                            </span>
-                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                                <code
-                                                                    class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">{{ $transaction->productKey->key_code }}</code>
-                                                            </span>
-                                                            <span class="text-xs text-gray-500">
-                                                                Ngày tạo:
-                                                                {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                                class="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
+                                                                Custom Extension Key
                                                             </span>
                                                         </div>
-                                                    @endif
+                                                        <div class="space-y-1">
+                                                            <div class="flex items-center justify-between text-xs">
+                                                                <span class="text-gray-600 dark:text-gray-400">ID
+                                                                    Key:</span>
+                                                                <strong
+                                                                    class="text-indigo-600 dark:text-indigo-400">#{{ $meta['key_id'] ?? 'N/A' }}</strong>
+                                                            </div>
+                                                            @if (isset($meta['key_code']))
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                                        Code:</span>
+                                                                    <code
+                                                                        class="bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded text-xs font-mono font-bold">
+                                                                        {{ $meta['key_code'] }}
+                                                                    </code>
+                                                                </div>
+                                                            @endif
+                                                            {{-- @if (isset($meta['package_name']))
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span
+                                                                        class="text-gray-600 dark:text-gray-400">Gói:</span>
+                                                                    <span
+                                                                        class="font-semibold text-purple-600 dark:text-purple-400">
+                                                                        {{ $meta['package_name'] }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif --}}
+                                                            @if (isset($meta['days_added']))
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">Thời
+                                                                        gian:</span>
+                                                                    <span
+                                                                        class="font-bold text-green-600 dark:text-green-400">
+                                                                        +{{ $meta['days_added'] }} ngày
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
 
-                                                    {{-- 3️⃣ CUSTOM KEY (Người dùng tự đặt Key Code) --}}
+                                                    {{-- 2️ GIA HẠN THƯỜNG (EX) --}}
+                                                @elseif (substr($description, -2) === 'EX' || $type === 'key_extension')
+                                                    <div
+                                                        class="flex flex-col mt-1 p-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-700 shadow-sm">
+                                                        <div class="flex items-center gap-2 mb-2">
+                                                          
+                                                            <span
+                                                                class="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">
+                                                                Extension Key
+                                                            </span>
+                                                        </div>
+                                                        <div class="space-y-1">
+                                                            <div class="flex items-center justify-between text-xs">
+                                                                <span class="text-gray-600 dark:text-gray-400">ID
+                                                                    Key:</span>
+                                                                <strong
+                                                                    class="text-green-600 dark:text-green-400">#{{ $meta['key_id'] ?? 'N/A' }}</strong>
+                                                            </div>
+                                                            @if (isset($meta['key_code']))
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                                        Code:</span>
+                                                                    <code
+                                                                        class="bg-green-100 dark:bg-green-800 px-2 py-1 rounded text-xs font-mono">
+                                                                        {{ $meta['key_code'] }}
+                                                                    </code>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- 3️ CUSTOM KEY PURCHASE --}}
                                                 @elseif ($type === 'custom_key_purchase')
                                                     @php
                                                         $keyId = $meta['key_id'] ?? null;
@@ -452,36 +487,84 @@
                                                             : $transaction->productKey;
                                                     @endphp
 
-                                                    @if ($customKey)
-                                                        <div
-                                                            class="flex flex-col mt-1 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800">
+                                                    <div
+                                                        class="flex flex-col mt-1 p-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border-2 border-purple-200 dark:border-purple-700 shadow-sm">
+                                                        <div class="flex items-center gap-2 mb-2">
+                                                        
                                                             <span
-                                                                class="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase">
+                                                                class="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
                                                                 Custom Key
                                                             </span>
-                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                                ID Key: <strong>#{{ $customKey->id }}</strong>
-                                                            </span>
-                                                            <span class="text-xs text-gray-600 dark:text-gray-300">
-                                                                <code
-                                                                    class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">{{ $customKey->key_code }}</code>
-                                                            </span>
-                                                            <span class="text-xs text-gray-500">
-                                                                Ngày tạo:
-                                                                {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
-                                                            </span>
+                                                        </div>
+                                                        @if ($customKey)
+                                                            <div class="space-y-1">
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">ID
+                                                                        Key:</span>
+                                                                    <strong
+                                                                        class="text-purple-600 dark:text-purple-400">#{{ $customKey->id }}</strong>
+                                                                </div>
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                                        Code:</span>
+                                                                    <code
+                                                                        class="bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded text-xs font-mono font-bold">
+                                                                        {{ $customKey->key_code }}
+                                                                    </code>
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <div class="text-xs text-yellow-600 dark:text-yellow-400">
+                                                                ⏳ Đang xử lý...
+                                                            </div>
+                                                        @endif
+                                                    </div>
+
+                                                    {{-- 4️ PACKAGE PURCHASE (Standard Key) --}}
+                                                @elseif (($lastChar === 'K' && !$type) || $type === 'package_purchase')
+                                                    @if ($transaction->productKey)
+                                                        <div
+                                                            class="flex flex-col mt-1 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-700 shadow-sm">
+                                                            <div class="flex items-center gap-2 mb-2">
+                                                                
+                                                                <span
+                                                                    class="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                                                                    Normally Key
+                                                                </span>
+                                                            </div>
+                                                            <div class="space-y-1">
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">ID
+                                                                        Key:</span>
+                                                                    <strong
+                                                                        class="text-blue-600 dark:text-blue-400">#{{ $transaction->productKey->id }}</strong>
+                                                                </div>
+                                                                <div class="flex items-center justify-between text-xs">
+                                                                    <span class="text-gray-600 dark:text-gray-400">
+                                                                        Code:</span>
+                                                                    <code
+                                                                        class="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded text-xs font-mono">
+                                                                        {{ $transaction->productKey->key_code }}
+                                                                    </code>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     @endif
 
-                                                    {{-- 4️⃣ NẠP COIN --}}
-                                                @elseif ($suffix === 'C')
-                                                    <span class="text-xs text-yellow-600 dark:text-yellow-400">
-                                                        💰 Nạp ví Coinkey
-                                                    </span>
+                                                    {{-- 5️ COINKEY DEPOSIT --}}
+                                                @elseif ($lastChar === 'C' || $transaction->product?->product_type === 'coinkey')
+                                                    <div
+                                                        class="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                                                        <span class="text-xl">💰</span>
+                                                        <span
+                                                            class="text-xs font-medium text-yellow-700 dark:text-yellow-400">
+                                                            Nạp ví Coinkey
+                                                        </span>
+                                                    </div>
                                                 @endif
                                             </div>
                                         @else
-                                            <span class="text-sm text-gray-400 italic">No Product Info</span>
+                                            <span class="text-sm text-gray-400 italic">No Info</span>
                                         @endif
                                         <span class="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
                                             Desc: {{ $transaction->order_code }}
