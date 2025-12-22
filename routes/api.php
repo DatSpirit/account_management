@@ -5,12 +5,52 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Api\KeyValidationController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\KeyController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\WalletController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
+
+
+// ==========================================
+// WEBHOOK (No Auth/CSRF)
+// ==========================================
+Route::post('/payos/webhook', [WebhookController::class, 'handleWebhook'])
+    ->name('api.payos.webhook');
+
+// ==========================================
+// ORDERS
+// ==========================================
+Route::post('/orders/create', [OrderController::class, 'createOrder'])
+    ->name('api.orders.create');
+
+// Public - Không cần token
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']); // nếu cần
+
+// Protected - Cần token Sanctum
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    // Route::put('/me/profile', [AuthController::class, 'updateProfile']);
+    // Route::put('/me/password', [AuthController::class, 'updatePassword']);
+
+    // Keys
+    // Route::get('/keys', [KeyController::class, 'index']);
+    // Route::get('/keys/{id}', [KeyController::class, 'show']);
+    // Route::post('/keys/{id}/extend', [KeyController::class, 'extend']);
+    // Route::get('/extension-packages', [KeyController::class, 'extensionPackages']);
+
+    // // Transactions
+    // Route::get('/transactions', [TransactionController::class, 'index']);
+    // Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+
+    // // Wallet
+    // Route::get('/wallet', [WalletController::class, 'show']);
+    // Route::get('/wallet/balance', [WalletController::class, 'balance']);
+});
 
 // ==========================================
 // HEALTH CHECK
@@ -29,17 +69,6 @@ use App\Http\Controllers\Api\KeyValidationController;
 //     ]);
 // });
 
-// ==========================================
-// WEBHOOK (No Auth/CSRF)
-// ==========================================
-Route::post('/payos/webhook', [WebhookController::class, 'handleWebhook'])
-    ->name('api.payos.webhook');
-
-// ==========================================
-// ORDERS
-// ==========================================
-Route::post('/orders/create', [OrderController::class, 'createOrder'])
-    ->name('api.orders.create');
 
 // ==========================================
 // KEY VALIDATION API (Enhanced Security)
