@@ -16,6 +16,12 @@
                     class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg transition flex items-center gap-2">
                     🛒 Mua Gói Có Sẵn
                 </a>
+                @if(auth()->user()->is_admin)
+                  <a href="{{ route('admin.custom-extend.index') }}"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg transition flex items-center gap-2">
+                    ⚙ Quản lý Gói Gia Hạn
+                </a>
+                @endif
             </div>
         </div>
     </x-slot>

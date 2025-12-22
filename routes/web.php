@@ -19,6 +19,7 @@ use App\Http\Controllers\AccountExpirationController;
 use App\Http\Controllers\CoinkeyWalletController;
 use App\Http\Controllers\KeyManagementController;
 use App\Http\Controllers\Admin\AdminKeyManagementController;
+use App\Http\Controllers\Admin\AdminCustomExtendController;
 use App\Http\Controllers\DailyCheckinController;
 
 // ===========================
@@ -148,6 +149,20 @@ Route::middleware(['auth', 'verified', 'admin'])
         // Quick extend từ dashboard -- Gia hạn nhanh từ dashboard
         Route::post('/quick-extend/{userId}', [AccountExpirationController::class, 'extendByDays'])
             ->name('admin.quick-extend');
+
+
+        // Trang danh sách các gói
+        Route::get('/custom-extend', [AdminCustomExtendController::class, 'index'])
+            ->name('admin.custom-extend.index');
+
+        // Trang hiển thị form chỉnh sửa
+        Route::get('/custom-extend/{id}/edit', [AdminCustomExtendController::class, 'edit'])
+            ->name('admin.custom-extend.edit');
+
+        // Xử lý cập nhật dữ liệu 
+        Route::put('/custom-extend/{id}', [AdminCustomExtendController::class, 'update'])
+            ->name('admin.custom-extend.update');
+
 
         // Account Expiration Management- Quản lý hết hạn tài khoản
         Route::prefix('account-expiration')->name('account-expiration.')->group(function () {
