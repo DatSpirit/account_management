@@ -38,18 +38,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::put('/me/password', [AuthController::class, 'updatePassword']);
 
     // Keys
-    // Route::get('/keys', [KeyController::class, 'index']);
-    // Route::get('/keys/{id}', [KeyController::class, 'show']);
-    // Route::post('/keys/{id}/extend', [KeyController::class, 'extend']);
-    // Route::get('/extension-packages', [KeyController::class, 'extensionPackages']);
+    Route::get('/keys', [KeyController::class, 'index']);
+    Route::get('/keys/{id}', [KeyController::class, 'show']);
+    Route::post('/keys/{id}/extend', [KeyController::class, 'extend']);
+    Route::get('/extension-packages', [KeyController::class, 'extensionPackages']);
 
-    // // Transactions
-    // Route::get('/transactions', [TransactionController::class, 'index']);
-    // Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+    // Transactions
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
 
-    // // Wallet
-    // Route::get('/wallet', [WalletController::class, 'show']);
-    // Route::get('/wallet/balance', [WalletController::class, 'balance']);
+    // Wallet
+    Route::get('/wallet', [WalletController::class, 'show']);
+    Route::get('/wallet/balance', [WalletController::class, 'balance']);
+    Route::get('/wallet/history', [WalletController::class, 'history']);
 });
 
 // ==========================================
