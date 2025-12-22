@@ -83,10 +83,10 @@
                     class="bg-gradient-to-br from-blue-200 to-blue-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Total</p>
+                            <p class="text-xs sm:text-sm text-gray-800 dark:text-white font-medium">Total</p>
                             <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                                 {{ number_format($stats['total']) }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Today: <span
+                            <p class="text-xs text-gray-800 dark:text-white mt-2">Today: <span
                                     class="font-semibold">{{ $stats['today'] }}</span></p>
                         </div>
                         <div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
@@ -103,10 +103,10 @@
                     class="bg-gradient-to-br from-green-200 to-green-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Success</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mt-1">
+                            <p class="text-xs sm:text-sm text-gray-800 dark:text-white font-medium">Success</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                                 {{ number_format($stats['success']) }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            <p class="text-xs text-gray-800 dark:text-white mt-2">
                                 {{ number_format($stats['total_amount']) }}</p>
                         </div>
                         <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
@@ -123,10 +123,10 @@
                     class="bg-gradient-to-br from-yellow-200 to-yellow-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Pending</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
+                            <p class="text-xs sm:text-sm text-gray-800 dark:text-white font-medium">Pending</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                                 {{ number_format($stats['pending']) }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            <p class="text-xs text-gray-800 dark:text-white mt-2">
                                 {{ number_format($stats['pending_amount'] / 1000) }}K</p>
                         </div>
                         <div class="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-full">
@@ -143,10 +143,10 @@
                     class="bg-gradient-to-br from-red-200 to-red-600 dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Failed</p>
-                            <p class="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mt-1">
+                            <p class="text-xs sm:text-sm text-gray-800 dark:text-white font-medium">Failed</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                                 {{ number_format($stats['failed'] + $stats['cancelled']) }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Cancelled:
+                            <p class="text-xs text-gray-800 dark:text-white mt-2">Cancelled:
                                 {{ $stats['cancelled'] }}</p>
                         </div>
                         <div class="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
@@ -372,7 +372,16 @@
                                     </td>
 
                                     <td class="px-3 sm:px-6 py-4 text-left whitespace-nowrap">
-                                        @if ($transaction->product || isset($meta['type']))
+                                        @php
+                                            $meta = $transaction->response_data ?? [];
+                                            $type = $meta['type'] ?? '';
+                                            $description = $transaction->description ?? '';
+                                            $last3 = substr($description, -3);
+                                            $last2 = substr($description, -2);
+                                            $last1 = substr($description, -1);
+                                        @endphp
+
+                                        @if ($transaction->product || !empty($meta) || $description)
                                             <div class="flex flex-col space-y-2">
                                                 {{-- Tên sản phẩm gốc --}}
                                                 @if ($transaction->product)
@@ -380,30 +389,18 @@
                                                         {{ Str::limit($transaction->product->name, 30) }}
                                                     </span>
                                                 @else
-                                                    <span
-                                                        class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
+                                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                         Custom Extension
                                                     </span>
                                                 @endif
-
                                                 {{--  LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
-                                                @php
-                                                    $meta = $transaction->response_data ?? [];
-                                                    $type = $meta['type'] ?? '';
-
-                                                    // Check suffix cuối chuỗi description để xác định loại
-                                                    $description = $transaction->description ?? '';
-                                                    $suffix = substr($description, -3); // Lấy 3 ký tự cuối (CEX, EX, K, C)
-                                                    $lastChar = substr($description, -1); // Lấy 1 ký tự cuối để fallback
-                                                @endphp
-
                                                 {{-- 1️ GIA HẠN TÙY CHỈNH (CEX) --}}
-                                                @if ($suffix === 'CEX' || $type === 'custom_key_extension')
+                                                @if ($type === 'custom_key_extension' || $last3 === 'CEX')
                                                     <div
-                                                        class="flex flex-col mt-1 p-3 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 shadow-sm">
+                                                        class="flex flex-col mt-1 p-3 bg-gradient-to-br from-orange-50 to-blue-50 dark:from-orange-900/20 dark:to-blue-900/20 rounded-xl border-2 border-orange-200 dark:border-orange-700 shadow-sm">
                                                         <div class="flex items-center gap-2 mb-2">
                                                             <span
-                                                                class="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">
+                                                                class="text-xs font-bold text-orange-700 dark:text-orange-300 uppercase tracking-wide">
                                                                 Custom Extension Key
                                                             </span>
                                                         </div>
@@ -412,14 +409,14 @@
                                                                 <span class="text-gray-600 dark:text-gray-400">ID
                                                                     Key:</span>
                                                                 <strong
-                                                                    class="text-indigo-600 dark:text-indigo-400">#{{ $meta['key_id'] ?? 'N/A' }}</strong>
+                                                                    class="text-orange-400 dark:text-orange-200">#{{ $meta['key_id'] ?? 'N/A' }}</strong>
                                                             </div>
                                                             @if (isset($meta['key_code']))
                                                                 <div class="flex items-center justify-between text-xs">
                                                                     <span class="text-gray-600 dark:text-gray-400">
                                                                         Code:</span>
                                                                     <code
-                                                                        class="bg-indigo-100 dark:bg-indigo-800 px-2 py-1 rounded text-xs font-mono font-bold">
+                                                                        class="bg-orange-100 dark:bg-orange-800 px-2 py-1 rounded text-xs font-mono font-bold">
                                                                         {{ $meta['key_code'] }}
                                                                     </code>
                                                                 </div>
@@ -448,11 +445,11 @@
                                                     </div>
 
                                                     {{-- 2️ GIA HẠN THƯỜNG (EX) --}}
-                                                @elseif (substr($description, -2) === 'EX' || $type === 'key_extension')
+                                                @elseif ($last2 === 'EX' || $type === 'key_extension')
                                                     <div
                                                         class="flex flex-col mt-1 p-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-700 shadow-sm">
                                                         <div class="flex items-center gap-2 mb-2">
-                                                          
+
                                                             <span
                                                                 class="text-xs font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">
                                                                 Extension Key
@@ -490,7 +487,7 @@
                                                     <div
                                                         class="flex flex-col mt-1 p-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border-2 border-purple-200 dark:border-purple-700 shadow-sm">
                                                         <div class="flex items-center gap-2 mb-2">
-                                                        
+
                                                             <span
                                                                 class="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
                                                                 Custom Key
@@ -521,12 +518,12 @@
                                                     </div>
 
                                                     {{-- 4️ PACKAGE PURCHASE (Standard Key) --}}
-                                                @elseif (($lastChar === 'K' && !$type) || $type === 'package_purchase')
+                                                @elseif (($last1 === 'K' && !$type) || $type === 'package_purchase')
                                                     @if ($transaction->productKey)
                                                         <div
                                                             class="flex flex-col mt-1 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-700 shadow-sm">
                                                             <div class="flex items-center gap-2 mb-2">
-                                                                
+
                                                                 <span
                                                                     class="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
                                                                     Normally Key
@@ -552,7 +549,7 @@
                                                     @endif
 
                                                     {{-- 5️ COINKEY DEPOSIT --}}
-                                                @elseif ($lastChar === 'C' || $transaction->product?->product_type === 'coinkey')
+                                                @elseif ($last1 === 'C' || $transaction->product?->product_type === 'coinkey')
                                                     <div
                                                         class="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
                                                         <span class="text-xl">💰</span>
@@ -605,13 +602,15 @@
                                                     $suffix = 'C';
                                                 } elseif ($productType === 'package') {
                                                     $suffix = 'K';
+                                                } elseif ($type === 'custom_key_extension') {
+                                                    $suffix = 'CEX';
                                                 }
 
                                                 $finalOrderCode = $transaction->order_code . $suffix;
                                             @endphp
 
                                             {{-- Hiển thị Order Code với Hậu tố chuẩn --}}
-                                            <span class="text-sm font-bold text-gray-600 dark:text-gray-400">
+                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400">
                                                 {{ $finalOrderCode }}
                                             </span>
 

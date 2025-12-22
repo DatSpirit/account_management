@@ -729,7 +729,10 @@ class KeyManagementController extends Controller
                         ])
                     ]);
 
-                    // 5. Ghi lịch sử
+                    // 5. LOAD RELATIONS NGAY LẬP TỨC
+                    $newTransaction->load(['user', 'product']);
+
+                    // 6. Ghi lịch sử
                     \App\Models\KeyHistory::log($key->id, 'custom_extend', "Gia hạn tùy chỉnh qua Ví - Đơn #{$orderCode}", [
                         'package_name' => $package->name,
                         'days_added' => $package->days,

@@ -185,7 +185,7 @@ class OrderController extends Controller
             // $user = Auth::user();
 
             // 1. Tạo mã đơn hàng unique
-            $orderCode = (int)(now()->timestamp . rand(1000, 9999));
+            $orderCode = (int)(now()->timestamp . rand(100, 999));
 
             // PayOS yêu cầu tối thiểu 2000 VND
             $amount = (int)max(2000, $product->price);
@@ -221,7 +221,7 @@ class OrderController extends Controller
                 'order_code' => $orderCode,
                 'amount' => $amount,
                 'status' => 'pending',
-                'description' => $orderCode . "K", // Ký hiệu K = mua Key/package
+                'description' => $description,
                 'currency' => 'VND',
                 'is_processed' => false,
             ]);
@@ -273,7 +273,7 @@ class OrderController extends Controller
                 'cancelUrl' => 'nullable|url',
             ]);
 
-            $orderCode = (int)(now()->timestamp . rand(1000, 9999));
+            $orderCode = (int)(now()->timestamp . rand(100, 999));
 
             $body = [
                 'amount' => $validated['amount'],
@@ -457,6 +457,160 @@ class OrderController extends Controller
         }
 
         return view('thankyou', $viewData);
+    }
+
+    /**
+     * Xử lý giao hàng sau khi thanh toán thành công
+     */
+    private function fulfillOrder(Transaction $transaction)
+    {
+        try {
+            $user = $transaction->user;
+            $product = $transaction->product;
+            $meta = $transaction->response_data ?? [];
+            $type = $meta['type'] ?? null;
+
+            Log::info(" Processing fulfillment for order {$transaction->order_code}", [
+                'type' => $type,
+                'user_id' => $user->id ?? 'N/A'
+            ]);
+
+            // 1️ XỬ LÝ GIA HẠN TÙY CHỈNH (Custom Extension)
+            if ($type === 'custom_key_extension') {
+                $keyId = $meta['key_id'] ?? null;
+                $duration = $meta['duration_minutes'] ?? 0;
+
+                if (!$keyId || !$duration) {
+                    Log::error(" Missing key_id or duration for custom extension");
+                    return;
+                }
+
+                $key = \App\Models\ProductKey::with(['product', 'user'])->find($keyId);
+                if (!$key) {
+                    Log::error(" Key not found: {$keyId}");
+                    return;
+                }
+
+                $oldExpiry = $key->expires_at?->toDateTimeString() ?? 'N/A';
+                $key->extend($duration);
+                $key->status = 'active';
+
+                if ($transaction->currency === 'VND') {
+                    $key->key_cost += ($transaction->amount / 1000);
+                }
+                $key->save();
+
+                // Cập nhật metadata
+                $transaction->update([
+                    'response_data' => array_merge($meta, [
+                        'actual_new_expiry' => $key->expires_at->toIso8601String(),
+                    ])
+                ]);
+
+                \App\Models\KeyHistory::log($key->id, 'custom_extend', "Gia hạn tùy chỉnh - Order #{$transaction->order_code}", [
+                    'package_name' => $meta['package_name'] ?? 'N/A',
+                    'days_added' => $meta['days_added'] ?? 0,
+                    'old_expiry' => $oldExpiry,
+                    'new_expiry' => $key->expires_at->toDateTimeString()
+                ]);
+
+                Log::info(" Custom extension completed");
+                return;
+            }
+
+            // 2️ XỬ LÝ GIA HẠN THƯỜNG (Key Extension)
+            if ($type === 'key_extension') {
+                $keyId = $meta['key_id'] ?? null;
+                $duration = $meta['duration_minutes'] ?? 0;
+
+                if (!$keyId || !$duration) return;
+
+                $key = \App\Models\ProductKey::find($keyId);
+                if (!$key) return;
+
+                $oldExpiry = $key->expires_at?->toDateTimeString() ?? 'N/A';
+                $key->extend($duration);
+                $key->status = 'active';
+
+                if ($transaction->currency === 'VND') {
+                    $key->key_cost += ($transaction->amount / 1000);
+                }
+                $key->save();
+
+                \App\Models\KeyHistory::log($key->id, 'extend', "Gia hạn - Order #{$transaction->order_code}", [
+                    'minutes_added' => $duration,
+                    'old_expiry' => $oldExpiry,
+                    'new_expiry' => $key->expires_at->toDateTimeString()
+                ]);
+
+                Log::info(" Extension completed");
+                return;
+            }
+
+            // 3️ XỬ LÝ MUA CUSTOM KEY
+            if ($type === 'custom_key_purchase') {
+                $keyService = app(\App\Services\KeyManagementService::class);
+
+                $newKey = $keyService->createCustomKey(
+                    user: $user,
+                    customKeyCode: $meta['key_code'],
+                    durationMinutes: $meta['duration_minutes'],
+                    baseProduct: $product
+                );
+
+                $transaction->update([
+                    'response_data' => array_merge($meta, [
+                        'key_id' => $newKey->id,
+                    ])
+                ]);
+
+                $newKey->update(['transaction_id' => $transaction->id]);
+
+                \App\Models\KeyHistory::log($newKey->id, 'create', "Tạo Custom Key - Order #{$transaction->order_code}");
+
+                Log::info(" Custom key created");
+                return;
+            }
+
+            // 4️ XỬ LÝ NẠP COINKEY
+            if ($product?->isCoinkeyPack()) {
+                $wallet = $user->getOrCreateWallet();
+                $wallet->deposit(
+                    amount: $product->coinkey_amount,
+                    type: 'deposit',
+                    description: "Nạp {$product->coinkey_amount} Coinkey - Order #{$transaction->order_code}",
+                    referenceType: 'Transaction',
+                    referenceId: $transaction->id
+                );
+
+                Log::info("✅ Coinkey deposited");
+                return;
+            }
+
+            // 5️ XỬ LÝ MUA GÓI KEY THƯỜNG
+            if ($product?->isServicePackage()) {
+                $keyService = app(\App\Services\KeyManagementService::class);
+                $key = $keyService->createKeyFromPackage($user, $product, $transaction);
+
+                if ($key) {
+                    $transaction->update([
+                        'response_data' => array_merge($meta, [
+                            'type' => 'package_purchase',
+                            'key_id' => $key->id,
+                            'key_code' => $key->key_code,
+                        ])
+                    ]);
+
+                    \App\Models\KeyHistory::log($key->id, 'create', "Mua gói {$product->name}");
+                    Log::info("✅ Package key created");
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("❌ Fulfillment Error: " . $e->getMessage(), [
+                'order_code' => $transaction->order_code,
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
     /**
      * ⚙️ Xử lý lỗi chung
