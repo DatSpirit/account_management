@@ -238,6 +238,17 @@
                                 </td>
 
                                 <td class="px-3 sm:px-6 py-4 text-left whitespace-nowrap">
+                                    {{--  LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
+                                    @php
+                                        $meta = $transaction->response_data ?? [];
+                                        $type = $meta['type'] ?? '';
+
+                                        // Check suffix cuối chuỗi description để xác định loại
+                                        $description = $transaction->description ?? '';
+                                        $suffix = substr($description, -3); // Lấy 3 ký tự cuối (CEX, EX, K, C)
+                                        $lastChar = substr($description, -1); // Lấy 1 ký tự cuối để fallback
+                                    @endphp
+
                                     @if ($transaction->product || isset($meta['type']))
                                         <div class="flex flex-col space-y-2">
                                             {{-- Tên sản phẩm gốc --}}
@@ -251,18 +262,6 @@
                                                     Custom Extension
                                                 </span>
                                             @endif
-
-                                            {{--  LOGIC HIỂN THỊ CHI TIẾT THEO LOẠI --}}
-                                            @php
-                                                $meta = $transaction->response_data ?? [];
-                                                $type = $meta['type'] ?? '';
-
-                                                // Check suffix cuối chuỗi description để xác định loại
-                                                $description = $transaction->description ?? '';
-                                                $suffix = substr($description, -3); // Lấy 3 ký tự cuối (CEX, EX, K, C)
-                                                $lastChar = substr($description, -1); // Lấy 1 ký tự cuối để fallback
-                                            @endphp
-
                                             {{-- 1️ GIA HẠN TÙY CHỈNH (CEX) --}}
                                             @if ($suffix === 'CEX' || $type === 'custom_key_extension')
                                                 <div

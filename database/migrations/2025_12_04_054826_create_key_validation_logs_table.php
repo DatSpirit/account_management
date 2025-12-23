@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('request_method', 10)->default('API');// Phương thức yêu cầu (API, Web, Mobile App, etc)
 
             // Kết quả xác thực
-            $table->enum('validation_result', ['success', 'expired', 'invalid', 'suspended', 'error']);// Kết quả xác thực
+            $table->enum('validation_result', ['success', 'expired', 'invalid', 'suspended', 'suspicious',  'error']);// Kết quả xác thực
             $table->text('validation_message')->nullable();// Thông điệp chi tiết về kết quả xác thực
             $table->json('request_data')->nullable();// Dữ liệu yêu cầu xác thực dưới dạng JSON
             $table->json('response_data')->nullable();// Dữ liệu phản hồi xác thực dưới dạng JSON

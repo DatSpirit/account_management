@@ -33,7 +33,7 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                            🔑 Thông tin Key
+                         Thông tin Key
                         </h3>
                     </div>
 
@@ -80,7 +80,7 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                            📦 Gói gia hạn đã chọn
+                         Gói gia hạn đã chọn
                         </h3>
                     </div>
 
@@ -107,7 +107,7 @@
                     </div>
 
                     @if ($new_expiry)
-                        <div class="mt-4 p-5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl text-white">
+                        <div class="mt-4 p-5 bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-500 dark:to-emerald-500 rounded-xl text-gray-900 dark:text-white shadow-lg">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm opacity-90 mb-1">Hết hạn mới sau khi gia hạn</p>
@@ -138,7 +138,7 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                            💳 Chọn phương thức thanh toán
+                            Chọn phương thức thanh toán
                         </h3>
                     </div>
 
@@ -175,7 +175,7 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-bold text-lg text-gray-900 dark:text-gray-100">💳 Ví
+                                                <p class="font-bold text-lg text-gray-900 dark:text-gray-100">Ví
                                                     Coinkey</p>
                                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                                     Số dư: <span
@@ -233,7 +233,7 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-bold text-lg text-gray-900 dark:text-gray-100">💵 Chuyển
+                                                <p class="font-bold text-lg text-gray-900 dark:text-gray-100">Chuyển
                                                     khoản / QR</p>
                                                 <p class="text-sm text-gray-600 dark:text-gray-400">Thanh toán qua
                                                     PayOS</p>

@@ -138,9 +138,11 @@
                         <select name="show_deleted"
                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 cursor-pointer">
                             <option value="">Key Chưa xóa</option>
-                            <option value="with" {{ request('show_deleted') == 'with' ? 'selected' : '' }}>Tất cả Key
+                            <option value="with" {{ request('show_deleted') == 'with' ? 'selected' : '' }}>Tất cả
+                                Key
                             </option>
-                            <option value="only" {{ request('show_deleted') == 'only' ? 'selected' : '' }}>Key đã xóa
+                            <option value="only" {{ request('show_deleted') == 'only' ? 'selected' : '' }}>Key đã
+                                xóa
                             </option>
                         </select>
                     </div>
@@ -275,19 +277,19 @@
                     </div> --}}
                                     <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
                                         <span class="flex flex-col">
-                                        @if ($key->expires_at)
-                                            <div>
-                                                {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
-                                            </div>
-                                            <div>
-                                                {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('H:i:s') }}
-                                            </div>
-                                            <div class="text-xs text-gray-400">
-                                                {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->diffForHumans() }}
-                                            </div>
-                                        @else
-                                            <span class="text-infinity text-lg">∞</span>
-                                        @endif
+                                            @if ($key->expires_at)
+                                                <div>
+                                                    {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y') }}
+                                                </div>
+                                                <div>
+                                                    {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->format('H:i:s') }}
+                                                </div>
+                                                <div class="text-xs text-gray-400">
+                                                    {{ $key->expires_at->setTimezone('Asia/Ho_Chi_Minh')->diffForHumans() }}
+                                                </div>
+                                            @else
+                                                <span class="text-infinity text-lg">∞</span>
+                                            @endif
                                         </span>
                                         <span class="lg:hidden flex flex-col">
                                             @if ($key->isActive())

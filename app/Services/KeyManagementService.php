@@ -102,8 +102,8 @@ class KeyManagementService
                 amount: $coinkeyRequired,
                 type: 'purchase',
                 description: "Create custom key: {$customKeyCode} ({$durationMinutes} minutes)",
-                referenceType: 'ProductKey', 
-                referenceId: null 
+                referenceType: 'ProductKey',
+                referenceId: null
             );
 
             // Tạo key
@@ -260,7 +260,7 @@ class KeyManagementService
             );
 
             $key->extend($additionalMinutes);
-            $key->coinkey_cost += $coinkeyRequired;
+            $key->key_cost = ($key->key_cost ?? 0) + $coinkeyRequired;
             $key->save();
 
             DB::commit();

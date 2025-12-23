@@ -312,39 +312,41 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
                                     <td class="px-3 sm:px-6 py-4">
                                         <div class="flex flex-col space-y-1">
-                                            <span
-                                                class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ $transaction->order_code }}</span>
-                                            {{-- Hiển thị Time chỉ trên Mobile --}}
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
-                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}
-                                            </span>
-                                            <span
-                                                class="lg:hidden text-xs text-gray-700 dark:text-gray-300 font-medium">
-                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                                {{ $transaction->user->name ?? 'Guest' }}
-                                            </span>
-                                            <span class="text-xs text-gray-600 dark:text-gray-300 sm:hidden">
-                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 8l7.89 5.26c.45.3.93.3 1.35 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                </svg>
-                                                @if ($transaction->user?->email)
-                                                    {{ $transaction->user->email }}
-                                                @endif
-                                            </span>
+                                            <div class="max-w-xs">
+                                                <span
+                                                    class="text-sm font-bold text-indigo-600 dark:text-indigo-400 break-words whitespace-normal">{{ $transaction->order_code }}</span>
+                                                {{-- Hiển thị Time chỉ trên Mobile --}}
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    {{ $transaction->created_at->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i') }}
+                                                </span>
+                                                <span
+                                                    class="lg:hidden text-xs text-gray-700 dark:text-gray-300 font-medium break-words whitespace-normal">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    {{ $transaction->user->name ?? 'Guest' }}
+                                                </span>
+                                                <span class="text-xs text-gray-600 dark:text-gray-300 sm:hidden break-words whitespace-normal ">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M3 8l7.89 5.26c.45.3.93.3 1.35 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                    @if ($transaction->user?->email)
+                                                        {{ $transaction->user->email }}
+                                                    @endif
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
 

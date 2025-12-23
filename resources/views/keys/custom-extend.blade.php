@@ -35,7 +35,7 @@
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                🔑 Nhập mã Key
+                                Nhập mã Key
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                 Key của bạn cần được gia hạn
