@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\CoinkeyWallet;
+use App\Models\CustomExtensionPackage;
 use Faker\Factory as Faker;
 use Carbon\Carbon;
 
@@ -17,155 +18,154 @@ class OptimizeTransactionSeeder extends Seeder
     {
         $faker = Faker::create('vi_VN');
 
-        // Lấy dữ liệu thực
+        // Lấy dữ liệu thực tế từ các seeder trước
         $users = User::all();
         $products = Product::all();
+        $customExtensions = CustomExtensionPackage::all();
 
-        if ($users->isEmpty() || $products->isEmpty()) {
-            $this->command->info('⚠️ Cần có Users và Products trước khi chạy TransactionSeeder.');
+        if ($users->isEmpty() || $products->isEmpty() || $customExtensions->isEmpty()) {
+            $this->command->error('⚠️ Vui lòng chạy UserSeeder, ProductSeeder, VipPackageSeeder và CustomExtensionPackageSeeder trước!');
             return;
         }
 
-        $limit = 50; // Số lượng giao dịch mẫu
+        $limit = 200; // Tạo 200 giao dịch để có nhiều ví dụ đa dạng
 
         foreach (range(1, $limit) as $i) {
             $user = $users->random();
             $product = $products->random();
-            
-            // Random trạng thái (ưu tiên thành công để có dữ liệu test)
-            $status = $faker->randomElement(['success', 'success', 'success', 'pending', 'cancelled', 'failed']);
+
+            // Xác định loại sản phẩm
+            $isTopUp = $product->product_type === 'coinkey';
+            $isPackage = $product->product_type === 'package';
+
+            // Trạng thái giao dịch - ưu tiên success để có dữ liệu key & wallet
+            $status = $faker->randomElement(['success', 'success', 'success', 'success', 'pending', 'failed', 'cancelled']);
             $isSuccess = $status === 'success';
-            
-            // Thời gian tạo
+
+            // Thời gian ngẫu nhiên trong 10 tháng gần đây
             $createdAt = $faker->dateTimeBetween('-10 months', 'now');
-            $processedAt = $isSuccess ? (clone $createdAt)->modify('+'.rand(1, 10).' minutes') : null;
+            $processedAt = $isSuccess ? Carbon::parse($createdAt)->addMinutes(rand(2, 45)) : null;
 
-            // Tạo mã đơn hàng
-            $timestampMicro = (int) (microtime(true) * 1000);
-            $orderCode = $timestampMicro + $i;
+            // Mã đơn hàng duy nhất
+            $orderCode = (int)(microtime(true) * 1000) + $i;
 
-            // --- 1. XÁC ĐỊNH LOẠI GIAO DỊCH & TIỀN TỆ ---
+            // ==================== XÁC ĐỊNH LOẠI GIAO DỊCH & HIỂN THỊ ====================
+            $displayType = '';          // Lưu vào response_data.type (ưu tiên dùng ở Blade)
+            $descriptionSuffix = '';    // Ký hiệu cuối description để fallback (C, K, EX, CEX)
+            $description = '';
+            $durationMinutes = $product->duration_minutes;
+
+            // Biến tạm cho custom extension
+            $isCustomExtend = false;
+            $customPkg = null;
+
+            // Thanh toán: VND hay Coinkey
+            $paymentMethod = 'vnd';
             $currency = 'VND';
-            $amount = $product->price;
-            $paymentMethod = 'cash'; 
+            $amount = $product->price; // Mặc định VND
 
-            if ($product->product_type === 'coinkey') {
-                $paymentMethod = 'cash';
-                $currency = 'VND';
-                $amount = $product->price;
+            if ($isTopUp) {
+                // NẠP COINKEY
+                $displayType = 'coinkey_deposit';
+                $description = "Nạp ví Coinkey +{$product->coinkey_amount} từ gói '{$product->name}'";
+                $descriptionSuffix = ' (C)';
             } else {
-                if ($product->coinkey_amount > 0 && $faker->boolean(40)) { 
-                    $paymentMethod = 'wallet';
+                // MUA GÓI / GIA HẠN
+                $wallet = CoinkeyWallet::firstOrCreate(
+                    ['user_id' => $user->id],
+                    ['balance' => 0, 'total_deposited' => 0, 'total_spent' => 0]
+                );
+
+                // 50% cơ hội dùng Coinkey nếu đủ tiền
+                if ($wallet->balance >= $product->coinkey_amount && $faker->boolean(50)) {
+                    $paymentMethod = 'coinkey';
                     $currency = 'COINKEY';
                     $amount = $product->coinkey_amount;
                 }
+
+                // Ngẫu nhiên các loại giao dịch mua/gia hạn
+                $transactionScenario = $faker->randomElement([
+                    'normal_purchase',      // 45% - Mua key thường
+                    'custom_purchase',      // 20% - Mua custom key mới
+                    'normal_extension',     // 15% - Gia hạn thường
+                    'custom_extension',     // 20% - Gia hạn tùy chỉnh
+                ]);
+
+                if ($transactionScenario === 'custom_extension') {
+                    $isCustomExtend = true;
+                    $customPkg = $customExtensions->random();
+                    $durationMinutes = $customPkg->duration_minutes;
+                    $amount = $paymentMethod === 'coinkey' ? $customPkg->price_coinkey : $customPkg->price_vnd;
+
+                    $displayType = 'custom_key_extension';
+                    $description = "Gia hạn tùy chỉnh +{$customPkg->days} ngày ({$customPkg->name})";
+                    $descriptionSuffix = ' (CEX)';
+
+                } elseif ($transactionScenario === 'normal_extension') {
+                    $displayType = 'key_extension';
+                    $description = "Gia hạn key thường '{$product->name}'";
+                    $descriptionSuffix = ' (EX)';
+
+                } elseif ($transactionScenario === 'custom_purchase') {
+                    $displayType = 'custom_key_purchase';
+                    $description = "Mua Custom Key mới '{$product->name}'";
+                    $descriptionSuffix = ' (K)';
+
+                } else { // normal_purchase
+                    $displayType = 'package_purchase';
+                    $description = "Mua gói '{$product->name}'";
+                    $descriptionSuffix = ' (K)';
+                }
+
+                $description .= ' bằng ' . ($paymentMethod === 'coinkey' ? 'Coinkey' : 'VND');
             }
 
-            // --- 2. GIẢ LẬP DỮ LIỆU CUSTOM KEY ---
-            $isCustomKey = ($product->product_type === 'package' && $faker->boolean(20));
-            $customKeyCode = $isCustomKey ? strtoupper(Str::random(4) . '-' . Str::random(4)) : null;
-            
-            $responseData = [];
-            if ($isCustomKey) {
-                $responseData = [
-                    'type' => 'custom_key_purchase',
-                    'key_code' => $customKeyCode,
-                    'duration_minutes' => $product->duration_minutes ?? 30,
-                    'product_id' => $product->id
-                ];
-                $description = "Custom Key: $customKeyCode";
-            } else {
-                $description = $paymentMethod === 'wallet' 
-                    ? "Mua {$product->name} (Ví Coinkey)" 
-                    : "Thanh toán đơn hàng #{$orderCode}";
-            }
+            $finalDescription = $description . $descriptionSuffix;
 
-            // --- 3. TẠO TRANSACTION CHÍNH ---
+            // Response data để lưu type và thông tin key (rất quan trọng cho Blade)
+            $responseData = [
+                'type' => $displayType,
+                'days_added' => $isCustomExtend ? $customPkg->days : null,
+                'package_name' => $isCustomExtend ? $customPkg->name : $product->name,
+            ];
+
+            // ==================== TẠO TRANSACTION ====================
             $transactionId = DB::table('transactions')->insertGetId([
-                'user_id'       => $user->id,
-                'product_id'    => $product->id,
-                'order_code'    => $orderCode,
-                'amount'        => $amount,
-                'status'        => $status,
-                'description'   => $description,
-                'currency'      => $currency,
-                'is_processed'  => $isSuccess,
-                'processed_at'  => $processedAt,
+                'user_id' => $user->id,
+                'product_id' => $isCustomExtend ? null : $product->id,
+                'order_code' => $orderCode,
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => $status,
+                'description' => $finalDescription,
+                'is_processed' => $isSuccess,
+                'processed_at' => $processedAt,
                 'payment_link_id' => $currency === 'VND' ? 'PL' . Str::random(10) : null,
-                'account_number'  => $currency === 'VND' ? '0333' . $faker->numberBetween(100000, 999999) : null,
+                'account_number' => $currency === 'VND' ? '0333' . $faker->numberBetween(100000, 999999) : null,
                 'response_data' => json_encode($responseData),
                 'created_at' => $createdAt,
                 'updated_at' => $processedAt ?? $createdAt,
             ]);
 
-            // --- 4. HỆ QUẢ ĐỒNG BỘ DỮ LIỆU (NẾU SUCCESS) ---
+            // ==================== XỬ LÝ KHI SUCCESS ====================
             if ($isSuccess) {
-                
-                // A. Tạo Key nếu là package
-                if ($product->product_type === 'package') {
-                    DB::table('product_keys')->insert([
-                        'user_id' => $user->id,
-                        'product_id' => $product->id,
-                        'transaction_id' => $transactionId,
-                        'key_code' => $isCustomKey ? $customKeyCode : strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(4)),
-                        'key_type' => $isCustomKey ? 'custom' : 'auto_generated',
-                        'duration_minutes' => $product->duration_minutes,
-                        'key_cost' => $currency === 'COINKEY' ? $amount : 0,
-                        'status' => 'active',
-                        'activated_at' => $processedAt,
-                        'expires_at' => Carbon::parse($processedAt)->addMinutes($product->duration_minutes ?? 0),
-                        'created_at' => $processedAt,
-                        'updated_at' => $processedAt,
-                    ]);
-                    $product->increment('sold_count');
-                }
-
-                // B. Xử lý Ví Coinkey
-                // FIX LỖI: Cung cấp giá trị mặc định khi tạo mới
                 $wallet = CoinkeyWallet::firstOrCreate(
                     ['user_id' => $user->id],
-                    [
-                        'balance' => 0, 
-                        'total_deposited' => 0, 
-                        'total_spent' => 0
-                    ]
+                    ['balance' => 0, 'total_deposited' => 0, 'total_spent' => 0]
                 );
-
-                // FIX LỖI: Đảm bảo currentBalance không bao giờ null
                 $currentBalance = $wallet->balance ?? 0;
-                
-                if ($paymentMethod === 'wallet') {
-                    // Trừ tiền
-                    DB::table('coinkey_transactions')->insert([
-                        'wallet_id' => $wallet->id,
-                        'user_id' => $user->id,
-                        'type' => 'purchase',
-                        'amount' => -$amount,
-                        'balance_before' => $currentBalance, // Sử dụng biến đã check null
-                        'balance_after' => $currentBalance - $amount,
-                        'description' => $description,
-                        'reference_type' => 'Product',
-                        'reference_id' => $product->id,
-                        'created_at' => $processedAt,
-                        'updated_at' => $processedAt,
-                    ]);
-                    
-                    $wallet->increment('total_spent', $amount);
-                    // Giả lập trừ tiền trong ví (để các vòng lặp sau tính toán đúng hơn)
-                    $wallet->decrement('balance', $amount);
-                    
-                } elseif ($product->product_type === 'coinkey') {
-                    // Nạp tiền
+
+                // 1. Nạp Coinkey
+                if ($isTopUp) {
                     $coinAmount = $product->coinkey_amount;
-                    
                     DB::table('coinkey_transactions')->insert([
                         'wallet_id' => $wallet->id,
                         'user_id' => $user->id,
                         'type' => 'deposit',
                         'amount' => $coinAmount,
-                        'balance_before' => $currentBalance, // Sử dụng biến đã check null
+                        'balance_before' => $currentBalance,
                         'balance_after' => $currentBalance + $coinAmount,
-                        'description' => "Nạp {$coinAmount} Coinkey (Đơn #{$orderCode})",
+                        'description' => "Nạp từ đơn #{$orderCode}",
                         'reference_type' => 'Transaction',
                         'reference_id' => $transactionId,
                         'created_at' => $processedAt,
@@ -173,11 +173,73 @@ class OptimizeTransactionSeeder extends Seeder
                     ]);
 
                     $wallet->increment('balance', $coinAmount);
-                    $wallet->increment('total_deposited', $amount);
+                    $wallet->increment('total_deposited', $product->price);
+                }
+
+                // 2. Trừ Coinkey nếu thanh toán bằng ví
+                if ($paymentMethod === 'coinkey' && !$isTopUp) {
+                    DB::table('coinkey_transactions')->insert([
+                        'wallet_id' => $wallet->id,
+                        'user_id' => $user->id,
+                        'type' => 'purchase',
+                        'amount' => -$amount,
+                        'balance_before' => $currentBalance,
+                        'balance_after' => $currentBalance - $amount,
+                        'description' => $finalDescription,
+                        'reference_type' => 'Transaction',
+                        'reference_id' => $transactionId,
+                        'created_at' => $processedAt,
+                        'updated_at' => $processedAt,
+                    ]);
+
+                    $wallet->decrement('balance', $amount);
+                    $wallet->increment('total_spent', $amount);
+                }
+
+                // 3. Tạo Product Key nếu là mua gói hoặc gia hạn
+                if ($isPackage || $isCustomExtend) {
+                    $keyCode = strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(4));
+
+                    DB::table('product_keys')->insert([
+                        'user_id' => $user->id,
+                        'product_id' => $isCustomExtend ? null : $product->id,
+                        'transaction_id' => $transactionId,
+                        'key_code' => $keyCode,
+                        'key_type' => $transactionScenario === 'custom_purchase' ? 'custom' : 'auto_generated',
+                        'duration_minutes' => $durationMinutes,
+                        'key_cost' => $amount,
+                        'status' => 'active',
+                        'activated_at' => $processedAt,
+                        'expires_at' => Carbon::parse($processedAt)->addMinutes($durationMinutes),
+                        'created_at' => $processedAt,
+                        'updated_at' => $processedAt,
+                    ]);
+
+                    $keyId = DB::getPdo()->lastInsertId();
+
+                    // Cập nhật lại response_data với key_id và key_code thực tế
+                    DB::table('transactions')
+                        ->where('id', $transactionId)
+                        ->update([
+                            'response_data' => json_encode(array_merge($responseData, [
+                                'key_id' => $keyId,
+                                'key_code' => $keyCode,
+                            ]))
+                        ]);
+
+                    // Tăng sold_count nếu không phải gia hạn custom
+                    if (!$isCustomExtend && $product->exists) {
+                        $product->increment('sold_count');
+                    }
                 }
             }
         }
-        
-        $this->command->info("✅ Đã tạo {$limit} giao dịch mẫu thành công!");
+
+        $this->command->info("✅ Đã tạo thành công {$limit} giao dịch mẫu đa dạng!");
+        $this->command->info("   • Nạp Coinkey (C)");
+        $this->command->info("   • Mua key thường / Custom Key (K)");
+        $this->command->info("   • Gia hạn thường (EX)");
+        $this->command->info("   • Gia hạn tùy chỉnh (CEX)");
+        $this->command->info("   • Thanh toán VND & Coinkey, success/failed/pending");
     }
 }

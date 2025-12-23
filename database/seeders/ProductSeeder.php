@@ -12,11 +12,11 @@ class ProductSeeder extends Seeder
     {
         // 1. Tạo các gói nạp Coinkey (Top-up)
         $coinPackages = [
-            ['name' => 'Gói Khởi Động', 'coin' => 20000, 'price' => 20000],
-            ['name' => 'Gói Cơ Bản', 'coin' => 50000, 'price' => 50000],
-            ['name' => 'Gói Tiêu Chuẩn', 'coin' => 100000, 'price' => 100000],
-            ['name' => 'Gói Cao Cấp', 'coin' => 200000, 'price' => 200000],
-            ['name' => 'Gói Vip', 'coin' => 500000, 'price' => 500000],
+            ['name' => 'Gói Khởi Động', 'coin' => 22000, 'price' => 20000],
+            ['name' => 'Gói Cơ Bản', 'coin' => 55000, 'price' => 50000],
+            ['name' => 'Gói Tiêu Chuẩn', 'coin' => 115000, 'price' => 100000],
+            ['name' => 'Gói Cao Cấp', 'coin' => 240000, 'price' => 200000],
+            ['name' => 'Gói Vip', 'coin' => 650000, 'price' => 500000],
         ];
 
         foreach ($coinPackages as $pkg) {
@@ -34,10 +34,10 @@ class ProductSeeder extends Seeder
 
         // 2. Tạo các gói dịch vụ (Service Packages)
         $servicePackages = [
-            ['name' => 'Key 1 Ngày', 'days' => 1, 'price' => 15000, 'coin' => 15000],
-            ['name' => 'Key 3 Ngày', 'days' => 3, 'price' => 40000, 'coin' => 40000],
-            ['name' => 'Key 1 Tuần', 'days' => 7, 'price' => 80000, 'coin' => 80000],
-            ['name' => 'Key 1 Tháng', 'days' => 30, 'price' => 300000, 'coin' => 300000],
+            ['name' => 'Key 1 Ngày', 'days' => 1, 'price' => 20000, 'coin' => 18000],
+            ['name' => 'Key 3 Ngày', 'days' => 3, 'price' => 55000, 'coin' => 48000],
+            ['name' => 'Key 1 Tuần', 'days' => 7, 'price' => 120000, 'coin' => 100000],
+            ['name' => 'Key 1 Tháng', 'days' => 30, 'price' => 450000, 'coin' => 360000],
         ];
 
         foreach ($servicePackages as $pkg) {
