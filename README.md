@@ -28,7 +28,7 @@ Dưới đây là các bước cần thiết để thiết lập và chạy dự
 - Mở Git Bash hoặc Command Prompt và thực hiện lệnh sau để tải mã nguồn về:
 
 ```bash
-git clone [https://github.com/DatSpirit/account_management.git](https://github.com/DatSpirit/account_management.git)
+git clone https://github.com/DatSpirit/account_management.git
 cd (tên dự án của bạn)
 ```
 ---
