@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\Product;
+use App\Models\CoinkeyWallet;
+use App\Models\ProductKey;
 use App\Services\AccountExpirationService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -72,74 +74,42 @@ class AdminDashboardController extends Controller
         $yearlyGrowthPercentage = round($yearlyGrowthPercentage, 1);
         $isYearlyGrowth = $yearlyGrowthPercentage >= 0;
 
-        // // ===== BIỂU ĐỒ TRÒN 1: PHÂN LOẠI NGƯỜI DÙNG =====
-        // $userDistribution = [
-        //     'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
-        //     'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
-        //     'expired' => User::where(function ($q) {
-        //         $q->where('account_status', 'expired')
-        //             ->orWhere(function ($q2) {
-        //                 $q2->where('account_status', 'active')
-        //                     ->whereNotNull('expires_at')
-        //                     ->where('expires_at', '<', now());
-        //             });
-        //     })->count(),
-        //     'deleted' => User::onlyTrashed()->count() ?? 0,
-        // ];
-
-        // // ===== BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG =====
-        // $activityStatus = [
-        //     'very_active' => User::where('last_login_at', '>=', now()->subDays(1))->count(), // Hoạt động hôm nay
-        //     'active' => User::whereBetween('last_login_at', [now()->subDays(7), now()->subDays(1)])->count(), // 1-7 ngày
-        //     'inactive' => User::whereBetween('last_login_at', [now()->subDays(30), now()->subDays(7)])->count(), // 7-30 ngày
-        //     'dormant' => User::where('last_login_at', '<', now()->subDays(30))
-        //         ->orWhereNull('last_login_at')
-        //         ->count(), // Trên 30 ngày hoặc chưa login
-        // ];
-
-
         // ===== BIỂU ĐỒ TRÒN 1: PHÂN LOẠI NGƯỜI DÙNG  =====
-    $userDistribution = [
-        'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
-        'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
-        'expired' => User::where(function ($q) {
-            $q->where('account_status', 'expired')
-                ->orWhere(function ($q2) {
-                    $q2->where('account_status', 'active')
-                        ->whereNotNull('expires_at')
-                        ->where('expires_at', '<', now());
-                });
-        })->count(),
-        'deleted' => User::onlyTrashed()->count() ?? 0,
-    ];
+        $userDistribution = [
+            'new' => User::where('created_at', '>=', now()->subDays($period))->count(),
+            'existing' => User::where('created_at', '<', now()->subDays($period))->count(),
+            'expired' => User::where(function ($q) {
+                $q->where('account_status', 'expired')
+                    ->orWhere(function ($q2) {
+                        $q2->where('account_status', 'active')
+                            ->whereNotNull('expires_at')
+                            ->where('expires_at', '<', now());
+                    });
+            })->count(),
+            'deleted' => User::onlyTrashed()->count() ?? 0,
+        ];
 
-    // =====  BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG THEO GIAO DỊCH (30 NGÀY) =====
-    
-    // 1. Lấy danh sách số lượng giao dịch thành công của từng user trong 30 ngày qua
-    $transactionCounts = Transaction::select('user_id', DB::raw('count(*) as total'))
-        ->where('status', 'success')
-        ->where('created_at', '>=', now()->subDays(365)) // Trong vòng 1 năm
-        ->groupBy('user_id')
-        ->pluck('total');
+        // =====  BIỂU ĐỒ TRÒN 2: TRẠNG THÁI HOẠT ĐỘNG THEO GIAO DỊCH (365 NGÀY) =====
+        $transactionCounts = Transaction::select('user_id', DB::raw('count(*) as total'))
+            ->where('status', 'success')
+            ->where('created_at', '>=', now()->subDays(365))
+            ->groupBy('user_id')
+            ->pluck('total');
 
-    // 2. Phân loại dựa trên số lượng
-    // Logic: > 20: Rất hđ, 5-20: Hoạt động, 1-5: Ít, 0: Không hđ
-    $veryActiveCount = $transactionCounts->filter(fn($count) => $count > 20)->count();
-    $activeCount = $transactionCounts->filter(fn($count) => $count >= 5 && $count <= 20)->count();
-    $inactiveCount = $transactionCounts->filter(fn($count) => $count >= 1 && $count < 5)->count();
-    
-    // Những người không có giao dịch nào = Tổng user hiện tại - Tổng user có giao dịch
-    // (Lưu ý: dùng User::count() cho user chưa xóa mềm)
-    $totalActiveUsersInDb = User::count(); 
-    $usersWithTransactions = $transactionCounts->count();
-    $dormantCount = max(0, $totalActiveUsersInDb - $usersWithTransactions);
+        $veryActiveCount = $transactionCounts->filter(fn($count) => $count > 20)->count();
+        $activeCount = $transactionCounts->filter(fn($count) => $count >= 5 && $count <= 20)->count();
+        $inactiveCount = $transactionCounts->filter(fn($count) => $count >= 1 && $count < 5)->count();
 
-    $activityStatus = [
-        'very_active' => $veryActiveCount,
-        'active'      => $activeCount,
-        'inactive'    => $inactiveCount,
-        'dormant'     => $dormantCount,
-    ];
+        $totalActiveUsersInDb = User::count();
+        $usersWithTransactions = $transactionCounts->count();
+        $dormantCount = max(0, $totalActiveUsersInDb - $usersWithTransactions);
+
+        $activityStatus = [
+            'very_active' => $veryActiveCount,
+            'active'      => $activeCount,
+            'inactive'    => $inactiveCount,
+            'dormant'     => $dormantCount,
+        ];
 
         // ===== TOP 10 NGƯỜI MUA HÀNG NHIỀU NHẤT =====
         $topBuyers = Transaction::select('user_id', DB::raw('COUNT(*) as purchase_count'))
@@ -233,6 +203,124 @@ class AdminDashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
+        // ===== THỐNG KÊ DÒNG TIỀN - DỮ LIỆU THỰC TẾ =====
+
+        // Tổng tiền mặt nạp vào hệ thống (từ tất cả giao dịch thành công)
+        $totalCash = Transaction::where('status', 'success')->sum('amount');
+
+        $totalDeposited = $totalCash; // Tổng tiền mặt đã nạp (bằng tổng tiền mặt hiện có)
+
+        // Tổng coin hiện có trong tất cả ví người dùng
+        $totalCoins = CoinkeyWallet::sum('total_deposited');
+
+        // Tổng coin đã chi tiêu từ tất cả ví người dùng
+        $totalspenCoin = CoinkeyWallet::sum('total_spent');
+
+        
+        // Coin còn lại trong ví = tổng coin hiện tại
+        $remainingCoins = $totalCoins - $totalspenCoin;
+
+        // Tổng tiền mặt đã tiêu = tổng nạp (vì toàn bộ tiền nạp đều được dùng để mua sản phẩm)
+        $totalCashSpent = $totalCash;
+
+        // Tổng tiền đã chi cho việc mua Coin (gói có coinkey_amount > 0)
+        $spentOnCoins = Transaction::where('status', 'success')
+            ->whereHas('product', function ($q) {
+                $q->where('coinkey_amount', '>', 0);
+            })
+            ->sum('amount');
+
+        // Tổng tiền đã chi cho việc mua Key/Package (gói không có coinkey_amount hoặc = 0)
+        $spentOnKeys = Transaction::where('status', 'success')
+            ->where(function ($q) {
+                $q->whereHas('product', function ($sub) {
+                    $sub->where('coinkey_amount', '<=', 0)
+                        ->orWhereNull('coinkey_amount');
+                })
+                    ->orWhereNull('product_id'); // Các giao dịch không gắn product (nếu có)
+            })
+            ->sum('amount');
+
+        $moreSpentOn = $spentOnCoins > $spentOnKeys ? 'Coin' : 'Key/Package';
+
+        // Tổng coin đã nạp (tính từ các giao dịch mua gói coin)
+        $totalCoinsDeposited = Transaction::where('status', 'success')
+            ->whereHas('product', function ($q) {
+                $q->where('coinkey_amount', '>', 0);
+            })
+            ->with('product')
+            ->get()
+            ->sum(function ($transaction) {
+                return $transaction->product->coinkey_amount ?? 0;
+            });
+
+
+
+        // Top 10 sản phẩm Coin (có coinkey_amount > 0)
+        $topCoinProducts = Transaction::select('product_id', DB::raw('COUNT(*) as sales_count'), DB::raw('SUM(amount) as revenue'))
+            ->where('status', 'success')
+            ->whereHas('product', function ($q) {
+                $q->where('coinkey_amount', '>', 0);
+            })
+            ->groupBy('product_id')
+            ->orderBy('sales_count', 'desc')
+            ->limit(10)
+            ->with('product')
+            ->get()
+            ->map(fn($item) => [
+                'product' => $item->product,
+                'sales_count' => $item->sales_count,
+                'revenue' => $item->revenue
+            ]);
+
+        // Top 10 sản phẩm Key/Package
+        $topKeyProducts = Transaction::select('product_id', DB::raw('COUNT(*) as sales_count'), DB::raw('SUM(amount) as revenue'))
+            ->where('status', 'success')
+            ->where(function ($q) {
+                $q->whereHas('product', function ($sub) {
+                    $sub->where('coinkey_amount', '<=', 0)
+                        ->orWhereNull('coinkey_amount');
+                })
+                    ->orWhereNull('product_id');
+            })
+            ->groupBy('product_id')
+            ->orderBy('sales_count', 'desc')
+            ->limit(10)
+            ->with('product')
+            ->get()
+            ->map(fn($item) => [
+                'product' => $item->product ?? null,
+                'sales_count' => $item->sales_count,
+                'revenue' => $item->revenue
+            ]);
+        // Người có nhiều key nhất (từ ProductKey model)
+        $topKeyHolders = ProductKey::select('user_id', DB::raw('COUNT(*) as key_count'))
+            ->groupBy('user_id')
+            ->orderBy('key_count', 'desc')
+            ->limit(10)
+            ->with('user')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'user' => $item->user,
+                    'key_count' => $item->key_count
+                ];
+            });
+
+        // ===== BIỂU ĐỒ GỘP: DOANH THU + TĂNG TRƯỞNG USER (12 tháng) =====
+        $combinedChartData = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $monthDate = Carbon::create($currentYear, $month, 1);
+            $combinedChartData[] = [
+                'month' => $monthDate->format('M'),
+                'new_users' => $growthData[$month - 1],
+                'revenue' => Transaction::where('status', 'success')
+                    ->whereMonth('created_at', $month)
+                    ->whereYear('created_at', $currentYear)
+                    ->sum('amount')
+            ];
+        }
+
         return view('dashboard.admin', compact(
             'totalUsers',
             'recentUsers',
@@ -260,7 +348,22 @@ class AdminDashboardController extends Controller
 
             // Thống kê giao dịch
             'transactionStats',
-            'revenueChart'
+            'revenueChart',
+
+            // Thống kê dòng tiền
+            'totalCash',
+            'totalCoins',
+            'totalDeposited',
+            'spentOnCoins',
+            'spentOnKeys',
+            'moreSpentOn',
+            'totalCoinsDeposited',
+            'remainingCoins',
+            'totalCashSpent',
+            'topCoinProducts',
+            'topKeyProducts',
+            'topKeyHolders',
+            'combinedChartData'
         ));
     }
 }
