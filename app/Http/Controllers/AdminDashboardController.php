@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CoinkeyTransaction;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\Product;
@@ -205,10 +206,16 @@ class AdminDashboardController extends Controller
 
         // ===== THỐNG KÊ DÒNG TIỀN - DỮ LIỆU THỰC TẾ =====
 
-        // Tổng tiền mặt nạp vào hệ thống (từ tất cả giao dịch thành công)
-        $totalCash = Transaction::where('status', 'success')->sum('amount');
+        // Tổng tiền mặt và coin trong tất cả giao dịch thành công
+        $totalCashandCoin = Transaction::where('status', 'success')->sum('amount');
 
-        $totalDeposited = $totalCash; // Tổng tiền mặt đã nạp (bằng tổng tiền mặt hiện có)
+
+        // Tổng tiền coin trong tất cả giao dịch 
+        $totalpayedCoin = CoinkeyTransaction::where('type', 'purchase')->sum('amount');
+
+
+        // Tổng tiền mặt trong tất cả giao dịch thành công
+        $totalCash = $totalCashandCoin + $totalpayedCoin;
 
         // Tổng coin hiện có trong tất cả ví người dùng
         $totalCoins = CoinkeyWallet::sum('total_deposited');
@@ -216,32 +223,25 @@ class AdminDashboardController extends Controller
         // Tổng coin đã chi tiêu từ tất cả ví người dùng
         $totalspenCoin = CoinkeyWallet::sum('total_spent');
 
-        
-        // Coin còn lại trong ví = tổng coin hiện tại
+        // Coin còn lại trong ví người dùng
         $remainingCoins = $totalCoins - $totalspenCoin;
+
+        // Tổng tiền người dùng đã tiêu(Tiền mặt + Coin)
+        $totalAll = $totalCash + $totalspenCoin;
 
         // Tổng tiền mặt đã tiêu = tổng nạp (vì toàn bộ tiền nạp đều được dùng để mua sản phẩm)
         $totalCashSpent = $totalCash;
 
-        // Tổng tiền đã chi cho việc mua Coin (gói có coinkey_amount > 0)
+        // Tổng tiền đã chi cho việc mua Coin 
         $spentOnCoins = Transaction::where('status', 'success')
             ->whereHas('product', function ($q) {
-                $q->where('coinkey_amount', '>', 0);
+                $q->where('product_type', 'coinkey');
             })
             ->sum('amount');
 
-        // Tổng tiền đã chi cho việc mua Key/Package (gói không có coinkey_amount hoặc = 0)
-        $spentOnKeys = Transaction::where('status', 'success')
-            ->where(function ($q) {
-                $q->whereHas('product', function ($sub) {
-                    $sub->where('coinkey_amount', '<=', 0)
-                        ->orWhereNull('coinkey_amount');
-                })
-                    ->orWhereNull('product_id'); // Các giao dịch không gắn product (nếu có)
-            })
-            ->sum('amount');
+        // Tổng tiền mặt đã chi cho việc mua Key/Package trừ giao dịch bằng Coin
+        $spentOnKeys = $totalCash - $spentOnCoins;
 
-        $moreSpentOn = $spentOnCoins > $spentOnKeys ? 'Coin' : 'Key/Package';
 
         // Tổng coin đã nạp (tính từ các giao dịch mua gói coin)
         $totalCoinsDeposited = Transaction::where('status', 'success')
@@ -353,10 +353,10 @@ class AdminDashboardController extends Controller
             // Thống kê dòng tiền
             'totalCash',
             'totalCoins',
-            'totalDeposited',
+            'totalAll',
             'spentOnCoins',
+            'totalspenCoin',
             'spentOnKeys',
-            'moreSpentOn',
             'totalCoinsDeposited',
             'remainingCoins',
             'totalCashSpent',

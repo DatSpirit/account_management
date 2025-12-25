@@ -118,7 +118,7 @@
                     <p class="text-xs text-gray-800 dark:text-white mt-3">Coin :
                         <span class="font-bold text-gray-900 dark:text-white">{{ number_format($spentOnCoins) }}đ</span>
                     </p>
-                    <p class="text-xs text-gray-800 dark:text-white mt-3">Key  :
+                    <p class="text-xs text-gray-800 dark:text-white mt-3">Key :
                         <span class="font-bold text-gray-900 dark:text-white">{{ number_format($spentOnKeys) }}đ</span>
                     </p>
                 </div>
@@ -132,6 +132,8 @@
                     <p
                         class="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent mt-2">
                         {{ number_format($totalCoins) }}</p>
+                    <p class="text-xs text-gray-500 mt-3">Đã tiêu: <span
+                            class="font-semibold">{{ number_format($totalspenCoin) }}</span></p>
                     <p class="text-xs text-gray-500 mt-3">Còn lại: <span
                             class="font-semibold">{{ number_format($remainingCoins) }}</span></p>
                 </div>
@@ -164,16 +166,19 @@
                     </p>
                 </div>
 
-                <!-- Card 6: Tổng Nạp -->
+                <!-- Card 6: Tổng Tiêu -->
                 <div
                     class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Tổng Nạp</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Tổng Chi Tiêu</p>
                     <p
                         class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mt-2">
-                        {{ number_format($totalDeposited) }}</p>
-                    <p class="text-xs text-gray-500 mt-3">Chi nhiều: <span
-                            class="font-semibold text-indigo-600">{{ $moreSpentOn }}</span></p>
+                        {{ number_format($totalAll) }}</p>
+                    <p class="text-xs text-gray-500 mt-3">Tiền Mặt: <span
+                            class="font-semibold text-indigo-600">{{ number_format($totalCash) }}</span></p>
+
+                    <p class="text-xs text-gray-500 mt-3">Coin: <span
+                            class="font-semibold text-indigo-600">{{ number_format($totalspenCoin) }}</span></p>
                 </div>
             </div>
 
