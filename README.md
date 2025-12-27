@@ -18,6 +18,74 @@ Dưới đây là các bước cần thiết để thiết lập và chạy dự
 
 - **Git**: Dùng để clone mã nguồn.
 
+
+
+# 1. Cài đặt Git
+Tác dụng: Dùng lệnh git clone để tải code từ GitHub.
+
+Lưu ý: Sau khi cài xong, phải khởi động lại Terminal để nhận lệnh.
+
+Bash
+
+# Kiểm tra phiên bản Git
+```bash
+git --version
+```
+
+# 2. Cài đặt Node.js & NPM
+Tác dụng: Biên dịch giao diện (Frontend), chạy Vite/Laravel Mix.
+
+Phiên bản khuyến nghị: v24.x (LTS).
+
+Bash
+
+# Kiểm tra Node.js
+
+```bash
+node -v
+npm -v
+```
+
+
+# 3. Web Server & PHP (XAMPP Setup)
+
+3.1. Cài đặt XAMPP
+
+Cài đặt vào đường dẫn mặc định: C:\xampp.
+
+Mở XAMPP Control Panel với quyền Administrator.
+
+3.2. Cấu hình Quan Trọng (php.ini) 
+
+Đây là bước sửa lỗi The zip extension is missing mà chúng ta đã gặp:
+
+Mở file C:\xampp\php\php.ini.
+
+Tìm và bỏ dấu ; (uncomment) ở các dòng sau:
+
+Ini, TOML
+
+extension=zip
+extension=fileinfo
+extension=intl
+extension=gd
+
+
+# 4. Quản Lý Thư Viện PHP (Composer)
+Tải file Composer-Setup.exe và trỏ đường dẫn PHP về C:\xampp\php\php.exe.
+
+Cách sửa lỗi "Fatal Error" khi cài thư viện:
+Nếu thư mục vendor bị lỗi hoặc tải thiếu, cần xóa sạch và cài lại:
+
+DOS
+
+# Cửa sổ CMD Windows
+
+```bash
+cd C:\Project\account_management
+rd /s /q vendor
+composer install
+```
 ---
 
 
@@ -29,7 +97,6 @@ Dưới đây là các bước cần thiết để thiết lập và chạy dự
 
 ```bash
 git clone https://github.com/DatSpirit/account_management.git
-cd (tên dự án của bạn)
 ```
 ---
 
@@ -141,6 +208,7 @@ php artisan storage:link
 ```bash
 npm install
 npm run build
+composer dump-autoload
 ```
 
 ---
